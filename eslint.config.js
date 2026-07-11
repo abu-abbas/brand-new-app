@@ -9,6 +9,20 @@ export default tseslint.config(
   pluginVue.configs['flat/recommended'],
   eslintConfigPrettier,
   {
+    ignores: [
+      'node_modules/**',
+      'vendor/**',
+      'public/**',
+      'storage/**',
+      'bootstrap/**',
+      'config/**',
+      'database/**',
+      'tests/**',
+      'dist/**',
+      '**/*.php',
+    ],
+  },
+  {
     files: ['*.vue', '**/*.vue'],
     languageOptions: {
       parser: pluginVue.parser,

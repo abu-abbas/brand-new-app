@@ -1,0 +1,12 @@
+node_modules
+vendor
+public
+storage
+bootstrap
+config
+database
+tests
+dist
+*.php
+.husky
+.git
