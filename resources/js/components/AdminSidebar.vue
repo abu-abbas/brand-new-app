@@ -35,7 +35,6 @@ import {
   Settings,
   Map,
   ChevronRight,
-  GalleryVerticalEnd,
   ChevronsUpDown,
   Sparkles,
   BadgeCheck,
@@ -71,14 +70,29 @@ const themes: { name: ThemeName; label: string; color: string }[] = [
   { name: 'yellow', label: 'Yellow', color: '#eab308' },
 ];
 
+import type { Component } from 'vue';
+
+interface SubMenuItem {
+  title: string;
+  url: string;
+  isSubActive?: boolean;
+}
+
+interface PlatformMenuItem {
+  title: string;
+  icon: Component;
+  isActive?: boolean;
+  items?: SubMenuItem[];
+}
+
 // Mock data untuk menu navigasi utama (Platform - collapsible)
-const platformMenu = [
+const platformMenu: PlatformMenuItem[] = [
   {
     title: 'Playground',
     icon: SquareTerminal,
     isActive: true,
     items: [
-      { title: 'History', url: '#' },
+      { title: 'History', url: '#', isSubActive: true },
       { title: 'Starred', url: '#' },
       { title: 'Settings', url: '#' },
     ],
@@ -131,9 +145,9 @@ const projectsMenu = [
           <SidebarMenuButton size="lg" class="w-full justify-between hover:bg-accent/50">
             <div class="flex items-center gap-2 overflow-hidden">
               <div
-                class="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm"
+                class="hidden group-data-[collapsible=icon]:flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold text-sm"
               >
-                <GalleryVerticalEnd class="size-4" />
+                AI
               </div>
               <div class="flex flex-col group-data-[collapsible=icon]:hidden min-w-0 text-left">
                 <span class="text-xs font-semibold text-foreground truncate leading-tight">
@@ -171,7 +185,15 @@ const projectsMenu = [
             >
               <SidebarMenuItem>
                 <CollapsibleTrigger as-child>
-                  <SidebarMenuButton :tooltip="item.title" class="w-full">
+                  <SidebarMenuButton
+                    :tooltip="item.title"
+                    class="w-full transition-colors"
+                    :class="
+                      item.isActive
+                        ? 'bg-primary/75 dark:bg-primary/15 text-primary-foreground dark:text-primary! hover:bg-primary/85! dark:hover:bg-primary/25! hover:text-primary-foreground! dark:hover:text-primary!'
+                        : ''
+                    "
+                  >
                     <component :is="item.icon" class="size-4 shrink-0" />
                     <span
                       class="group-data-[collapsible=icon]:hidden font-medium text-xs leading-none"
@@ -179,8 +201,13 @@ const projectsMenu = [
                       {{ item.title }}
                     </span>
                     <ChevronRight
-                      class="ml-auto size-3 transition-transform duration-200 group-data-[collapsible=icon]:hidden text-muted-foreground/70"
-                      :class="open ? 'rotate-90' : ''"
+                      class="ml-auto size-3 transition-transform duration-200 group-data-[collapsible=icon]:hidden"
+                      :class="[
+                        open ? 'rotate-90' : '',
+                        item.isActive
+                          ? 'text-primary-foreground dark:text-primary!'
+                          : 'text-muted-foreground/70',
+                      ]"
                     />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
@@ -190,7 +217,10 @@ const projectsMenu = [
                   >
                     <SidebarMenuSubItem v-for="sub in item.items" :key="sub.title">
                       <SidebarMenuSubButton as-child>
-                        <a :href="sub.url">
+                        <a
+                          :href="sub.url"
+                          :class="sub.isSubActive ? 'text-primary! font-semibold' : ''"
+                        >
                           {{ sub.title }}
                         </a>
                       </SidebarMenuSubButton>
@@ -229,9 +259,7 @@ const projectsMenu = [
           <SidebarMenuItem>
             <SidebarMenuButton tooltip="More" as-child>
               <a href="#" class="flex items-center gap-2">
-                <span
-                  class="text-muted-foreground/70 text-lg leading-none font-bold select-none px-0.5"
-                >
+                <span class="size-4 text-muted-foreground/70 leading-none font-bold select-none">
                   •••
                 </span>
                 <span class="group-data-[collapsible=icon]:hidden text-xs text-muted-foreground">
@@ -256,7 +284,7 @@ const projectsMenu = [
               >
                 <div class="flex items-center gap-2 overflow-hidden">
                   <div
-                    class="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground font-semibold text-xs"
+                    class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
                     WS
                   </div>
@@ -278,7 +306,7 @@ const projectsMenu = [
               <DropdownMenuLabel class="p-0 font-normal">
                 <div class="flex items-center gap-2 px-1.5 py-1.5 text-left text-sm">
                   <div
-                    class="flex size-8 items-center justify-center rounded-full bg-accent text-accent-foreground font-semibold text-xs"
+                    class="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
                     WS
                   </div>
