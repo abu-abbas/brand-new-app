@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { PanelLeft } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
+import { PanelLeft, Bell } from '@lucide/vue';
 
 defineProps<{
   title?: string;
@@ -31,6 +32,18 @@ defineProps<{
           {{ title || 'Dashboard' }}
         </span>
       </div>
+    </div>
+
+    <!-- Right Side Header (Notification Button Only) -->
+    <div class="flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        class="size-8 rounded-lg bg-primary/15 text-primary border border-primary/30 hover:bg-primary/20 hover:text-primary cursor-pointer"
+        aria-label="Notifications"
+      >
+        <Bell class="size-4" />
+      </Button>
     </div>
   </header>
 </template>
