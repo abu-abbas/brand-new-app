@@ -57,7 +57,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="dropdownRef" class="relative w-56 text-left">
+  <div ref="dropdownRef" class="relative w-full text-left">
     <!-- Dropdown Trigger Button -->
     <button
       type="button"

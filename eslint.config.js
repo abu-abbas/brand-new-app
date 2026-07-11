@@ -19,6 +19,7 @@ export default tseslint.config(
       'database/**',
       'tests/**',
       'dist/**',
+      '.vscode/**',
       '**/*.php',
     ],
   },

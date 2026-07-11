@@ -29,6 +29,7 @@
   "dependencies": {
     "@lucide/vue": "^1.24.0",
     "@vitejs/plugin-vue": "^6.0.7",
+    "@vueuse/core": "^14.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^1.0.0",
