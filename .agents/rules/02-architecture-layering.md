@@ -28,12 +28,44 @@ Browser
 - Business logic backend **TIDAK BOLEH** ditulis langsung di Controller. Controller hanya orkestrasi: validasi (FormRequest) -> panggil Service/Action -> return API Resource.
 - Setiap module frontend **HARUS mandiri** (self-contained): Page, Components, API Facade, Query, Mutation, Routes, Permission ada di dalam folder module itu sendiri.
 
-## Kenapa aturan ini penting
+---
 
-Layering ini menjaga agar:
+# Folder Convention — `resources/js/`
 
-1. Perubahan API contract cukup di-generate ulang lewat Orval, tanpa Agent perlu menebak-nebak shape data di banyak component.
-2. Agent AI bisa membangun fitur baru secara konsisten mengikuti pola yang sama setiap saat.
-3. Refactor lebih aman karena boundary antar layer jelas.
+```
+resources/js/
+├── app/          # Bootstrap aplikasi: main.ts, router index, pinia init, plugin registration
+├── api/          # Generated client (Orval) — JANGAN diedit manual
+├── modules/      # Setiap fitur/domain bisnis punya foldernya sendiri
+│   └── <nama-module>/
+│       ├── pages/          # Halaman/route-level component
+│       ├── components/     # Component spesifik module ini
+│       ├── api/            # API Facade module ini (pembungkus generated client)
+│       ├── queries/        # useQuery hooks (TanStack Query)
+│       ├── mutations/      # useMutation hooks (TanStack Query)
+│       ├── routes.ts       # Route definition module ini
+│       └── permissions.ts  # Daftar permission key yang dipakai module ini
+├── shared/       # Component, composable, util yang dipakai lintas module
+└── stores/       # Pinia store: auth, permission, theme, sidebar, app-bootstrap
+```
 
-Jika Agent menemukan pelanggaran pola ini di kode existing, **laporkan ke user** dan tawarkan perbaikan, jangan diam-diam mengikuti pola yang salah.
+### Aturan Folder:
+- Module baru **WAJIB** mengikuti struktur di atas secara konsisten — jangan membuat struktur ad-hoc.
+- Component yang dipakai lebih dari 1 module **WAJIB** ditaruh di `shared/components/`.
+- Nama folder module menggunakan `kebab-case` (contoh: `user-management`, `product-catalog`).
+
+---
+
+# Batasan Pinia vs TanStack Query
+
+### Pinia — untuk Client State / App State
+Gunakan Pinia **hanya** untuk state yang sifatnya client-side dan tidak berasal dari server secara langsung sebagai data list/detail:
+- `auth` — user login, token, profile ringkas.
+- `permission` — daftar permission/role hasil login.
+- `theme` — dark/light mode, preferensi tampilan.
+- `sidebar` — collapsed/expanded, active menu.
+- `app-bootstrap` — konfigurasi awal aplikasi.
+
+### TanStack Query — untuk Server State
+Gunakan TanStack Query untuk **semua** data yang berasal dari server API (CRUD, Search & filter, Pagination, Detail record, Caching, dll).
+Jangan menyimpan hasil fetch list/detail ke dalam Pinia store — itu akan menduplikasi cache dan menyebabkan data stale tidak sinkron.
