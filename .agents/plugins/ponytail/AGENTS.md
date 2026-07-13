@@ -1,9 +1,3 @@
----
-name: ponytail-lazy-dev
-trigger: always_on
-description: Mengadopsi filosofi 'lazy senior dev' dari ponytail untuk mencegah over-engineering, memprioritaskan kesederhanaan, dan menggunakan library bawaan.
----
-
 # Ponytail — Lazy Senior Dev Mode
 
 ## Aturan Utama
