@@ -350,19 +350,20 @@ const projectsMenu = [
                     <span>Theme Color</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent class="w-48 max-h-72 overflow-y-auto">
-                    <DropdownMenuItem
-                      v-for="t in themes"
-                      :key="t.name"
-                      class="flex items-center justify-between"
-                      :class="activeTheme === t.name ? 'bg-accent/40 font-semibold' : ''"
-                      @click="setTheme(t.name)"
-                    >
-                      <span>{{ t.label }}</span>
-                      <span
-                        class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
-                        :style="{ backgroundColor: t.color }"
-                      />
-                    </DropdownMenuItem>
+                    <template v-for="t in themes" :key="t.name">
+                      <DropdownMenuItem
+                        class="flex items-center justify-between"
+                        :class="activeTheme === t.name ? 'bg-accent/40 font-semibold' : ''"
+                        @click="setTheme(t.name)"
+                      >
+                        <span>{{ t.label }}</span>
+                        <span
+                          class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
+                          :style="{ backgroundColor: t.color }"
+                        />
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator v-if="t.name === 'default'" />
+                    </template>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 

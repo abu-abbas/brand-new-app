@@ -20,7 +20,7 @@ defineProps<{
       >
         <PanelLeft class="size-4 text-foreground" />
       </SidebarTrigger>
-      <div class="mx-3 h-4 w-px bg-border self-center" />
+      <div class="mx-1 h-4 w-px bg-border self-center" />
 
       <!-- Breadcrumbs style clean -->
       <div class="flex items-center gap-2 text-xs select-none">

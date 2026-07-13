@@ -307,6 +307,38 @@
     @apply bg-background text-foreground;
     @apply font-sans;
   }
+  
+  /* Custom Scrollbar Styles for Dynamic Dark Mode Support */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.85 0 0);
+    border-radius: 9999px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: oklch(0.3 0 0);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.75 0 0);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.4 0 0);
+  }
+
+  /* Standard scrollbar properties for Firefox compatibility */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.85 0 0) transparent;
+  }
+  .dark * {
+    scrollbar-color: oklch(0.3 0 0) transparent;
+  }
+  
   button:not(:disabled),
   [role='button']:not(:disabled) {
     cursor: pointer;
