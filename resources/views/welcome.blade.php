@@ -6,6 +6,7 @@
         <title>Demo shadcn-vue & Laravel</title>
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
+        {{ Vite::fonts() }}
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
     </head>
     <body class="antialiased">
