@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue';
-import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import ConfirmDialog from '@/components/custom-ui/ConfirmDialog.vue';
 import TrafficChannelsChart from '@/components/TrafficChannelsChart.vue';
 import { Button } from '@/components/ui/button';
 import {
