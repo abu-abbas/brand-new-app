@@ -2,6 +2,7 @@
 import AdminLayout from '@/components/AdminLayout.vue';
 import ConfirmDialog from '@/components/custom-ui/confirm-dialog/ConfirmDialog.vue';
 import ConfirmDialogExample from '@/components/custom-ui/confirm-dialog/ConfirmDialogExample.vue';
+import ComboboxExample from '@/components/custom-ui/combobox/ComboboxExample.vue';
 import TrafficChannelsChart from '@/components/TrafficChannelsChart.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, Package, Activity, Users } from '@lucide/vue';
@@ -44,6 +45,8 @@ const stats = [
     </div>
 
     <ConfirmDialogExample />
+
+    <ComboboxExample />
 
     <!-- Main Layout Split (Recent Sales and Chart Placeholder) -->
     <div class="grid gap-4 md:gap-6 lg:grid-cols-7 flex-1">

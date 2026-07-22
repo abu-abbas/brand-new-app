@@ -6,6 +6,7 @@
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint .",
+    "test:combobox": "node --experimental-strip-types --test resources/js/components/custom-ui/combobox/combobox.utils.test.mjs",
     "test:confirm-dialog": "node --experimental-strip-types --test resources/js/composables/useConfirmDialog.test.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -29,7 +30,7 @@
     "vite": "^8.0.0"
   },
   "dependencies": {
-    "@lucide/vue": "^1.24.0",
+    "@lucide/vue": "^1.25.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vueuse/core": "^14.3.0",
     "class-variance-authority": "^0.7.1",
