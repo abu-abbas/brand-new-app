@@ -28,7 +28,7 @@ description: Prioritas pemilihan komponen UI antara shadcn-vue, Element Plus, da
 ## Notifikasi & Konfirmasi
 
 - **DILARANG KERAS** menggunakan `window.alert()`, `window.confirm()`, atau `window.prompt()` di mana pun dalam aplikasi.
-- Konfirmasi dan blocking alert **WAJIB** memakai `useConfirmDialog()` dan satu host global `components/custom-ui/ConfirmDialog.vue` berbasis shadcn-vue `AlertDialog`.
+- Konfirmasi dan blocking alert **WAJIB** memakai `useConfirmDialog()` dan satu host global `components/custom-ui/confirm-dialog/ConfirmDialog.vue` berbasis shadcn-vue `AlertDialog`.
 - Untuk aksi async, berikan `onConfirm`; host mempertahankan dialog dan menampilkan `Spinner` sampai Promise selesai.
 - Setelah `onConfirm`, host menampilkan dialog sukses atau error. Success auto-close memakai `successAutoCloseSeconds` (default `3`, gunakan `false` untuk menonaktifkan) dan menampilkan countdown.
 - Gunakan `confirmVariant: 'destructive'` untuk aksi berbahaya, `reverseActions` untuk menukar urutan, serta label `false` untuk menyembunyikan tombol.
