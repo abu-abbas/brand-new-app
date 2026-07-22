@@ -378,6 +378,7 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
 
     <ComboboxList align="start">
       <ComboboxInput
+        class="mt-3"
         :model-value="search"
         :placeholder="searchPlaceholder"
         @update:model-value="updateSearch"
