@@ -57,6 +57,7 @@ interface Props {
   creating?: boolean;
   selectAll?: boolean;
   clearAll?: boolean;
+  showSelectedIndicator?: boolean;
   disabled?: boolean;
 }
 
@@ -89,6 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
   creating: false,
   selectAll: false,
   clearAll: false,
+  showSelectedIndicator: true,
   disabled: false,
 });
 
@@ -432,7 +434,7 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
               >
                 {{ getOptionLabel(option, labelKey) }}
               </slot>
-              <ComboboxItemIndicator>
+              <ComboboxItemIndicator v-if="showSelectedIndicator">
                 <Check class="size-4" />
               </ComboboxItemIndicator>
             </ComboboxItem>

@@ -197,6 +197,7 @@ async function createCity(name: string) {
           :error="remoteError"
           :creating="remoteCreating"
           :max-displayed-items="2"
+          :show-selected-indicator="false"
           clear-all
           creatable
           placeholder="Pilih kota"
