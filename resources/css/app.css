@@ -58,6 +58,13 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+.font-mono {
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings:
+    'liga' 1,
+    'calt' 1;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
