@@ -15,12 +15,13 @@ defineOptions({
 const props = defineProps<
   ComboboxInputProps & {
     class?: HTMLAttributes['class'];
+    inputClass?: HTMLAttributes['class'];
   }
 >();
 
 const emits = defineEmits<ComboboxInputEmits>();
 
-const delegatedProps = reactiveOmit(props, 'class');
+const delegatedProps = reactiveOmit(props, 'class', 'inputClass');
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
@@ -34,7 +35,12 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
     </InputGroupAddon>
     <ComboboxInput
       data-slot="combobox-input"
-      class="flex-1 outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+      :class="
+        cn(
+          'flex-1 outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
+          props.inputClass,
+        )
+      "
       v-bind="{ ...$attrs, ...forwarded }"
     />
   </InputGroup>
