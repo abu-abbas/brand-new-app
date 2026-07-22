@@ -6,8 +6,7 @@
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint .",
-    "test:combobox": "node --experimental-strip-types --test resources/js/components/custom-ui/combobox/combobox.utils.test.mjs",
-    "test:confirm-dialog": "node --experimental-strip-types --test resources/js/composables/useConfirmDialog.test.mjs",
+    "test": "node --experimental-strip-types --test 'resources/js/**/*.test.mjs'",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
