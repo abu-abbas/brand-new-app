@@ -464,7 +464,7 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
         <button
           v-if="canCreate"
           type="button"
-          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+          class="my-0.5 flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm hover:bg-accent"
           :disabled="creating"
           @click="emit('create', search.trim())"
         >
