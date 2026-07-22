@@ -8,6 +8,7 @@
     "lint": "eslint .",
     "test:confirm-dialog": "node --experimental-strip-types --test resources/js/composables/useConfirmDialog.test.mjs",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky"
   },
   "devDependencies": {

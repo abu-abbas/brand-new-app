@@ -1,4 +1,4 @@
 echo "🔍 Menjalankan linter (ESLint) pada kode..."
 npm run lint
-echo "✨ Merapikan format berkas (Prettier)..."
-npm run format
+echo "🔍 Memeriksa format berkas (Prettier)..."
+npm run format:check

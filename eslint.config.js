@@ -46,6 +46,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ['resources/js/components/ui/**/*.vue'],
+    rules: {
+      'vue/require-default-prop': 'off',
+    },
+  },
+  {
     rules: {
       'vue/multi-word-component-names': 'off', // Dimatikan agar nama component seperti App.vue atau Button.vue diperbolehkan
       '@typescript-eslint/no-explicit-any': 'warn',
