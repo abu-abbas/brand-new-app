@@ -149,7 +149,7 @@ async function createCity(name: string) {
           label-key="fullName"
           group-key="team"
           disabled-key="inactive"
-          :max-displayed-items="2"
+          :max-displayed-items="10"
           :max-selected-items="4"
           select-all
           clear-all
