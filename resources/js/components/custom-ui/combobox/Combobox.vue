@@ -379,35 +379,12 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
     <ComboboxList align="start">
       <ComboboxInput
         class="mt-3"
+        input-class="text-sm"
         :model-value="search"
         :placeholder="searchPlaceholder"
         @update:model-value="updateSearch"
         @keydown.enter="handleEnter"
       />
-
-      <div
-        v-if="canSelectAll || (clearAll && selectedItems.length)"
-        class="flex gap-1 border-b p-1"
-      >
-        <Button
-          v-if="canSelectAll"
-          type="button"
-          size="sm"
-          variant="ghost"
-          @click="selectEveryOption"
-        >
-          Pilih semua
-        </Button>
-        <Button
-          v-if="clearAll && selectedItems.length"
-          type="button"
-          size="sm"
-          variant="ghost"
-          @click="clearSelection"
-        >
-          Bersihkan
-        </Button>
-      </div>
 
       <div
         v-if="loading"
@@ -489,6 +466,30 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
           {{ loadingText }}
         </div>
       </ComboboxViewport>
+
+      <div
+        v-if="canSelectAll || (clearAll && selectedItems.length)"
+        class="flex justify-end gap-1 border-t p-1"
+      >
+        <Button
+          v-if="canSelectAll"
+          type="button"
+          size="sm"
+          variant="link"
+          @click="selectEveryOption"
+        >
+          Pilih semua
+        </Button>
+        <Button
+          v-if="clearAll && selectedItems.length"
+          type="button"
+          size="sm"
+          variant="link"
+          @click="clearSelection"
+        >
+          Bersihkan
+        </Button>
+      </div>
     </ComboboxList>
   </ComboboxRoot>
 </template>

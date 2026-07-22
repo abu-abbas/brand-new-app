@@ -151,6 +151,8 @@ async function createCity(name: string) {
           disabled-key="inactive"
           :max-displayed-items="2"
           :max-selected-items="4"
+          select-all
+          clear-all
           creatable
           placeholder="Pilih anggota tim"
           @create="createEmployee"
