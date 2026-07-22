@@ -1,6 +1,6 @@
 ---
 name: build-backend-services
-description: Panduan setup infrastruktur penanganan kesalahan (error handling), pelacakan request ID (tracing UUID v4), dan pembuatan sistem antrean (Queue Job & Horizon) terintegrasi pada backend Laravel.
+description: Panduan setup infrastruktur Error Definition Framework, pelacakan request ID (tracing UUID v4), dan pembuatan sistem antrean (Queue Job & Horizon) terintegrasi pada backend Laravel.
 ---
 
 # Build Backend Services
@@ -18,17 +18,11 @@ Dipakai saat mengatur penanganan eror global, mendesain exception kustom, melaca
 2. **Propagasi**: Teruskan `request_id` saat meluncurkan job async dari request context agar trace log antar-proses sinkron.
 
 ### 2. Penanganan Error Terpusat (Exception Handler)
-1. **Response Envelope**: Semua kegagalan API harus menghasilkan format JSON envelope yang sama:
-   ```json
-   {
-     "message": "Pesan ramah untuk pengguna.",
-     "errors": { "field": ["detail error"] },
-     "error_code": "KONSTANTA_KODE_EROR",
-     "trace_id": "uuid-v4-dari-request-id"
-   }
-   ```
-2. **Exception Mapping**: Di `app/Exceptions/Handler.php`, petakan model exception (seperti `ValidationException` -> 422, `AuthorizationException` -> 403, `ModelNotFoundException` -> 404, custom -> status kustom) ke format JSON di atas.
-3. **Custom Exception**: Buat class exception terisolasi untuk kebutuhan logika bisnis spesifik (misalnya `DuplicateEmailException` -> 409). Lempar exception ini dari Service/Action layer dan hindari `return response()->json()` manual dari dalam Service.
+1. Jalankan skill `build-error-definitions` dan baca reference kontraknya sebelum mengubah exception handling.
+2. Daftarkan renderer sentral untuk `ApplicationException` dan `ErrorValidationException`; pertahankan scope exception Laravel lain kecuali ada mapping eksplisit.
+3. Lempar `ApplicationException` yang membawa resolved definition dari Service/Action. Hindari exception class satu-per-kondisi dan `return response()->json()` manual.
+4. Pastikan response publik hanya memuat `message`, `code`, `retryable`; validation memuat top-level `message` dan structured `errors` per field.
+5. Simpan request ID pada header dan log context, bukan body response Error Definition.
 
 ### 3. Queue Job & Horizon (Tugas Latar Belakang)
 1. **Job Definition**: Buat Job class (`php artisan make:job <NamaJob>`) yang mengimplementasikan interface `ShouldQueue`.
@@ -40,8 +34,8 @@ Dipakai saat mengatur penanganan eror global, mendesain exception kustom, melaca
 
 - [ ] Middleware `AssignRequestId` dipasang di urutan pertama global stack.
 - [ ] Log context mendeteksi dan merekam `request_id` secara otomatis.
-- [ ] Exception handler mengembalikan JSON response dengan schema envelope konsisten.
-- [ ] Custom domain exception memicu status code yang tepat (seperti 409, 400, dll).
+- [ ] Renderer menghasilkan kontrak application dan validation error sesuai `build-error-definitions`.
+- [ ] Domain failure memakai enum error module, resolved definition, dan status yang tepat.
 - [ ] Queue Job didelegasikan ke class Service/Action, bukan inline di handle().
 - [ ] Horizon memantau antrean kustom yang dialokasikan.
 - [ ] Queue Job menyimpan property `$tries` & `$backoff` serta penanganan `failed()`.

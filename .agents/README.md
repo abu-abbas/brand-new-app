@@ -42,13 +42,13 @@ sesuai dokumentasi Antigravity IDE:
 | `08-generated-files-protection.md`         | Always On                  | Larangan edit file hasil generate (Orval/OpenAPI)                                                           |
 | `09-testing-strategy.md`                   | Model Decision             | Kapan pakai PHPStan/Pest/Vitest/Playwright                                                                  |
 | `10-cicd-pipeline.md`                      | Model Decision             | Referensi gate CI/CD: push, MR, release                                                                     |
-| `11-error-handling-and-request-tracing.md` | Always On                  | Response envelope error, pemetaan HTTP status->aksi frontend, request ID (UUID v4) via middleware + logging |
+| `11-error-handling-and-request-tracing.md` | Always On                  | Error Definition Framework per module, response contract, request ID UUID v4, dan structured logging        |
 
-### `.agents/skills/` (13 skill)
+### `.agents/skills/` (14 skill)
 
 `build-frontend-ui`, `build-admin-page`, `build-datatable`, `build-form`, `build-api`, `build-rbac`,
 `build-queue-job`, `generate-openapi`, `sync-orval`, `code-review`, `debug-application`, `write-tests`,
-`build-error-handling-tracing`.
+`build-error-handling-tracing`, dan `build-error-definitions`.
 
 ### `.agents/workflows/` (6 workflow)
 

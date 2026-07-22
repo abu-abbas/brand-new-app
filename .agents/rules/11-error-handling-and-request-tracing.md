@@ -1,42 +1,71 @@
 ---
 name: error-handling-and-request-tracing
 trigger: always_on
-description: Standar response envelope error, pemetaan HTTP status code ke aksi frontend, request ID (UUID v4) untuk tracing, serta penanganan batasan sandbox permission AI.
+description: Mewajibkan Error Definition Framework pada setiap module Laravel serta request ID UUID v4 untuk tracing dan logging internal.
 ---
 
-# Error Handling & Request Tracing (Wajib)
+# Error Definition & Request Tracing (Wajib)
 
-## 1. Response Envelope — Bentuk Error Wajib Konsisten
-Setiap error dari API, apapun jenisnya, **HARUS** memakai bentuk (envelope) yang sama:
+## Source of truth
+
+- Setiap pembuatan atau perubahan module, endpoint, FormRequest, Service/Action, domain exception, atau error response **WAJIB** menjalankan skill `build-error-definitions`.
+- PHP/Laravel adalah source of truth. Error didefinisikan sekali melalui string backed enum `ErrorCode` dan attribute `ErrorDefinition`.
+- Tambahkan error pada enum konteks bisnis pemiliknya. Jangan membuat enum global atau mengelompokkan error berdasarkan halaman/controller.
+- Frontend memakai generated error code dan melakukan branching berdasarkan `code`, bukan `message`.
+
+## Kontrak response publik
+
+Application error:
+
 ```json
 {
-  "message": "Pesan ringkas, ramah user.",
-  "errors": {
-    "email": ["Email sudah terdaftar."]
-  },
-  "error_code": "VALIDATION_ERROR",
-  "trace_id": "3f1a9c2e-4b7d-4e2a-9f0a-1c2d3e4f5a6b"
+  "message": "Draft sedang dikunci.",
+  "code": "SM-WF-001",
+  "retryable": false
 }
 ```
-- `message` — **selalu ada**. Bahasa Indonesia, ramah user, tidak berisi stack trace internal.
-- `errors` — **hanya untuk validation error (422)**. Format bawaan Laravel: `field -> array pesan`.
-- `error_code` — string konstan. Contoh: `VALIDATION_ERROR`, `DUPLICATE_EMAIL`, `RESOURCE_NOT_FOUND`.
-- `trace_id` — **wajib diisi** dari `request_id` yang di-assign oleh middleware.
 
-## 2. Pemetaan HTTP Status Code -> Aksi Frontend
-- **400** / **409** / **429** / **403** -> Tampilkan dialog/toast dengan pesan spesifik lewat **SweetAlert2**.
-- **401** -> Bersihkan `auth` store, redirect ke halaman login, **tanpa toast** (mencegah spam alert).
-- **422** -> Teruskan Promise error untuk di-render sebagai **inline error per-field** di Element Plus Form, **bukan** sekadar toast dialog.
-- **500** / **503** -> Tampilkan generic SweetAlert2 "Terjadi kesalahan" beserta potongan kecil kode `trace_id` untuk bahan laporan bug user.
+Validation error (`422`):
 
-## 3. Request ID Tracing (UUID v4)
-- Setiap request masuk **WAJIB** memiliki `request_id` unik berbasis **UUID v4** (`Str::uuid()`).
-- Inject `request_id` ke log context Laravel, response header `X-Request-Id`, error envelope `trace_id`, dan teruskan ke Queue Job yang dipicu dari request terkait.
+```json
+{
+  "message": "Nomor surat wajib diisi.",
+  "errors": {
+    "nomor_surat": [
+      {
+        "code": "SM-VAL-001",
+        "message": "Nomor surat wajib diisi.",
+        "retryable": false
+      }
+    ]
+  }
+}
+```
 
----
+- HTTP status berasal dari definition; validation selalu `422`.
+- Validation tidak memiliki top-level `code` karena satu request dapat mengandung beberapa definition.
+- Category, severity, rule name, runtime context, exception class, file, previous exception, dan stack trace **DILARANG** masuk response, termasuk saat debug aktif.
+- `ApplicationException` dan `ErrorValidationException` dirender terpusat. Service/Action melempar exception; Controller tidak membuat error JSON manual.
+- Exception di luar Error Definition Framework tetap ditangani Laravel kecuali sudah mempunyai mapping eksplisit. Jangan menciptakan kode generik tanpa definition.
 
-# Penanganan Batasan Sandbox AI
+## Perilaku frontend
 
-1. **Meminta Izin Secara Jelas**: Untuk setiap perintah terminal atau operasi file yang gagal karena permission error, Agent harus memanggil tool `ask_permission` dengan lingkup tersempit yang dibutuhkan.
-2. **Batasan Berulang (Anti-Looping)**: Jika perintah/operasi sudah di-approve oleh user namun eksekusi masih gagal karena batasan sandbox (akses path luar, dll), **JANGAN mencobanya berulang-ulang**.
-3. **Fallback ke Instruksi Manual**: Jika terhalang batasan sandbox, hentikan percobaan otomatis dan sampaikan secara jujur kepada user. Berikan panduan perintah tertulis yang jelas agar dapat dijalankan secara manual oleh user di mesin lokalnya.
+- `400`, `403`, `404`, `409`, `429`: tampilkan pesan spesifik melalui `useConfirmDialog()` bila membutuhkan blocking alert dan bukan inline validation.
+- `401`: bersihkan auth store dan redirect ke login tanpa toast.
+- `422`: teruskan structured `errors` ke Element Plus Form; jangan ditelan interceptor.
+- `500`, `503`: tampilkan pesan generik. Ambil request ID dari header `X-Request-Id` bila perlu referensi laporan.
+- Gunakan `retryable` untuk menawarkan retry; jangan menebak dari message.
+
+## Request ID dan logging
+
+- Middleware paling awal menetapkan UUID v4, menyimpan `request_id` pada Laravel log context, dan mengirim header `X-Request-Id`.
+- Teruskan request ID ke Queue Job yang dipicu request tersebut.
+- Runtime exception context hanya berisi identifier minimum dan tidak dikirim ke client.
+- Sanitasi nested context dan redaksi credential/data sensitif. Gunakan `logging.additional_sensitive_keys` untuk key domain.
+- Structured log memuat error code, category, severity, retryable, HTTP status, sanitized context, dan exception tanpa duplicate reporting.
+
+## Quality gate
+
+- Jalankan `php artisan error-definition:lint` dan `php artisan error-definition:generate` jika command tersedia.
+- Jangan edit generated `error-codes.ts` atau `error-catalog.json` manual.
+- Test minimal membuktikan code, status, response shape, validation mapping, dan context internal tidak bocor.

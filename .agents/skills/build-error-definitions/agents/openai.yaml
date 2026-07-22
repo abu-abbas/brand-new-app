@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Error Definitions"
+  short_description: "Standarkan error setiap module Laravel"
+  default_prompt: "Use $build-error-definitions to define and integrate structured errors for this Laravel module."

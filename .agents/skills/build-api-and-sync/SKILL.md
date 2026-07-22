@@ -1,6 +1,6 @@
 ---
 name: build-api-and-sync
-description: Alur pembangunan API Laravel 13 (Controller, FormRequest, API Resource, Route, Policy) terintegrasi dengan generate spec OpenAPI (Scramble) dan sinkronisasi type-safe client frontend (Orval).
+description: Alur pembangunan API Laravel 13 (Controller, FormRequest, API Resource, Route, Policy), integrasi Error Definition Framework, generate spec OpenAPI (Scramble), dan sinkronisasi type-safe client frontend (Orval).
 ---
 
 # Build API & Sync
@@ -14,8 +14,10 @@ Dipakai saat membuat endpoint API baru di backend atau mengubah endpoint yang su
 ### 1. Backend API (Laravel 13)
 1. **Route**: Daftarkan rute di `routes/api.php`, kelompokkan per resource dengan middleware `auth:sanctum`. Gunakan middleware otorisasi `can:` jika diperlukan.
 2. **FormRequest**: Buat class FormRequest terpisah (`php artisan make:request Store<Resource>Request`) untuk validasi input. Hindari validasi inline di Controller.
+   - Jalankan skill `build-error-definitions`: gunakan `HasErrorDefinitions` dan petakan setiap rule melalui `errorCodes()`.
 3. **Policy**: Buat/perbarui Policy (`php artisan make:policy <Resource>Policy --model=<Resource>`) untuk mendefinisikan otorisasi per aksi (viewAny, view, create, update, delete).
 4. **Controller**: Controller bertindak sebagai orkestrator bersih. Panggil `$this->authorize()`, delegasikan logika bisnis ke **Service/Action class** (hindari penulisan logika rumit di controller), lalu kembalikan **API Resource**.
+   - Service/Action melempar `ApplicationException` berdasarkan error enum module untuk business failure; jangan membentuk error response manual.
 5. **API Resource**: Buat API Resource (`php artisan make:resource <Resource>Resource`) untuk mentransformasi bentuk response agar konsisten.
 6. **Anotasi Scramble**: Tulis docblock yang jelas (summary, tag, response example) agar OpenAPI schema terdeteksi dengan tepat oleh Scramble.
 
@@ -44,6 +46,8 @@ Dipakai saat membuat endpoint API baru di backend atau mengubah endpoint yang su
 ## Checklist
 
 - [ ] Validasi menggunakan FormRequest (bukan inline di Controller).
+- [ ] Semua validation rule mempunyai Error Definition dan mapping `attribute.rule`.
+- [ ] Business failure memakai error enum module dan `ApplicationException`.
 - [ ] Otorisasi dipanggil eksplisit melalui Policy/Gate di backend.
 - [ ] Output response menggunakan API Resource.
 - [ ] Berkas `docs/openapi.json` berhasil diekspor dan divalidasi.

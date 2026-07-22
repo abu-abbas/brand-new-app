@@ -13,9 +13,10 @@ Workflow utama untuk membangun fitur baru end-to-end di project ini. Panggil den
 1. **Klarifikasi kebutuhan**: Pastikan Agent memahami nama resource/module, field-field data, aturan bisnis (validasi, permission apa saja yang terlibat). Jika belum jelas, tanyakan ke user sebelum lanjut.
 2. **Backend**
    - Jalankan skill `build-api` untuk membuat Migration (jika perlu tabel baru), Model, FormRequest, Policy, Controller, API Resource, dan Route.
+   - Jalankan skill `build-error-definitions` untuk menginventarisasi failure nyata, menambah enum error milik module, memetakan seluruh validation rule, dan memakai `ApplicationException` untuk kegagalan bisnis.
    - Jika fitur butuh RBAC baru, jalankan juga skill `build-rbac`.
    - Jika ada proses berat/async (kirim email, export, dsb), jalankan skill `build-queue-job`.
-   - Jika fitur ini punya error/kondisi khusus (misal duplikat, konflik state), buat domain exception mengikuti skill `build-error-handling-tracing` bagian 3, jangan pakai `abort()` custom di Controller.
+   - Jangan memakai `abort()` atau response JSON manual untuk error module; ikuti renderer sentral dari `build-error-definitions`.
 3. **Generate OpenAPI**
    - Jalankan skill `generate-openapi` untuk export `docs/openapi.json` dari Scramble.
    - Verifikasi schema endpoint baru sudah benar.
@@ -28,6 +29,7 @@ Workflow utama untuk membangun fitur baru end-to-end di project ini. Panggil den
    - Pastikan API Facade, Query, Mutation module baru sudah dibuat sesuai rule `folder-convention` & `architecture-layering`.
 6. **Testing**
    - Jalankan skill `write-tests` untuk menambahkan test backend (Pest/PHPUnit) dan frontend (Vitest) sesuai rule `testing-strategy`.
+   - Verifikasi minimal satu validation mapping dan setiap business failure baru mengembalikan `code`, status, serta `retryable` yang benar tanpa membocorkan runtime context.
 7. **Summary**
    - Berikan ringkasan ke user (dalam Bahasa Indonesia, ikuti rule `bahasa-indonesia`) yang mencakup:
      - Endpoint API yang dibuat/diubah.

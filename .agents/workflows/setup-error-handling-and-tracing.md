@@ -1,5 +1,5 @@
 ---
-description: Memasang middleware request ID (UUID v4), exception handler sentral, contoh domain exception, propagasi ke Queue Job, dan interceptor Axios di frontend — semua sekaligus dalam satu alur, sesuai rule `error-handling-and-request-tracing`
+description: Memasang Error Definition Framework, middleware request ID UUID v4, renderer/reporter sentral, propagasi Queue Job, dan interceptor Axios sesuai rule workspace.
 ---
 
 # Setup Error Handling & Request Tracing
@@ -9,37 +9,44 @@ sistem error handling terpusat + request ID tracing secara lengkap. Panggil deng
 
 ## Steps
 
-1. **Backend — Middleware Request ID**
-   - Jalankan skill `build-error-handling-tracing`, bagian Middleware Request ID.
+1. **Backend — Kontrak Error Definition**
+   - Jalankan skill `build-error-definitions` dan baca `references/contracts.md`.
+   - Implementasikan core types, reader, renderer, reporter, validation integration, linter, dan generator hanya jika belum tersedia di project/dependency.
+
+2. **Backend — Middleware Request ID**
+   - Jalankan skill `build-backend-services`, bagian Middleware Request ID.
    - Pastikan `AssignRequestId` terdaftar **paling awal** di `bootstrap/app.php`.
 
-2. **Backend — Exception Handler Sentral**
-   - Lanjutkan skill `build-error-handling-tracing`, bagian Exception Handler.
-   - Petakan minimal: `ValidationException` (422), `AuthorizationException` (403), `ModelNotFoundException` (404),
-     `AuthenticationException` (401), fallback exception tak terduga (500).
-   - Pastikan response `production` **tidak pernah** bocorkan stack trace/pesan teknis.
+3. **Backend — Renderer dan Reporter Sentral**
+   - Daftarkan renderer `ApplicationException` dan `ErrorValidationException` untuk request JSON.
+   - Daftarkan structured reporter `ApplicationException` dan cegah duplicate reporting.
+   - Biarkan exception Laravel lain mengikuti handler Laravel kecuali ada Error Definition dan mapping eksplisit.
+   - Pastikan response di semua environment tidak pernah membocorkan category, severity, runtime context, exception detail, atau stack trace.
 
-3. **Backend — Contoh Domain Exception**
-   - Buat minimal 1 contoh domain exception (misal `DuplicateEmailException`) mengikuti pola di skill
-     `build-error-handling-tracing` bagian 3, sebagai referensi untuk exception-exception berikutnya.
+4. **Backend — Error Module**
+   - Buat satu enum contoh pada konteks bisnis nyata yang sudah ada; jangan membuat dummy exception production.
+   - Lempar `ApplicationException` dengan resolved definition dari Service/Action.
+   - Terapkan `HasErrorDefinitions` dan `errorCodes()` pada FormRequest module tersebut.
 
-4. **Backend — Queue Job Propagation**
+5. **Backend — Queue Job Propagation**
    - Jika project sudah/akan punya Queue Job, pastikan pola dispatch selalu meneruskan `request_id`
-     (lihat skill `build-queue-job` dan `build-error-handling-tracing` bagian 4).
+     (lihat skill `build-backend-services`).
 
-5. **Frontend — Axios Interceptor**
+6. **Frontend — Axios Interceptor**
    - Buat/perbarui interceptor sentral sesuai pemetaan status code lengkap di rule `error-handling-and-request-tracing`.
    - Pastikan **422 tidak ditelan interceptor** — harus diteruskan ke form (ikuti skill `build-form`).
-   - Pastikan tidak ada `alert()`/`confirm()` native — semua lewat SweetAlert2 (rule `ui-component-priority`).
+   - Gunakan `code` dan `retryable`; ambil tracing dari header `X-Request-Id`, bukan body.
+   - Pastikan tidak ada `alert()`/`confirm()` native — konfirmasi/blocking alert lewat `useConfirmDialog()` (rule `ui-component-priority`).
 
-6. **Verifikasi**
-   - Trigger manual masing-masing skenario (401, 403, 404, 409, 422, 429, 500) lewat endpoint uji coba, pastikan:
-     - Response envelope konsisten (`message`, `errors`, `error_code`, `trace_id`).
+7. **Verifikasi**
+   - Trigger application error dan validation error nyata, lalu pastikan:
+     - Application response persis `message`, `code`, `retryable`.
+     - Validation response berisi top-level `message` dan structured `errors` per field tanpa top-level `code`.
      - Header `X-Request-Id` selalu ada di response.
-     - Log backend (`storage/logs/laravel.log`) menampilkan `request_id` yang sama dengan `trace_id` di response.
-   - Jalankan skill `write-tests` untuk menambahkan test yang memverifikasi bentuk envelope error ini
-     (minimal untuk 422 dan 1 domain exception).
+     - Log backend menampilkan `request_id` yang sama dengan header dan context sudah disanitasi.
+     - Response tidak memuat runtime context atau detail exception.
+   - Jalankan `php artisan error-definition:lint` dan `php artisan error-definition:generate` bila command tersedia.
+   - Tambahkan test minimal untuk 422 dan satu application error.
 
-7. **Summary**
-   - Ringkas ke user (Bahasa Indonesia) file-file yang dibuat/diubah: middleware, Handler, contoh domain exception,
-     interceptor Axios, dan test yang ditambahkan.
+8. **Summary**
+   - Ringkas file core framework, enum module, FormRequest mapping, middleware, renderer/reporter, generated artifact, interceptor, dan test yang dibuat/diubah.
