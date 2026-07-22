@@ -43,7 +43,7 @@ function toggleSidebar() {
   return isMobile.value ? setOpenMobile(!openMobile.value) : setOpen(!open.value)
 }
 
-useEventListener("keydown", (event: KeyboardEvent) => {
+useEventListener("keydown", (event) => {
   if (event.key === SIDEBAR_KEYBOARD_SHORTCUT && (event.metaKey || event.ctrlKey)) {
     event.preventDefault()
     toggleSidebar()
