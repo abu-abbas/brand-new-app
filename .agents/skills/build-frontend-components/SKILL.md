@@ -12,15 +12,17 @@ Dipakai saat membuat halaman/view baru, merancang form input (create/edit data),
 ## Langkah Kerja
 
 ### 1. Struktur UI & Layouting (Vue 3 + Tailwind CSS)
+
 1. **Module Scope**: Tentukan apakah komponen masuk ke folder modul yang sudah ada (`resources/js/modules/<nama-module>/`) atau membuat modul baru.
 2. **Prioritas Pemilihan Komponen (shadcn-vue vs Element Plus)**:
    - **shadcn-vue** (Layout/Struktur): `Card`, `Tabs`, `Sheet`, `Breadcrumbs`, dll. Gunakan CLI `npx shadcn-vue add <component>` untuk memasang secara otomatis.
    - **Element Plus** (Form & Data Kompleks): Gunakan untuk komponen input formulir atau visualisasi data tabular.
    - **Tailwind CSS**: Gunakan kelas-kelas utilitas Tailwind secara konsisten. Hindari pembuatan kode CSS manual/kustom.
 3. **Penyajian Status**: Tangani status loading (`isLoading` dari TanStack Query) dengan skeleton/spinner dan status kosong (empty state) jika data kosong.
-4. **Notifikasi**: Semua notifikasi/toast atau dialog konfirmasi **wajib** menggunakan **SweetAlert2**, dilarang keras memanggil native `alert()` atau `confirm()`.
+4. **Feedback**: Gunakan `useConfirmDialog()` untuk konfirmasi/blocking alert. Aksi async menampilkan loader lalu dialog sukses/error; success auto-close default 3 detik dengan countdown. Gunakan `vue-sonner` untuk toast non-blocking. Dilarang memanggil native `alert()` atau `confirm()`.
 
 ### 2. Form Handling (Element Plus Form & Mutation)
+
 1. **Model Binding**: Ikat model formulir menggunakan reactive model yang tipenya berasal dari data generated Orval API (request body type) untuk akurasi kontrak tipe data.
 2. **Validasi Formulir**:
    - **Client-side**: Gunakan `rules` validasi Element Plus Form (`FormItem` prop) untuk validasi instan.
@@ -28,6 +30,7 @@ Dipakai saat membuat halaman/view baru, merancang form input (create/edit data),
 3. **Submit Logic**: Submit memanggil **mutation** dari `modules/<module>/mutations/` yang di dalamnya memanggil **API Facade** terkait. Setelah sukses, lakukan invalidate query data dan jalankan aksi redirect/tutup dialog.
 
 ### 3. Visualisasi Data (DataTable & Query)
+
 1. **Komponen Tabel**: Gunakan komponen `Table` + `Pagination` bawaan Element Plus untuk rendering data list.
 2. **State & Query Composable**: State parameter (page, search, sortBy) dideklarasikan sebagai **local reactive state** di komponen Vue (bukan di global Pinia store). Kirim parameter reaktif ini ke composable query TanStack.
 3. **Debounce Search**: Berikan penundaan input pencarian (debounce 300-500ms) sebelum memicu pembaruan parameter query ke server untuk mencegah request spam.
@@ -38,5 +41,5 @@ Dipakai saat membuat halaman/view baru, merancang form input (create/edit data),
 - [ ] Penggunaan shadcn-vue dipasang dengan CLI, bukan copy manual.
 - [ ] Validasi form client-side (Element Plus Form rules) + server-side (FormRequest Laravel) terintegrasi.
 - [ ] Error response API `422` terpetakan sebagai error inline per-field di frontend.
-- [ ] Notifikasi sukses/gagal/konfirmasi menggunakan SweetAlert2.
+- [ ] Konfirmasi memakai `useConfirmDialog()`; toast non-blocking memakai `vue-sonner` bila diperlukan.
 - [ ] Pencarian text-search pada tabel sudah melalui proses debounce.

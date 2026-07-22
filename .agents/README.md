@@ -30,19 +30,19 @@ sesuai dokumentasi Antigravity IDE:
 
 ### `.agents/rules/` (11 file)
 
-| File                                       | Aktivasi                   | Isi                                                                                                         |
-| ------------------------------------------ | -------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `01-bahasa-indonesia.md`                   | Always On                  | Wajib Bahasa Indonesia untuk penjelasan, istilah teknis tetap asli                                          |
-| `02-architecture-layering.md`              | Always On                  | Layer Browser->Blade->Vue->Module->API Facade->Orval->Axios->Laravel                                        |
-| `03-openapi-first-flow.md`                 | Always On                  | Laravel+Scramble sebagai single source of truth                                                             |
-| `04-state-management.md`                   | Model Decision             | Batasan Pinia (client state) vs TanStack Query (server state)                                               |
-| `05-ui-component-priority.md`              | Always On                  | shadcn-vue (layout) > Element Plus (form), wajib SweetAlert2                                                |
-| `06-authentication-authorization.md`       | Always On                  | Sanctum SPA, Policy/Gate backend, `auth.can` hanya UX                                                       |
-| `07-folder-convention.md`                  | Glob (`resources/js/**/*`) | Struktur folder module frontend                                                                             |
-| `08-generated-files-protection.md`         | Always On                  | Larangan edit file hasil generate (Orval/OpenAPI)                                                           |
-| `09-testing-strategy.md`                   | Model Decision             | Kapan pakai PHPStan/Pest/Vitest/Playwright                                                                  |
-| `10-cicd-pipeline.md`                      | Model Decision             | Referensi gate CI/CD: push, MR, release                                                                     |
-| `11-error-handling-and-request-tracing.md` | Always On                  | Error Definition Framework per module, response contract, request ID UUID v4, dan structured logging        |
+| File                                       | Aktivasi                   | Isi                                                                                                  |
+| ------------------------------------------ | -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `01-bahasa-indonesia.md`                   | Always On                  | Wajib Bahasa Indonesia untuk penjelasan, istilah teknis tetap asli                                   |
+| `02-architecture-layering.md`              | Always On                  | Layer Browser->Blade->Vue->Module->API Facade->Orval->Axios->Laravel                                 |
+| `03-openapi-first-flow.md`                 | Always On                  | Laravel+Scramble sebagai single source of truth                                                      |
+| `04-state-management.md`                   | Model Decision             | Batasan Pinia (client state) vs TanStack Query (server state)                                        |
+| `05-ui-component-priority.md`              | Always On                  | shadcn-vue (layout/ConfirmDialog) > Element Plus (form), tanpa native alert                          |
+| `06-authentication-authorization.md`       | Always On                  | Sanctum SPA, Policy/Gate backend, `auth.can` hanya UX                                                |
+| `07-folder-convention.md`                  | Glob (`resources/js/**/*`) | Struktur folder module frontend                                                                      |
+| `08-generated-files-protection.md`         | Always On                  | Larangan edit file hasil generate (Orval/OpenAPI)                                                    |
+| `09-testing-strategy.md`                   | Model Decision             | Kapan pakai PHPStan/Pest/Vitest/Playwright                                                           |
+| `10-cicd-pipeline.md`                      | Model Decision             | Referensi gate CI/CD: push, MR, release                                                              |
+| `11-error-handling-and-request-tracing.md` | Always On                  | Error Definition Framework per module, response contract, request ID UUID v4, dan structured logging |
 
 ### `.agents/skills/` (14 skill)
 
@@ -67,5 +67,5 @@ sesuai dokumentasi Antigravity IDE:
 - Stack backend difokuskan ke: Laravel 13, Scramble, Sanctum (tanpa Queue/Horizon/PHPStan/Pest disebutkan
   eksplisit sebagai stack wajib — namun tetap direferensikan di rule testing/CI-CD & skill `build-queue-job`
   sebagai bagian dari konsep enterprise, silakan hapus jika tidak dipakai).
-- Stack frontend: Vue 3, TypeScript, Vue Router, Pinia, Axios, TanStack Query, Orval, SweetAlert2 (wajib,
-  no native alert), shadcn-vue (first choice layout), Element Plus (first choice form).
+- Stack frontend: Vue 3, TypeScript, Vue Router, Pinia, Axios, TanStack Query, Orval, shadcn-vue
+  (termasuk ConfirmDialog, no native alert), dan Element Plus (first choice form).
