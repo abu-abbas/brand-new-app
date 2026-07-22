@@ -6,7 +6,7 @@ Aplikasi kerangka kerja (dashboard admin) modern yang dibangun menggunakan perpa
 
 - **Layout Modular & Dekomposisi Komponen**:
   - `AdminLayout.vue` — Orkestrator global yang menyatukan tata letak sidebar dan header.
-  - `AdminSidebar.vue` — Sidebar collapsible dengan menu bertingkat (*collapsible tree items*) bergaya *sidebar-07*.
+  - `AdminSidebar.vue` — Sidebar collapsible dengan menu bertingkat (_collapsible tree items_) bergaya _sidebar-07_.
   - `AdminHeader.vue` — Top clean navigation dengan integrasi breadcrumb dinamis.
 - **Preferences Panel (Dropdown Profil)**:
   - **Multi-Theme Selector**: Mendukung 18 warna tema visual terintegrasi secara dinamis (mengubah variabel CSS `--primary` root secara instan).

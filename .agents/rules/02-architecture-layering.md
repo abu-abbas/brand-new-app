@@ -50,6 +50,7 @@ resources/js/
 ```
 
 ### Aturan Folder:
+
 - Module baru **WAJIB** mengikuti struktur di atas secara konsisten — jangan membuat struktur ad-hoc.
 - Component yang dipakai lebih dari 1 module **WAJIB** ditaruh di `shared/components/`.
 - Nama folder module menggunakan `kebab-case` (contoh: `user-management`, `product-catalog`).
@@ -59,7 +60,9 @@ resources/js/
 # Batasan Pinia vs TanStack Query
 
 ### Pinia — untuk Client State / App State
+
 Gunakan Pinia **hanya** untuk state yang sifatnya client-side dan tidak berasal dari server secara langsung sebagai data list/detail:
+
 - `auth` — user login, token, profile ringkas.
 - `permission` — daftar permission/role hasil login.
 - `theme` — dark/light mode, preferensi tampilan.
@@ -67,5 +70,6 @@ Gunakan Pinia **hanya** untuk state yang sifatnya client-side dan tidak berasal 
 - `app-bootstrap` — konfigurasi awal aplikasi.
 
 ### TanStack Query — untuk Server State
+
 Gunakan TanStack Query untuk **semua** data yang berasal dari server API (CRUD, Search & filter, Pagination, Detail record, Caching, dll).
 Jangan menyimpan hasil fetch list/detail ke dalam Pinia store — itu akan menduplikasi cache dan menyebabkan data stale tidak sinkron.

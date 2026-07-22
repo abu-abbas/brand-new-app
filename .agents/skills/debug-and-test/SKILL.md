@@ -12,6 +12,7 @@ Dipakai saat menelusuri bug/eror yang dilaporkan, melakukan verifikasi/review ma
 ## Langkah Kerja
 
 ### 1. Diagnosis & Debugging Lintas-Layer
+
 1. **Pemanfaatan Trace ID**: Jika laporan bug menyertakan `trace_id` / `request_id`, lakukan pencarian (grep) langsung pada log backend:
    ```bash
    grep 'request_id":"<id>"' storage/logs/laravel.log
@@ -20,6 +21,7 @@ Dipakai saat menelusuri bug/eror yang dilaporkan, melakukan verifikasi/review ma
 3. **Penyelesaian Masalah**: Selesaikan eror di sumber masalahnya. Hindari penulisan kode "tambalan" sementara di frontend untuk menutupi bug logika di backend.
 
 ### 2. Code Review (Peninjauan Kode)
+
 1. **Pemeriksaan Arsitektur**:
    - Pastikan komponen Vue **tidak** memanggil instance Axios / Orval client secara langsung (wajib lewat API Facade).
    - Pastikan Controller backend **hanya** bertindak sebagai orkestrator tipis (logika bisnis didelegasikan ke class Service/Action).
@@ -27,8 +29,9 @@ Dipakai saat menelusuri bug/eror yang dilaporkan, melakukan verifikasi/review ma
 2. **Kepatuhan Linter**: Kode harus mematuhi aturan format otomatis (Pint untuk PHP, ESLint/Prettier untuk TypeScript).
 
 ### 3. Penulisan Tes Otomatis (Automated Testing)
+
 1. **Backend Feature Test (Pest)**: Buat tes untuk API endpoint baru/modifikasi di `tests/Feature/`.
-   - Uji skenario sukses (*happy path* dengan data valid).
+   - Uji skenario sukses (_happy path_ dengan data valid).
    - Uji kegagalan validasi (skema input invalid menghasilkan respon `422`).
    - Uji batasan otorisasi (respon `403` jika tidak diizinkan, `401` jika unauthenticated).
    - Gunakan factory data model untuk menyajikan model data dummy (hindari hardcode data).

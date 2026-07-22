@@ -12,6 +12,7 @@ Dipakai saat membuat endpoint API baru di backend atau mengubah endpoint yang su
 ## Langkah Kerja
 
 ### 1. Backend API (Laravel 13)
+
 1. **Route**: Daftarkan rute di `routes/api.php`, kelompokkan per resource dengan middleware `auth:sanctum`. Gunakan middleware otorisasi `can:` jika diperlukan.
 2. **FormRequest**: Buat class FormRequest terpisah (`php artisan make:request Store<Resource>Request`) untuk validasi input. Hindari validasi inline di Controller.
    - Jalankan skill `build-error-definitions`: gunakan `HasErrorDefinitions` dan petakan setiap rule melalui `errorCodes()`.
@@ -22,6 +23,7 @@ Dipakai saat membuat endpoint API baru di backend atau mengubah endpoint yang su
 6. **Anotasi Scramble**: Tulis docblock yang jelas (summary, tag, response example) agar OpenAPI schema terdeteksi dengan tepat oleh Scramble.
 
 ### 2. Generate OpenAPI (Scramble)
+
 1. Jalankan perintah ekspor spec OpenAPI dari backend:
    ```bash
    php artisan scramble:export --path=docs/openapi.json
@@ -32,6 +34,7 @@ Dipakai saat membuat endpoint API baru di backend atau mengubah endpoint yang su
    - **Dilarang** mengedit berkas `docs/openapi.json` secara manual.
 
 ### 3. Sync TypeScript Client (Orval)
+
 1. Jalankan regenerasi client TypeScript menggunakan Orval:
    ```bash
    npx orval --config orval.config.ts
