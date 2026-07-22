@@ -168,7 +168,7 @@ async function createCity(name: string) {
           </template>
         </Combobox>
 
-        <p class="text-xs text-muted-foreground">v-model: {{ selectedEmployees }}</p>
+        <p class="text-xs text-muted-foreground font-mono">v-model: {{ selectedEmployees }}</p>
       </CardContent>
     </Card>
 
@@ -214,7 +214,7 @@ async function createCity(name: string) {
           </template>
         </Combobox>
 
-        <p class="text-xs text-muted-foreground">v-model: {{ selectedCityIds }}</p>
+        <p class="text-xs text-muted-foreground font-mono">v-model: {{ selectedCityIds }}</p>
       </CardContent>
     </Card>
   </div>
