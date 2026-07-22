@@ -347,7 +347,7 @@ const projectsMenu = [
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
                     <Palette class="size-4 mr-2 text-primary" />
-                    <span>Theme Color</span>
+                    <span>Accent Color</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent class="w-48 max-h-72 overflow-y-auto">
                     <template v-for="t in themes" :key="t.name">
