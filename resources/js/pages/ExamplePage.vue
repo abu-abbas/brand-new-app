@@ -94,10 +94,10 @@ function navigate(target: string, isExternal: boolean) {
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="space-y-6">
-      <!-- Horizontal Navigation Menu (Responsive & scrollable on small screens) -->
+      <!-- Horizontal Navigation Menu (Single-line horizontally scrollable on mobile) -->
       <div class="overflow-x-auto rounded-2xl border border-border bg-card p-2 shadow-xs">
         <NavigationMenu class="w-full max-w-full justify-start">
-          <NavigationMenuList class="flex flex-wrap items-center gap-1">
+          <NavigationMenuList class="flex w-max flex-nowrap items-center gap-1">
             <!-- Home Link -->
             <NavigationMenuItem>
               <NavigationMenuLink
