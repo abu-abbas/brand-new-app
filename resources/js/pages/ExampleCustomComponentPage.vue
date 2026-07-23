@@ -3,6 +3,9 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Home, ShieldAlert, Sliders, Table } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
+import DataTableExample from '@/components/custom-ui/data-table/DataTableExample.vue';
+import ConfirmDialogExample from '@/components/custom-ui/confirm-dialog/ConfirmDialogExample.vue';
+import ComboboxExample from '@/components/custom-ui/combobox/ComboboxExample.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -10,49 +13,77 @@ const router = useRouter();
 const navItems = [
   {
     name: 'Home',
-    path: '/',
+    target: '/',
+    isExternal: true,
     icon: Home,
-    description: 'Kembali ke Dashboard Utama',
   },
   {
     name: 'DataTable',
-    path: '/example-custom-component/data-table',
+    target: '#data-tables',
+    isExternal: false,
     icon: Table,
-    description: 'Tabel data reusable mode lokal & server',
   },
   {
     name: 'ConfirmDialog',
-    path: '/example-custom-component/confirm-dialog',
+    target: '#confirm-dialog',
+    isExternal: false,
     icon: ShieldAlert,
-    description: 'Dialog konfirmasi global shadcn-vue',
   },
   {
     name: 'Combobox',
-    path: '/example-custom-component/combobox',
+    target: '#combobox',
+    isExternal: false,
     icon: Sliders,
-    description: 'Autocomplete dropdown dengan filter',
   },
 ];
 
-const currentTitle = computed(() => {
-  const matched = navItems.find((item) => item.path !== '/' && route.path.startsWith(item.path));
-  return matched ? matched.name : 'Custom Components';
+const activeHash = computed(() => {
+  if (route.path !== '/example-custom-component') return '#data-tables';
+  return route.hash || '#data-tables';
 });
 
-function isItemActive(path: string): boolean {
-  if (path === '/') return route.path === '/';
-  return route.path.startsWith(path);
+const activeComponent = computed(() => {
+  switch (activeHash.value) {
+    case '#confirm-dialog':
+      return ConfirmDialogExample;
+    case '#combobox':
+      return ComboboxExample;
+    case '#data-tables':
+    default:
+      return DataTableExample;
+  }
+});
+
+const currentTitle = computed(() => {
+  switch (activeHash.value) {
+    case '#confirm-dialog':
+      return 'ConfirmDialog';
+    case '#combobox':
+      return 'Combobox';
+    case '#data-tables':
+    default:
+      return 'DataTable';
+  }
+});
+
+function isItemActive(target: string, isExternal: boolean): boolean {
+  if (isExternal) return route.path === target;
+  return route.path === '/example-custom-component' && activeHash.value === target;
 }
 
-function navigate(path: string) {
-  router.push(path);
+function navigate(target: string, isExternal: boolean) {
+  if (isExternal) {
+    router.push(target);
+  } else {
+    router.push({ path: '/example-custom-component', hash: target });
+  }
 }
 </script>
 
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-      <!-- Left Sidebar Navigation Card (Styled matching design screenshot) -->
+      <!-- Left Sidebar Navigation Card -->
       <aside class="lg:col-span-3">
         <div class="sticky top-0 rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div class="px-3 pt-2 pb-3">
@@ -64,21 +95,23 @@ function navigate(path: string) {
           <nav class="flex flex-col gap-1.5" aria-label="Component Navigation">
             <button
               v-for="item in navItems"
-              :key="item.path"
+              :key="item.target"
               type="button"
               :class="[
                 'flex w-full items-center gap-3.5 rounded-xl px-3.5 py-3 text-left transition-colors duration-150',
-                isItemActive(item.path)
+                isItemActive(item.target, item.isExternal)
                   ? 'bg-primary/10 font-semibold text-primary shadow-xs'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
               ]"
-              @click="navigate(item.path)"
+              @click="navigate(item.target, item.isExternal)"
             >
               <component
                 :is="item.icon"
                 :class="[
                   'size-5 shrink-0 transition-colors',
-                  isItemActive(item.path) ? 'text-primary' : 'text-muted-foreground',
+                  isItemActive(item.target, item.isExternal)
+                    ? 'text-primary'
+                    : 'text-muted-foreground',
                 ]"
               />
               <span class="text-sm tracking-tight">{{ item.name }}</span>
@@ -87,13 +120,11 @@ function navigate(path: string) {
         </div>
       </aside>
 
-      <!-- Right Main Content Area (Dynamic Router View) -->
+      <!-- Right Main Content Area -->
       <main class="min-w-0 lg:col-span-9">
-        <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
-          </transition>
-        </router-view>
+        <transition name="fade" mode="out-in">
+          <component :is="activeComponent" :key="activeHash" />
+        </transition>
       </main>
     </div>
   </AdminLayout>
