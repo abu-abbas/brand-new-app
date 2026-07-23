@@ -1,47 +1,23 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Home, ShieldAlert, Sliders, Table } from '@lucide/vue';
+import { Home, Layers, ShieldAlert, Sliders, Table } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import DataTableExample from '@/components/custom-ui/data-table/DataTableExample.vue';
 import ConfirmDialogExample from '@/components/custom-ui/confirm-dialog/ConfirmDialogExample.vue';
 import ComboboxExample from '@/components/custom-ui/combobox/ComboboxExample.vue';
 import {
   NavigationMenu,
+  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
 const route = useRoute();
 const router = useRouter();
-
-const navItems = [
-  {
-    name: 'Home',
-    target: '/',
-    isExternal: true,
-    icon: Home,
-  },
-  {
-    name: 'DataTable',
-    target: '#data-tables',
-    isExternal: false,
-    icon: Table,
-  },
-  {
-    name: 'ConfirmDialog',
-    target: '#confirm-dialog',
-    isExternal: false,
-    icon: ShieldAlert,
-  },
-  {
-    name: 'Combobox',
-    target: '#combobox',
-    isExternal: false,
-    icon: Sliders,
-  },
-];
 
 const activeHash = computed(() => {
   if (route.path !== '/example-custom-component') return '#data-tables';
@@ -88,50 +64,148 @@ function navigate(target: string, isExternal: boolean) {
 
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
-    <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-      <!-- Left Sidebar Navigation Card (Using shadcn-vue NavigationMenu) -->
-      <aside class="lg:col-span-3">
-        <div class="sticky top-0 rounded-2xl border border-border bg-card p-4 shadow-xs">
-          <div class="px-3 pt-2 pb-3">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Examples Nav
-            </h3>
-          </div>
+    <div class="space-y-6">
+      <!-- Horizontal Navigation Menu (shadcn-vue top navbar style matching screenshot) -->
+      <div class="rounded-2xl border border-border bg-card p-2 shadow-xs">
+        <NavigationMenu class="max-w-full justify-start">
+          <NavigationMenuList class="flex items-center gap-1">
+            <!-- Home Link -->
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                :class="[
+                  navigationMenuTriggerStyle(),
+                  'cursor-pointer gap-2 font-medium',
+                  isItemActive('/', true) && 'bg-primary/10 text-primary font-semibold',
+                ]"
+                @click="navigate('/', true)"
+              >
+                <Home class="size-4" />
+                Home
+              </NavigationMenuLink>
+            </NavigationMenuItem>
 
-          <NavigationMenu class="max-w-full justify-start">
-            <NavigationMenuList class="w-full flex-col items-stretch space-x-0 space-y-1.5">
-              <NavigationMenuItem v-for="item in navItems" :key="item.target">
-                <NavigationMenuLink as-child>
-                  <button
-                    type="button"
-                    :class="[
-                      'flex w-full items-center gap-3.5 rounded-xl px-3.5 py-3 text-left transition-colors duration-150',
-                      isItemActive(item.target, item.isExternal)
-                        ? 'bg-primary/10 font-semibold text-primary shadow-xs'
-                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                    ]"
-                    @click="navigate(item.target, item.isExternal)"
-                  >
-                    <component
-                      :is="item.icon"
-                      :class="[
-                        'size-5 shrink-0 transition-colors',
-                        isItemActive(item.target, item.isExternal)
-                          ? 'text-primary'
-                          : 'text-muted-foreground',
-                      ]"
-                    />
-                    <span class="text-sm tracking-tight">{{ item.name }}</span>
-                  </button>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
-      </aside>
+            <!-- Components Dropdown -->
+            <NavigationMenuItem>
+              <NavigationMenuTrigger class="cursor-pointer gap-2 font-medium">
+                <Layers class="size-4" />
+                Components
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                  <li>
+                    <NavigationMenuLink as-child>
+                      <a
+                        href="#data-tables"
+                        :class="[
+                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+                          activeHash === '#data-tables' && 'bg-accent/80 font-medium',
+                        ]"
+                        @click.prevent="navigate('#data-tables', false)"
+                      >
+                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
+                          <Table class="size-4 text-primary" />
+                          DataTable
+                        </div>
+                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                          Tabel data reusable mode lokal & server
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
 
-      <!-- Right Main Content Area -->
-      <main class="min-w-0 lg:col-span-9">
+                  <li>
+                    <NavigationMenuLink as-child>
+                      <a
+                        href="#confirm-dialog"
+                        :class="[
+                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+                          activeHash === '#confirm-dialog' && 'bg-accent/80 font-medium',
+                        ]"
+                        @click.prevent="navigate('#confirm-dialog', false)"
+                      >
+                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
+                          <ShieldAlert class="size-4 text-primary" />
+                          ConfirmDialog
+                        </div>
+                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                          Dialog konfirmasi global shadcn-vue
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+
+                  <li>
+                    <NavigationMenuLink as-child>
+                      <a
+                        href="#combobox"
+                        :class="[
+                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
+                          activeHash === '#combobox' && 'bg-accent/80 font-medium',
+                        ]"
+                        @click.prevent="navigate('#combobox', false)"
+                      >
+                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
+                          <Sliders class="size-4 text-primary" />
+                          Combobox
+                        </div>
+                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
+                          Autocomplete dropdown dengan filter
+                        </p>
+                      </a>
+                    </NavigationMenuLink>
+                  </li>
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            <!-- Direct Quick Tabs (DataTable, ConfirmDialog, Combobox) -->
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                :class="[
+                  navigationMenuTriggerStyle(),
+                  'cursor-pointer gap-2 font-medium',
+                  activeHash === '#data-tables' && 'bg-primary/10 text-primary font-semibold',
+                ]"
+                @click="navigate('#data-tables', false)"
+              >
+                <Table class="size-4" />
+                DataTable
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                :class="[
+                  navigationMenuTriggerStyle(),
+                  'cursor-pointer gap-2 font-medium',
+                  activeHash === '#confirm-dialog' && 'bg-primary/10 text-primary font-semibold',
+                ]"
+                @click="navigate('#confirm-dialog', false)"
+              >
+                <ShieldAlert class="size-4" />
+                ConfirmDialog
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                :class="[
+                  navigationMenuTriggerStyle(),
+                  'cursor-pointer gap-2 font-medium',
+                  activeHash === '#combobox' && 'bg-primary/10 text-primary font-semibold',
+                ]"
+                @click="navigate('#combobox', false)"
+              >
+                <Sliders class="size-4" />
+                Combobox
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
+
+      <!-- Full-Width Main Content Area -->
+      <main class="min-w-0">
         <transition name="fade" mode="out-in">
           <component :is="activeComponent" :key="activeHash" />
         </transition>
