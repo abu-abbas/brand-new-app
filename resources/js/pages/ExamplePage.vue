@@ -17,10 +17,13 @@ const route = useRoute();
 const router = useRouter();
 
 // Auto-discover all *Example.vue components inside resources/js/components/custom-ui/
-const exampleFiles = import.meta.glob<{ default: Component }>(
-  '/resources/js/components/custom-ui/**/*Example.vue',
-  { eager: true },
-);
+const exampleFiles = (
+  import.meta as unknown as {
+    glob: <T>(pattern: string, options?: { eager?: boolean }) => Record<string, T>;
+  }
+).glob<{ default: Component }>('/resources/js/components/custom-ui/**/*Example.vue', {
+  eager: true,
+});
 
 interface CustomComponentExample {
   dirName: string;
@@ -34,29 +37,30 @@ interface CustomComponentExample {
 const descriptions: Record<string, string> = {
   'data-table': 'Tabel data reusable mode lokal & server',
   'confirm-dialog': 'Dialog konfirmasi global berbasis shadcn-vue',
-  'combobox': 'Autocomplete dropdown dengan pencarian & filter',
+  combobox: 'Autocomplete dropdown dengan pencarian & filter',
 };
 
 const icons: Record<string, Component> = {
   'data-table': Table,
   'confirm-dialog': ShieldAlert,
-  'combobox': Sliders,
+  combobox: Sliders,
 };
 
-const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([path, module]) => {
+const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([path, mod]) => {
   const match = path.match(/custom-ui\/([^/]+)\/([^/]+)\.vue$/);
   const dirName = match ? match[1] : 'example';
   const fileName = match ? match[2] : 'Example';
   const name = fileName.replace(/Example$/, '');
   const slug = dirName === 'data-table' ? 'data-tables' : dirName;
   const hash = `#${slug}`;
+  const loadedModule = mod as { default: Component };
 
   return {
     dirName,
     name,
     hash,
     description: descriptions[dirName] || `Komponen kustom ${name}`,
-    component: module.default,
+    component: loadedModule.default,
     icon: icons[dirName] || ComponentIcon,
   };
 });
@@ -118,7 +122,7 @@ function navigate(target: string, isExternal: boolean) {
                 Components
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                <ul class="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150">
                   <li v-for="ex in examples" :key="ex.hash">
                     <NavigationMenuLink as-child>
                       <a
