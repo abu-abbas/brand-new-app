@@ -21,11 +21,6 @@ export const exampleCustomComponentRoutes: RouteRecordRaw[] = [
         name: 'example.combobox',
         component: () => import('@/components/custom-ui/combobox/ComboboxExample.vue'),
       },
-      {
-        path: 'dashboard',
-        name: 'example.dashboard',
-        component: () => import('./pages/DashboardOverview.vue'),
-      },
     ],
   },
 ];

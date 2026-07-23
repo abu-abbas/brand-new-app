@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Table, ShieldAlert, Sliders, LayoutDashboard } from '@lucide/vue';
+import { Table, ShieldAlert, Sliders, Home } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 
 const route = useRoute();
@@ -27,17 +27,22 @@ const navItems = [
     description: 'Autocomplete dropdown dengan filter',
   },
   {
-    name: 'Dashboard Overview',
-    path: '/example-custom-component/dashboard',
-    icon: LayoutDashboard,
-    description: 'Statistik dan ringkasan transaksi',
+    name: 'Home',
+    path: '/',
+    icon: Home,
+    description: 'Kembali ke Dashboard Utama',
   },
 ];
 
 const currentTitle = computed(() => {
-  const matched = navItems.find((item) => route.path.startsWith(item.path));
+  const matched = navItems.find((item) => item.path !== '/' && route.path.startsWith(item.path));
   return matched ? matched.name : 'Custom Components';
 });
+
+function isItemActive(path: string): boolean {
+  if (path === '/') return route.path === '/';
+  return route.path.startsWith(path);
+}
 
 function navigate(path: string) {
   router.push(path);
@@ -63,7 +68,7 @@ function navigate(path: string) {
               type="button"
               :class="[
                 'flex w-full items-center gap-3.5 rounded-xl px-3.5 py-3 text-left transition-colors duration-150',
-                route.path.startsWith(item.path)
+                isItemActive(item.path)
                   ? 'bg-primary/10 font-semibold text-primary shadow-xs'
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
               ]"
@@ -73,7 +78,7 @@ function navigate(path: string) {
                 :is="item.icon"
                 :class="[
                   'size-5 shrink-0 transition-colors',
-                  route.path.startsWith(item.path) ? 'text-primary' : 'text-muted-foreground',
+                  isItemActive(item.path) ? 'text-primary' : 'text-muted-foreground',
                 ]"
               />
               <span class="text-sm tracking-tight">{{ item.name }}</span>
