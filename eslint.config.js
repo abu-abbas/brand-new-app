@@ -46,7 +46,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['resources/js/components/ui/**/*.vue'],
+    files: ['resources/js/components/{ui,custom-ui}/**/*.vue'],
     rules: {
       'vue/require-default-prop': 'off',
     },

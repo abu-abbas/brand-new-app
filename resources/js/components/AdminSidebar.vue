@@ -150,7 +150,7 @@ const projectsMenu = [
                 AI
               </div>
               <div class="flex flex-col group-data-[collapsible=icon]:hidden min-w-0 text-left">
-                <span class="text-xs font-semibold text-foreground truncate leading-tight">
+                <span class="text-sm font-semibold text-foreground truncate leading-tight">
                   Acme Inc
                 </span>
                 <span class="text-[10px] text-muted-foreground truncate leading-none">
@@ -195,9 +195,7 @@ const projectsMenu = [
                     "
                   >
                     <component :is="item.icon" class="size-4 shrink-0" />
-                    <span
-                      class="group-data-[collapsible=icon]:hidden font-medium text-xs leading-none"
-                    >
+                    <span class="group-data-[collapsible=icon]:hidden font-medium leading-none">
                       {{ item.title }}
                     </span>
                     <ChevronRight
@@ -216,7 +214,7 @@ const projectsMenu = [
                     class="mt-1 border-l border-border/80 pl-3 ml-3.5 flex flex-col gap-1"
                   >
                     <SidebarMenuSubItem v-for="sub in item.items" :key="sub.title">
-                      <SidebarMenuSubButton as-child>
+                      <SidebarMenuSubButton size="md" class="text-2sm!" as-child>
                         <a
                           :href="sub.url"
                           :class="sub.isSubActive ? 'text-primary! font-semibold' : ''"
@@ -246,9 +244,7 @@ const projectsMenu = [
               <a :href="proj.url" class="flex items-center justify-between w-full">
                 <div class="flex items-center gap-2 overflow-hidden">
                   <component :is="proj.icon" class="size-4 shrink-0 text-muted-foreground/70" />
-                  <span
-                    class="group-data-[collapsible=icon]:hidden text-xs text-foreground truncate"
-                  >
+                  <span class="group-data-[collapsible=icon]:hidden text-foreground truncate">
                     {{ proj.title }}
                   </span>
                 </div>
@@ -262,7 +258,7 @@ const projectsMenu = [
                 <span class="size-4 text-muted-foreground/70 leading-none font-bold select-none">
                   •••
                 </span>
-                <span class="group-data-[collapsible=icon]:hidden text-xs text-muted-foreground">
+                <span class="group-data-[collapsible=icon]:hidden text-muted-foreground">
                   More
                 </span>
               </a>
@@ -289,7 +285,7 @@ const projectsMenu = [
                     WS
                   </div>
                   <div class="flex flex-col group-data-[collapsible=icon]:hidden min-w-0 text-left">
-                    <span class="text-xs font-semibold text-foreground truncate leading-tight">
+                    <span class="text-sm font-semibold text-foreground truncate leading-tight">
                       Wibowo Sulistiyo
                     </span>
                     <span class="text-[10px] text-muted-foreground truncate leading-none">

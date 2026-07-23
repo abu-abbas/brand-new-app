@@ -67,7 +67,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
       data-slot="sidebar-gap"
       :class="
         cn(
-          'transition-[width] duration-200 ease-linear relative w-(--sidebar-width) bg-transparent',
+          'transition-[width] duration-300 ease-in-out relative w-(--sidebar-width) bg-transparent',
           'group-data-[collapsible=offcanvas]:w-0',
           'group-data-[side=right]:rotate-180',
           variant === 'floating' || variant === 'inset'
@@ -81,7 +81,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
       :data-side="side"
       :class="
         cn(
-          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
+          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-300 ease-in-out md:flex',
           side === 'left'
             ? 'left-0 group-data-[collapsible=offcanvas]:-left-(--sidebar-width)'
             : 'right-0 group-data-[collapsible=offcanvas]:-right-(--sidebar-width)',
@@ -97,7 +97,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
       <div
         data-sidebar="sidebar"
         data-slot="sidebar-inner"
-        class="bg-sidebar group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 flex size-full flex-col"
+        class="bg-sidebar group-data-[variant=floating]:ring-sidebar-border group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 flex size-full flex-col overflow-hidden"
       >
         <slot />
       </div>
