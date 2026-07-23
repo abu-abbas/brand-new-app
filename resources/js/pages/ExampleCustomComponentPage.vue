@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Table, ShieldAlert, Sliders, Home } from '@lucide/vue';
+import { Home, ShieldAlert, Sliders, Table } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 
 const route = useRoute();
@@ -54,7 +54,7 @@ function navigate(path: string) {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
       <!-- Left Sidebar Navigation Card (Styled matching design screenshot) -->
       <aside class="lg:col-span-3">
-        <div class="sticky top-20 rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div class="sticky top-20 rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div class="px-3 pt-2 pb-3">
             <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Examples Nav
