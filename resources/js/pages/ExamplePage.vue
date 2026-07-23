@@ -97,7 +97,7 @@ function navigate(target: string, isExternal: boolean) {
       <!-- Horizontal Navigation Menu (Single-line horizontally scrollable on mobile) -->
       <div class="overflow-x-auto rounded-2xl border border-border bg-card p-2 shadow-xs">
         <NavigationMenu class="w-full max-w-full justify-start">
-          <NavigationMenuList class="flex w-max flex-nowrap items-center gap-1">
+          <NavigationMenuList class="flex w-max flex-nowrap items-center gap-1 pr-4">
             <!-- Home Link -->
             <NavigationMenuItem>
               <NavigationMenuLink
