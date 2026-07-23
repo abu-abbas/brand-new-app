@@ -55,15 +55,10 @@ const emit = defineEmits<{
     :resizable="field.resizable !== false"
   >
     <template #header>
-      <component
-        :is="slots[`header(${field.key})`]"
-        v-if="slots[`header(${field.key})`]"
-        :column="field"
-      />
       <button
-        v-else-if="field.key !== 'rownum' && field.sortable !== false"
+        v-if="field.key !== 'rownum' && field.sortable !== false"
         type="button"
-        class="inline-flex items-center gap-1 rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+        class="inline-flex items-center gap-1 rounded-xs focus-visible:outline-2 focus-visible:outline-ring"
         :aria-sort="
           sorts.find((sort) => sort.key === field.key)?.direction === 'asc'
             ? 'ascending'
@@ -74,7 +69,14 @@ const emit = defineEmits<{
         @click="emit('sort', field, $event)"
         @keydown.enter.prevent="emit('sort', field, $event)"
       >
-        {{ field.label }}
+        <component
+          :is="slots[`header(${field.key})`]"
+          v-if="slots[`header(${field.key})`]"
+          :column="field"
+          :sort-direction="sorts.find((sort) => sort.key === field.key)?.direction"
+        />
+        <template v-else>{{ field.label }}</template>
+
         <span v-if="sorts.find((sort) => sort.key === field.key)" class="text-xs">
           {{ sorts.find((sort) => sort.key === field.key)?.direction === 'asc' ? '↑' : '↓' }}
           <sup v-if="sorts.length > 1">{{
@@ -82,6 +84,13 @@ const emit = defineEmits<{
           }}</sup>
         </span>
       </button>
+
+      <component
+        :is="slots[`header(${field.key})`]"
+        v-else-if="slots[`header(${field.key})`]"
+        :column="field"
+      />
+
       <span v-else>{{ field.label }}</span>
     </template>
 
@@ -98,7 +107,7 @@ const emit = defineEmits<{
       />
       <template v-else>
         <template v-for="(part, index) in highlight(valueFor(row, field, $index))" :key="index">
-          <mark v-if="tree && part.match" class="bg-yellow-200 text-inherit dark:bg-yellow-800">{{
+          <mark v-if="part.match" class="bg-primary/20 text-foreground rounded-xs px-0.5">{{
             part.text
           }}</mark>
           <template v-else>{{ part.text }}</template>
