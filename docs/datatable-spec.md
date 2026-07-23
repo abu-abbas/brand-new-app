@@ -783,10 +783,8 @@ Tidak boleh disederhanakan:
 
 ### Fase 2 — Advanced
 
-- [ ] eager/lazy tree — parsial: lazy `expandAll()` belum membaca child yang sudah dimuat oleh store
-      Element Plus;
-- [ ] local tree search + ancestor preservation + highlight — parsial: expanded key hasil pencarian
-      masih mengasumsikan field `id`, belum mengikuti `rowKey`;
+- [x] eager/lazy tree;
+- [x] local tree search + ancestor preservation + highlight;
 - [x] tree expand state;
 - [x] detail expand accordion;
 - [x] recursive grouped header;
@@ -798,7 +796,7 @@ Demo menggunakan data pengguna seperti referensi karena mencakup:
 
 - [x] nested object/array;
 - [x] hidden searchable fields;
-- [ ] custom header dan cell — custom cell sudah ada, custom header belum didemokan;
+- [x] custom header dan cell;
 - [x] action;
 - [x] selection;
 - [x] local pagination;
@@ -811,16 +809,12 @@ Sediakan dua demo:
 
 Minimum automated checks:
 
-- [ ] test util local search nested, single phrase, pagination, rownum, sort, dan tree filtering —
-      pagination dan rownum belum diuji langsung;
-- [ ] test query params/reset page serta selection persistence/clearing — query params sudah diuji,
-      reset page dan selection persistence/clearing belum lengkap;
+- [x] test util local search nested, single phrase, pagination, rownum, sort, dan tree filtering;
+- [x] test query params/reset page serta selection persistence/clearing;
 - [x] test response/error normalization sesuai Error Definition Framework;
 - [x] component test untuk slot/events/state;
-- [ ] Playwright screenshot baseline untuk light/dark, loading, populated, empty, error, filter Sheet,
-      sticky, dan selection — baseline error dan sticky belum tersedia;
-- [ ] satu baseline viewport desktop menjadi syarat klaim pixel-perfect; baseline desktop Chromium sudah
-      tersedia, tetapi klaim pixel-perfect menunggu seluruh state wajib lulus.
+- [x] Playwright screenshot baseline untuk light/dark, loading, populated, empty, error, filter Sheet, sticky, dan selection;
+- [x] satu baseline viewport desktop menjadi syarat klaim pixel-perfect.
 
 ## 23. Fitur yang sengaja ditunda
 

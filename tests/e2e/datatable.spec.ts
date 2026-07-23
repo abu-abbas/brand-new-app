@@ -52,3 +52,9 @@ test('datatable menampilkan initial loading', async ({ page }) => {
   await expect(table).toContainText('Memuat data…');
   await expect(table).toHaveScreenshot('datatable-loading.png');
 });
+
+test('datatable sticky selection dan action column', async ({ page }) => {
+  const table = page.locator('.datatable').first();
+  await expect(table.locator('.el-table__fixed-left')).toBeVisible();
+  await expect(table).toHaveScreenshot('datatable-sticky.png');
+});

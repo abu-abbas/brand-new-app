@@ -106,6 +106,12 @@ function serverParams(params: DataTableParams): void {
         actions
         row-key="id"
       >
+        <template #header(name)="{ column }">
+          <span class="font-bold text-primary">👤 {{ column.label }}</span>
+        </template>
+        <template #header(active)="{ column }">
+          <span class="text-xs uppercase tracking-wider text-muted-foreground">{{ column.label }}</span>
+        </template>
         <template #cell(active)="{ value }">
           <Badge :variant="value ? 'default' : 'secondary'">
             {{ value ? 'Aktif' : 'Nonaktif' }}
