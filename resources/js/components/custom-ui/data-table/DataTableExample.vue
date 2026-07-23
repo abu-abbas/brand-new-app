@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { User } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DataTable from './DataTable.vue';
@@ -107,8 +108,9 @@ function serverParams(params: DataTableParams): void {
         row-key="id"
       >
         <template #header(name)="{ column }">
-          <span class="font-bold text-primary">
-            👤 {{ (column as { label?: string }).label }}
+          <span class="inline-flex items-center gap-1 font-bold text-primary">
+            <User class="size-4" />
+            {{ (column as { label?: string }).label }}
           </span>
         </template>
         <template #header(active)="{ column }">

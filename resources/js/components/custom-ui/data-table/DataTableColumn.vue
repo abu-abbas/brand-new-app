@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>">
 import { ElTableColumn } from 'element-plus';
+import { ArrowUp, ArrowDown } from '@lucide/vue';
 import type { DataTableField, DataTableSort } from './data-table.types';
 import { getPath } from './data-table.utils';
 
@@ -77,9 +78,13 @@ const emit = defineEmits<{
         />
         <template v-else>{{ field.label }}</template>
 
-        <span v-if="sorts.find((sort) => sort.key === field.key)" class="text-xs">
-          {{ sorts.find((sort) => sort.key === field.key)?.direction === 'asc' ? '↑' : '↓' }}
-          <sup v-if="sorts.length > 1">{{
+        <span v-if="sorts.find((sort) => sort.key === field.key)" class="inline-flex items-center text-xs">
+          <ArrowUp
+            v-if="sorts.find((sort) => sort.key === field.key)?.direction === 'asc'"
+            class="size-3.5"
+          />
+          <ArrowDown v-else class="size-3.5" />
+          <sup v-if="sorts.length > 1" class="ml-0.5">{{
             sorts.findIndex((sort) => sort.key === field.key) + 1
           }}</sup>
         </span>
