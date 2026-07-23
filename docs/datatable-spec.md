@@ -1,6 +1,6 @@
 # DataTable Reusable — Kontrak dan Spesifikasi
 
-Status: keputusan desain disepakati, implementasi belum dimulai.
+Status: implementasi berlangsung. Checklist pada bagian 21–22 menjadi status pengerjaan aktual.
 
 Dokumen ini menjadi source of truth agar pembahasan dan implementasi DataTable dapat dilanjutkan pada
 session/window lain tanpa mengulang discovery.
@@ -766,57 +766,65 @@ Tidak boleh disederhanakan:
 
 ### Fase 1 — Core
 
-- mode lokal/server;
-- TanStack Query + fetcher/API Facade boundary;
-- fields, nested path, formatter, header/cell/title/toolbar slots;
-- search dan pemilihan `search_fields`;
-- advanced filter + draft/apply/reset;
-- single/multi-sort;
-- pagination/per-page;
-- single/multiple selection;
-- default/custom action;
-- loading/empty/error/refetch;
-- remember/session storage;
-- fixed/resizable columns, horizontal scroll, height/maxHeight;
-- row/cell events dan class callbacks;
-- responsive shadcn-vue skin.
+- [x] mode lokal/server;
+- [x] TanStack Query + fetcher/API Facade boundary;
+- [x] fields, nested path, formatter, header/cell/title/toolbar slots;
+- [x] search dan pemilihan `search_fields`;
+- [x] advanced filter + draft/apply/reset;
+- [x] single/multi-sort;
+- [x] pagination/per-page;
+- [ ] single/multiple selection — parsial: select-all halaman aktif, validasi `rowKey` mode server,
+      pembaruan snapshot row, dan persistence selection belum selesai;
+- [x] default/custom action;
+- [ ] loading/empty/error/refetch — parsial: pesan generik network/unknown dan notifikasi kegagalan
+      background refetch belum lengkap;
+- [ ] remember/session storage — parsial: route scope, column width, selection, serta cache rows/meta
+      server belum disimpan;
+- [ ] fixed/resizable columns, horizontal scroll, height/maxHeight — parsial: penyimpanan hasil resize
+      saat `remember` belum selesai;
+- [x] row/cell events dan class callbacks;
+- [x] responsive shadcn-vue skin.
 
 ### Fase 2 — Advanced
 
-- eager/lazy tree;
-- local tree search + ancestor preservation + highlight;
-- tree expand state;
-- detail expand accordion;
-- recursive grouped header;
-- `spanMethod`.
+- [ ] eager/lazy tree — parsial: lazy `expandAll()` belum membaca child yang sudah dimuat oleh store
+      Element Plus;
+- [ ] local tree search + ancestor preservation + highlight — parsial: expanded key hasil pencarian
+      masih mengasumsikan field `id`, belum mengikuti `rowKey`;
+- [x] tree expand state;
+- [x] detail expand accordion;
+- [x] recursive grouped header;
+- [x] `spanMethod`.
 
 ## 22. Demo dan acceptance
 
 Demo menggunakan data pengguna seperti referensi karena mencakup:
 
-- nested object/array;
-- hidden searchable fields;
-- custom header dan cell;
-- action;
-- selection;
-- local pagination;
-- server-like Laravel response.
+- [x] nested object/array;
+- [x] hidden searchable fields;
+- [ ] custom header dan cell — custom cell sudah ada, custom header belum didemokan;
+- [x] action;
+- [x] selection;
+- [x] local pagination;
+- [x] server-like Laravel response.
 
 Sediakan dua demo:
 
-1. mode lokal dari fixture array;
-2. mode server dari mock API Facade/fetcher yang mengembalikan `data`, `meta`, dan `message`.
+1. [x] mode lokal dari fixture array;
+2. [x] mode server dari mock API Facade/fetcher yang mengembalikan `data`, `meta`, dan `message`.
 
 Minimum automated checks:
 
-- test util local search nested, single phrase, pagination, rownum, sort, dan tree filtering;
-- test query params/reset page serta selection persistence/clearing;
-- test response/error normalization sesuai Error Definition Framework;
-- component test untuk slot/events/state;
-- Playwright screenshot baseline untuk light/dark, loading, populated, empty, error, filter Sheet, sticky,
-  dan selection;
-- satu baseline viewport desktop menjadi syarat klaim pixel-perfect; viewport/browser lain ditambah jika
-  menjadi target resmi.
+- [ ] test util local search nested, single phrase, pagination, rownum, sort, dan tree filtering —
+      pagination dan rownum belum diuji langsung;
+- [ ] test query params/reset page serta selection persistence/clearing — query params sudah diuji,
+      reset page dan selection persistence/clearing belum lengkap;
+- [x] test response/error normalization sesuai Error Definition Framework;
+- [x] component test untuk slot/events/state;
+- [ ] Playwright screenshot baseline untuk light/dark, loading, populated, empty, error, filter Sheet,
+      sticky, dan selection — baseline error dan sticky belum tersedia;
+- [ ] satu baseline viewport desktop menjadi syarat klaim pixel-perfect; baseline desktop Chromium sudah
+      tersedia, tetapi klaim pixel-perfect menunggu seluruh state wajib lulus.
 
 ## 23. Fitur yang sengaja ditunda
 

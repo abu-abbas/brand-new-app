@@ -35,6 +35,38 @@ export function searchRows<T>(
   );
 }
 
+export function leafFields<T>(fields: DataTableField<T>[]): DataTableField<T>[] {
+  return fields.flatMap((field) => (field.children?.length ? leafFields(field.children) : field));
+}
+
+export function filterTreeRows<T>(
+  rows: T[],
+  search: string,
+  fields: DataTableField<T>[],
+  childrenKey = 'children',
+  searchFields?: string[],
+): { rows: T[]; expandedKeys: Array<string | number> } {
+  const phrase = search.trim();
+  if (!phrase) return { rows, expandedKeys: [] };
+  const expandedKeys: Array<string | number> = [];
+  const visit = (nodes: T[]): T[] =>
+    nodes.flatMap((row) => {
+      const children = getPath(row, childrenKey);
+      const matchingChildren = Array.isArray(children) ? visit(children as T[]) : [];
+      const matches = searchRows([row], phrase, fields, searchFields).length > 0;
+      if (!matches && !matchingChildren.length) return [];
+      const key = getPath(row, 'id');
+      if (matchingChildren.length && (typeof key === 'string' || typeof key === 'number'))
+        expandedKeys.push(key);
+      return [
+        matchingChildren.length
+          ? ({ ...(row as Record<string, unknown>), [childrenKey]: matchingChildren } as T)
+          : row,
+      ];
+    });
+  return { rows: visit(rows), expandedKeys };
+}
+
 export function filterRows<T>(
   rows: T[],
   filters: Record<string, unknown>,
@@ -79,6 +111,34 @@ export function sortRows<T>(rows: T[], sorts: DataTableSort[]): T[] {
     }
     return 0;
   });
+}
+
+export function sortTreeRows<T>(rows: T[], sorts: DataTableSort[], childrenKey = 'children'): T[] {
+  return sortRows(rows, sorts).map((row) => {
+    const children = getPath(row, childrenKey);
+    return Array.isArray(children)
+      ? ({
+          ...(row as Record<string, unknown>),
+          [childrenKey]: sortTreeRows(children as T[], sorts, childrenKey),
+        } as T)
+      : row;
+  });
+}
+
+export function highlightText(
+  value: unknown,
+  search: string,
+): Array<{ text: string; match: boolean }> {
+  const text = value == null ? '' : String(value);
+  const phrase = search.trim();
+  if (!phrase) return [{ text, match: false }];
+  const index = text.toLocaleLowerCase().indexOf(phrase.toLocaleLowerCase());
+  if (index < 0) return [{ text, match: false }];
+  return [
+    { text: text.slice(0, index), match: false },
+    { text: text.slice(index, index + phrase.length), match: true },
+    { text: text.slice(index + phrase.length), match: false },
+  ].filter((part) => part.text);
 }
 
 export function buildParams(

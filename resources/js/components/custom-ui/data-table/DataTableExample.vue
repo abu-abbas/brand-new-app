@@ -46,7 +46,7 @@ const selected = ref<UserRow[]>([]);
 
 const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
   await new Promise<void>((resolve, reject) => {
-    const timeout = globalThis.setTimeout(resolve, 350);
+    const timeout = globalThis.setTimeout(resolve, 1200);
     signal.addEventListener('abort', () => {
       globalThis.clearTimeout(timeout);
       reject(new Error('Request dibatalkan'));
@@ -107,9 +107,9 @@ function serverParams(params: DataTableParams): void {
         row-key="id"
       >
         <template #cell(active)="{ value }">
-          <Badge :variant="value ? 'default' : 'secondary'">{{
-            value ? 'Aktif' : 'Nonaktif'
-          }}</Badge>
+          <Badge :variant="value ? 'default' : 'secondary'">
+            {{ value ? 'Aktif' : 'Nonaktif' }}
+          </Badge>
         </template>
       </DataTable>
 
@@ -124,9 +124,9 @@ function serverParams(params: DataTableParams): void {
         @params-change="serverParams"
       >
         <template #cell(active)="{ value }">
-          <Badge :variant="value ? 'default' : 'secondary'">{{
-            value ? 'Aktif' : 'Nonaktif'
-          }}</Badge>
+          <Badge :variant="value ? 'default' : 'secondary'">
+            {{ value ? 'Aktif' : 'Nonaktif' }}
+          </Badge>
         </template>
       </DataTable>
     </CardContent>

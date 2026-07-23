@@ -61,7 +61,15 @@ export interface DataTableField<T = Record<string, unknown>> {
   fixed?: 'left' | 'right';
   resizable?: boolean;
   formatter?: (value: unknown, row: T, column: DataTableField<T>) => string | number;
+  children?: DataTableField<T>[];
 }
+
+export type DataTableSpanMethod<T> = (context: {
+  row: T;
+  column: DataTableField<T>;
+  rowIndex: number;
+  columnIndex: number;
+}) => [rowspan: number, colspan: number] | { rowspan: number; colspan: number };
 
 export interface DataTableFilter {
   key: string;

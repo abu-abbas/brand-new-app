@@ -1,0 +1,109 @@
+import { mount, type MountingOptions } from '@vue/test-utils';
+import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
+import ElementPlus from 'element-plus';
+import { nextTick, type Component } from 'vue';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import DataTable from './DataTable.vue';
+
+const rows = [
+  { id: 1, name: 'Budi', unit: { name: 'Keuangan' } },
+  { id: 2, name: 'Ani', unit: { name: 'Teknologi' } },
+];
+const fields = [
+  { key: 'name', label: 'Nama' },
+  { key: 'unit.name', label: 'Unit' },
+];
+
+function mountTable(options: MountingOptions<Record<string, unknown>> = {}) {
+  return mount(DataTable as unknown as Component, {
+    props: { items: rows, fields, title: 'Pengguna', rowKey: 'id' },
+    global: {
+      plugins: [ElementPlus, [VueQueryPlugin, { queryClient: new QueryClient() }]],
+      stubs: { teleport: true },
+    },
+    ...options,
+  });
+}
+
+beforeEach(() => {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+  vi.stubGlobal('matchMedia', () => ({
+    matches: false,
+    addEventListener() {},
+    removeEventListener() {},
+  }));
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+describe('DataTable', () => {
+  it('merender title, nested cell, dan custom cell slot', async () => {
+    const wrapper = mountTable({
+      slots: {
+        'cell(name)': ({ value }: { value: string }) => `Nama: ${value}`,
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+    expect(wrapper.text()).toContain('Pengguna (2 baris)');
+    expect(wrapper.text()).toContain('Nama: Budi');
+    expect(wrapper.text()).toContain('Keuangan');
+  });
+
+  it('submit search saat Enter dan memancarkan params-change', async () => {
+    const wrapper = mountTable();
+    await nextTick();
+    await nextTick();
+    const input = wrapper.get('input[aria-label="Cari data"]');
+
+    await input.setValue('Ani');
+    await input.trigger('keydown.enter');
+    await input.trigger('search');
+
+    expect(wrapper.text()).toContain('Ani');
+    expect(wrapper.text()).not.toContain('Budi');
+    expect(wrapper.emitted('params-change')?.at(-1)?.[0]).toMatchObject({
+      page: 1,
+      search: 'Ani',
+    });
+
+    await input.setValue('tidak-ada-hasil');
+    await input.trigger('keydown.enter');
+    expect(wrapper.text()).toContain('Data tidak ditemukan.');
+  });
+
+  it('memancarkan action dan row event', async () => {
+    const wrapper = mountTable({
+      props: { items: rows, fields, rowKey: 'id', actions: true },
+    });
+
+    await nextTick();
+    await nextTick();
+    await wrapper.findAll('button[aria-label="Edit"]')[1].trigger('click');
+    expect(wrapper.emitted('edit')?.[0]?.[0]).toEqual(rows[0]);
+
+    await wrapper.find('.el-table__row').trigger('dblclick');
+    expect(wrapper.emitted('row-dblclick')?.[0]?.[0]).toEqual(rows[0]);
+  });
+
+  it('mengekspos reset, selection, scroll, dan tree expansion', () => {
+    const wrapper = mountTable();
+
+    expect(wrapper.vm).toMatchObject({
+      refresh: expect.any(Function),
+      resetFilters: expect.any(Function),
+      clearSelection: expect.any(Function),
+      scrollToTop: expect.any(Function),
+      expandAll: expect.any(Function),
+      collapseAll: expect.any(Function),
+    });
+  });
+});

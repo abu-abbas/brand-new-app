@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildParams, getPath, normalizeError, searchRows, sortRows } from './data-table.utils.ts';
+import {
+  buildParams,
+  filterTreeRows,
+  getPath,
+  highlightText,
+  normalizeError,
+  searchRows,
+  sortRows,
+  sortTreeRows,
+} from './data-table.utils.ts';
 
 const rows = [
   { id: 1, name: 'Budi', unit: { name: 'Keuangan' }, roles: [{ name: 'Admin' }] },
@@ -71,4 +80,31 @@ test('normalisasi error memakai contract publik', () => {
       requestId: 'request-1',
     },
   );
+});
+
+test('tree mempertahankan ancestor, mengurutkan per level, dan menandai frasa', () => {
+  const tree = [
+    {
+      id: 1,
+      name: 'Induk',
+      children: [
+        { id: 3, name: 'Zulu' },
+        { id: 2, name: 'Anak cocok' },
+      ],
+    },
+  ];
+  const filtered = filterTreeRows(tree, 'cocok', [{ key: 'name', label: 'Nama' }]);
+  assert.deepEqual(
+    filtered.rows[0].children.map((row) => row.id),
+    [2],
+  );
+  assert.deepEqual(filtered.expandedKeys, [1]);
+  assert.deepEqual(
+    sortTreeRows(tree, [{ key: 'name', direction: 'asc' }])[0].children.map((row) => row.id),
+    [2, 3],
+  );
+  assert.deepEqual(highlightText('Anak cocok', 'cocok'), [
+    { text: 'Anak ', match: false },
+    { text: 'cocok', match: true },
+  ]);
 });

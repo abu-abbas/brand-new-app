@@ -49,15 +49,21 @@ import type {
   DataTableFilter,
   DataTableMeta,
   DataTableSort,
+  DataTableSpanMethod,
 } from './data-table.types';
 import {
   buildParams,
+  filterTreeRows,
   filterRows,
   getPath,
+  highlightText,
+  leafFields,
   normalizeError,
   searchRows,
   sortRows,
+  sortTreeRows,
 } from './data-table.utils';
+import DataTableColumn from './DataTableColumn.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -91,6 +97,17 @@ const props = withDefaults(
     maxHeight?: string | number;
     rowClass?: (row: T, rowIndex: number) => string;
     cellClass?: (row: T, column: DataTableField<T>, rowIndex: number) => string;
+    spanMethod?: DataTableSpanMethod<T>;
+    tree?:
+      | boolean
+      | {
+          children?: string;
+          hasChildren?: string;
+          lazy?: boolean;
+          defaultExpandAll?: boolean;
+        };
+    loadChildren?: (row: T, signal: Parameters<DataTableFetcher<T>>[0]['signal']) => Promise<T[]>;
+    expandedKeys?: Array<string | number>;
   }>(),
   {
     enabled: true,
@@ -111,6 +128,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:selected': [value: T | T[] | null];
   'update:filters': [value: Record<string, unknown>];
+  'update:expandedKeys': [value: Array<string | number>];
   loading: [value: boolean];
   loaded: [payload: { rows: T[]; meta?: DataTableMeta; message: string }];
   error: [payload: DataTableError & { error: unknown }];
@@ -123,26 +141,45 @@ const emit = defineEmits<{
 }>();
 
 const instanceKey = `datatable-${getCurrentInstance()?.uid ?? Math.random()}`;
+const slots = defineSlots<{
+  [name: string]: (props: Record<string, unknown>) => unknown;
+}>();
 const mounted = ref(false);
 const page = ref(1);
 const perPage = ref(props.perPage);
 const searchDraft = ref('');
 const search = ref('');
 const searchFields = ref(
-  props.fields.filter((field) => field.filterColumn !== false).map((field) => field.key),
+  leafFields(props.fields)
+    .filter((field) => field.filterColumn !== false)
+    .map((field) => field.key),
 );
 const draftSearchFields = ref([...searchFields.value]);
 const activeFilters = ref<Record<string, unknown>>({});
 const draftFilters = ref<Record<string, unknown>>({});
 const sorts = ref<DataTableSort[]>([]);
 const filterOpen = ref(false);
-const table = ref<{ clearSelection: () => void; scrollTo: (options: { top: number }) => void }>();
+const table = ref<{
+  clearSelection: () => void;
+  scrollTo: (options: { top: number }) => void;
+  toggleRowExpansion: (row: T, expanded: boolean) => void;
+}>();
 const selectedKeys = shallowRef(new Map<string | number, T>());
+const internalExpandedKeys = ref<Array<string | number>>([]);
+const detailExpandedRow = shallowRef<T>();
+const loadControllers = new Map<
+  string | number,
+  { abort: () => void; signal: Parameters<DataTableFetcher<T>>[0]['signal'] }
+>();
 
 const memoryKey = computed(() =>
   props.remember ? `datatable:${props.rememberScope ?? 'default'}:${props.remember}` : '',
 );
 const visibleFields = computed(() => props.fields.filter((field) => !field.hidden));
+const searchableFields = computed(() => leafFields(props.fields));
+const treeConfig = computed(() => (typeof props.tree === 'object' ? props.tree : {}));
+const childrenKey = computed(() => treeConfig.value.children ?? 'children');
+const activeExpandedKeys = computed(() => props.expandedKeys ?? internalExpandedKeys.value);
 const params = computed(() =>
   buildParams(
     {
@@ -153,7 +190,7 @@ const params = computed(() =>
       searchFields: searchFields.value,
       sorts: sorts.value.map((sort) => ({
         ...sort,
-        key: props.fields.find((field) => field.key === sort.key)?.sortKey ?? sort.key,
+        key: searchableFields.value.find((field) => field.key === sort.key)?.sortKey ?? sort.key,
       })),
       filters: activeFilters.value,
     },
@@ -178,28 +215,39 @@ const query = useQuery({
   retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
 });
 
-const localRows = computed(() =>
-  sortRows(
-    filterRows(
-      searchRows(props.items ?? [], search.value, props.fields, searchFields.value),
-      activeFilters.value,
-      props.filters,
-    ),
-    sorts.value,
+const localTreeResult = computed(() =>
+  filterTreeRows(
+    props.items ?? [],
+    search.value,
+    searchableFields.value,
+    childrenKey.value,
+    searchFields.value,
   ),
 );
+const localRows = computed(() => {
+  const searched = props.tree
+    ? localTreeResult.value.rows
+    : searchRows(props.items ?? [], search.value, searchableFields.value, searchFields.value);
+  const filtered = filterRows(searched, activeFilters.value, props.filters);
+  return props.tree
+    ? sortTreeRows(filtered, sorts.value, childrenKey.value)
+    : sortRows(filtered, sorts.value);
+});
 const rows = computed(() => {
   if (props.fetcher) return query.data.value?.data ?? [];
   if (!props.paginated) return localRows.value;
   const start = (page.value - 1) * perPage.value;
   return localRows.value.slice(start, start + perPage.value);
 });
+const rootKeys = computed(() => new Set(rows.value.map(rowIdentity)));
 const meta = computed<DataTableMeta | undefined>(() => query.data.value?.meta);
 const total = computed(() =>
   props.fetcher ? (meta.value?.total ?? rows.value.length) : localRows.value.length,
 );
 const pageCount = computed(() => Math.max(1, Math.ceil(total.value / perPage.value)));
-const initialLoading = computed(() => query.isPending.value && !rows.value.length);
+const initialLoading = computed(
+  () => Boolean(props.fetcher) && query.isPending.value && !rows.value.length,
+);
 const refreshing = computed(() => query.isFetching.value && Boolean(rows.value.length));
 const error = computed(() => (query.error.value ? normalizeError(query.error.value) : null));
 const hasActiveState = computed(() =>
@@ -209,7 +257,7 @@ const showFilterButton = computed(
   () =>
     props.showFilter &&
     (props.filters.length > 0 ||
-      props.fields.filter((field) => field.filterColumn !== false).length > 1),
+      searchableFields.value.filter((field) => field.filterColumn !== false).length > 1),
 );
 
 function rowIdentity(row: T): string | number {
@@ -218,19 +266,86 @@ function rowIdentity(row: T): string | number {
 }
 
 function valueFor(row: T, field: DataTableField<T>, rowIndex: number): unknown {
-  if (field.key === 'rownum') return (page.value - 1) * perPage.value + rowIndex + 1;
+  if (field.key === 'rownum')
+    return props.tree && !rootKeys.value.has(rowIdentity(row))
+      ? ''
+      : (page.value - 1) * perPage.value + rowIndex + 1;
   const value = getPath(row, field.key);
   if (field.formatter) return field.formatter(value, row, field);
   return value ?? '-';
 }
 
-function submitSearch(): void {
-  search.value = searchDraft.value.trim();
+function highlighted(value: unknown): Array<{ text: string; match: boolean }> {
+  return highlightText(value, props.tree ? search.value : '');
+}
+
+function setExpanded(row: T, expanded: boolean): void {
+  const next = new Set(activeExpandedKeys.value);
+  const key = rowIdentity(row);
+  if (expanded) next.add(key);
+  else next.delete(key);
+  internalExpandedKeys.value = [...next];
+  emit('update:expandedKeys', [...next]);
+}
+
+function handleExpand(row: T, expanded: boolean | T[]): void {
+  const isExpanded = Array.isArray(expanded) ? expanded.includes(row) : expanded;
+  if (props.tree) setExpanded(row, isExpanded);
+  if (!slots.expand) return;
+  if (isExpanded && detailExpandedRow.value && detailExpandedRow.value !== row)
+    table.value?.toggleRowExpansion(detailExpandedRow.value, false);
+  detailExpandedRow.value = isExpanded ? row : undefined;
+}
+
+async function loadTree(row: T, _node: unknown, resolve: (rows: T[]) => void): Promise<void> {
+  if (!props.loadChildren) return resolve([]);
+  const key = rowIdentity(row);
+  loadControllers.get(key)?.abort();
+  const controller = new globalThis.AbortController();
+  loadControllers.set(key, controller);
+  try {
+    resolve(await props.loadChildren(row, controller.signal));
+  } catch (error) {
+    if (!controller.signal.aborted) {
+      resolve([]);
+      emit('error', { error, ...normalizeError(error) });
+    }
+  } finally {
+    loadControllers.delete(key);
+  }
+}
+
+function expandAll(): void {
+  const keys: Array<string | number> = [];
+  const visit = (nodes: T[]) =>
+    nodes.forEach((row) => {
+      const children = getPath(row, childrenKey.value);
+      if (Array.isArray(children) && children.length) {
+        keys.push(rowIdentity(row));
+        visit(children as T[]);
+      }
+    });
+  visit(rows.value);
+  internalExpandedKeys.value = keys;
+  emit('update:expandedKeys', keys);
+}
+
+function collapseAll(): void {
+  internalExpandedKeys.value = [];
+  emit('update:expandedKeys', []);
+}
+
+function submitSearch(event?: unknown): void {
+  const input = (event as { currentTarget?: { value?: unknown } })?.currentTarget?.value;
+  search.value = (typeof input === 'string' ? input : searchDraft.value).trim();
+  searchDraft.value = search.value;
   page.value = 1;
   clearSelection();
 }
 
-function clearSearch(): void {
+function clearSearch(event?: unknown): void {
+  const input = (event as { currentTarget?: { value?: unknown } })?.currentTarget?.value;
+  if (typeof input === 'string' && input) return;
   searchDraft.value = '';
   submitSearch();
 }
@@ -263,7 +378,7 @@ function applyFilters(): void {
 function resetFilters(): Promise<void> {
   draftFilters.value = {};
   activeFilters.value = {};
-  draftSearchFields.value = props.fields
+  draftSearchFields.value = searchableFields.value
     .filter((field) => field.filterColumn !== false)
     .map((field) => field.key);
   searchFields.value = [...draftSearchFields.value];
@@ -337,10 +452,25 @@ function cellClassName({
   column: { property?: string };
   rowIndex: number;
 }): string {
-  const field = props.fields.find((candidate) => candidate.key === column.property);
+  const field = searchableFields.value.find((candidate) => candidate.key === column.property);
   return field
     ? cn(`datatable-cell-${field.wrap ?? 'wrap'}`, props.cellClass?.(row, field, rowIndex))
     : '';
+}
+
+function tableSpanMethod({
+  row,
+  column,
+  rowIndex,
+  columnIndex,
+}: {
+  row: T;
+  column: { property?: string };
+  rowIndex: number;
+  columnIndex: number;
+}) {
+  const field = searchableFields.value.find((candidate) => candidate.key === column.property);
+  return field ? props.spanMethod?.({ row, column: field, rowIndex, columnIndex }) : undefined;
 }
 
 function loadMemory(): void {
@@ -353,6 +483,7 @@ function loadMemory(): void {
     searchFields.value = draftSearchFields.value = value.searchFields ?? searchFields.value;
     activeFilters.value = draftFilters.value = value.filters ?? {};
     sorts.value = value.sorts ?? [];
+    internalExpandedKeys.value = value.expandedKeys ?? [];
   } catch {
     globalThis.sessionStorage.removeItem(memoryKey.value);
   }
@@ -383,6 +514,7 @@ watch(
       searchFields.value,
       activeFilters.value,
       sorts.value,
+      internalExpandedKeys.value,
     ],
   () => {
     if (!memoryKey.value) return;
@@ -395,6 +527,7 @@ watch(
         searchFields: searchFields.value,
         filters: activeFilters.value,
         sorts: sorts.value,
+        expandedKeys: internalExpandedKeys.value,
       }),
     );
   },
@@ -419,6 +552,24 @@ watch(
 watch(pageCount, (count) => {
   if (page.value > count) page.value = count;
 });
+watch(
+  () => props.expandedKeys,
+  (value) => {
+    if (value) internalExpandedKeys.value = [...value];
+  },
+  { immediate: true },
+);
+watch(
+  () => [search.value, rows.value],
+  () => {
+    detailExpandedRow.value = undefined;
+    if (props.tree && search.value && !props.fetcher) {
+      internalExpandedKeys.value = localTreeResult.value.expandedKeys;
+      emit('update:expandedKeys', localTreeResult.value.expandedKeys);
+    }
+  },
+  { deep: true },
+);
 
 onMounted(async () => {
   if (props.items && props.fetcher)
@@ -432,7 +583,7 @@ onMounted(async () => {
   mounted.value = true;
 });
 
-defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
+defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, collapseAll });
 </script>
 
 <template>
@@ -478,7 +629,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
             type="search"
             placeholder="Pencarian..."
             aria-label="Cari data"
-            @keydown.enter="submitSearch"
+            @keydown.enter="submitSearch($event)"
             @search="clearSearch"
           />
         </div>
@@ -493,13 +644,28 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
         :height="height"
         :max-height="maxHeight"
         :row-key="(row) => String(rowIdentity(row))"
+        :tree-props="{
+          children: childrenKey,
+          hasChildren: treeConfig.hasChildren ?? 'hasChildren',
+        }"
+        :lazy="treeConfig.lazy"
+        :load="loadTree"
+        :default-expand-all="treeConfig.defaultExpandAll"
+        :expand-row-keys="activeExpandedKeys.map(String)"
+        :span-method="tableSpanMethod"
         :row-class-name="rowClassName"
         :cell-class-name="cellClassName"
         class="w-full"
         @row-click="(row, column, event) => emit('row-click', row, column, event)"
         @row-dblclick="(row, column, event) => emit('row-dblclick', row, column, event)"
         @row-contextmenu="(row, column, event) => emit('row-contextmenu', row, column, event)"
+        @expand-change="handleExpand"
       >
+        <ElTableColumn v-if="$slots.expand" type="expand" width="48" fixed="left">
+          <template #default="{ row }">
+            <slot name="expand" :row="row" :expanded="detailExpandedRow === row" />
+          </template>
+        </ElTableColumn>
         <ElTableColumn v-if="selection" width="48" fixed="left" align="center">
           <template #header><span class="sr-only">Pilih</span></template>
           <template #default="{ row }">
@@ -554,60 +720,18 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
           </template>
         </ElTableColumn>
 
-        <ElTableColumn
+        <DataTableColumn
           v-for="field in visibleFields"
           :key="field.key"
-          :prop="field.key"
-          :label="field.label"
-          :width="field.width"
-          :min-width="field.minWidth"
-          :align="field.align"
-          :header-align="field.headerAlign"
-          :fixed="field.fixed"
-          :resizable="field.resizable !== false"
-        >
-          <template #header>
-            <slot :name="`header(${field.key})`" :column="field">
-              <button
-                v-if="field.key !== 'rownum' && field.sortable !== false"
-                type="button"
-                class="inline-flex items-center gap-1 rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
-                :aria-sort="
-                  sorts.find((sort) => sort.key === field.key)?.direction === 'asc'
-                    ? 'ascending'
-                    : sorts.find((sort) => sort.key === field.key)?.direction === 'desc'
-                      ? 'descending'
-                      : 'none'
-                "
-                @click="changeSort(field, $event)"
-                @keydown.enter.prevent="changeSort(field, $event)"
-              >
-                {{ field.label }}
-                <span v-if="sorts.find((sort) => sort.key === field.key)" class="text-xs">
-                  {{
-                    sorts.find((sort) => sort.key === field.key)?.direction === 'asc' ? '↑' : '↓'
-                  }}
-                  <sup v-if="sorts.length > 1">{{
-                    sorts.findIndex((sort) => sort.key === field.key) + 1
-                  }}</sup>
-                </span>
-              </button>
-              <span v-else>{{ field.label }}</span>
-            </slot>
-          </template>
-          <template #default="{ row, $index }">
-            <slot
-              :name="`cell(${field.key})`"
-              :row="row"
-              :value="getPath(row, field.key)"
-              :column="field"
-              :row-index="$index"
-              :search="search"
-            >
-              {{ valueFor(row, field, $index) }}
-            </slot>
-          </template>
-        </ElTableColumn>
+          :field="field"
+          :sorts="sorts"
+          :slots="slots"
+          :search="search"
+          :tree="Boolean(tree)"
+          :value-for="valueFor"
+          :highlight="highlighted"
+          @sort="changeSort"
+        />
 
         <template #empty>
           <div
@@ -690,7 +814,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
     </footer>
 
     <Sheet v-model:open="filterOpen">
-      <SheetContent>
+      <SheetContent class="p-2.5">
         <SheetHeader>
           <SheetTitle>Filter data</SheetTitle>
           <SheetDescription>Pilih kolom pencarian dan filter, lalu terapkan.</SheetDescription>
@@ -700,7 +824,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop });
           <fieldset class="flex flex-col gap-2">
             <legend class="mb-2 font-medium">Filter Kolom</legend>
             <label
-              v-for="field in fields.filter((item) => item.filterColumn !== false)"
+              v-for="field in searchableFields.filter((item) => item.filterColumn !== false)"
               :key="field.key"
               class="flex items-center gap-2 text-sm"
             >
