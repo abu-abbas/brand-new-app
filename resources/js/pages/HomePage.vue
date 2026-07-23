@@ -31,9 +31,9 @@ function goToExamples() {
     <div
       class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-2xs md:p-6"
     >
-      <div class="flex items-center gap-3">
+      <div class="flex items-start gap-3">
         <div
-          class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs"
+          class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs mt-0.5"
         >
           <Sparkles class="size-5" />
         </div>
