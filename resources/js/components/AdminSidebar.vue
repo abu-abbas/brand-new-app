@@ -137,7 +137,7 @@ const projectsMenu = [
 </script>
 
 <template>
-  <Sidebar collapsible="icon" class="border-none! bg-card">
+  <Sidebar collapsible="icon" class="border-r-0! border-none! bg-sidebar">
     <!-- Section 1: Brand / Workspace Switcher -->
     <SidebarHeader class="p-2 h-14 justify-center">
       <SidebarMenu>

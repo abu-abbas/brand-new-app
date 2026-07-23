@@ -52,7 +52,7 @@ const stats = [
     <DataTableExample />
 
     <!-- Main Layout Split (Recent Sales and Chart Placeholder) -->
-    <div class="grid gap-4 md:gap-6 lg:grid-cols-7 flex-1">
+    <div class="grid gap-4 md:gap-6 lg:grid-cols-7">
       <!-- Left Side Card (Transaction/Analytics) -->
       <Card class="lg:col-span-4 bg-card border-border flex flex-col justify-between">
         <TrafficChannelsChart />

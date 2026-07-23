@@ -3,11 +3,6 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PanelLeft, Bell } from '@lucide/vue';
-import { useWindowScroll } from '@vueuse/core';
-import { computed } from 'vue';
-
-const { y } = useWindowScroll();
-const isStuck = computed(() => y.value > 0);
 
 defineProps<{
   title?: string;
@@ -20,8 +15,7 @@ defineProps<{
   <header
     :class="
       cn(
-        'sticky top-0 z-10 flex h-14 items-center justify-between bg-background/95 backdrop-blur-md px-6 gap-4',
-        isStuck && 'border-b border-border/50',
+        'shrink-0 flex h-14 items-center justify-between bg-background/95 backdrop-blur-md px-4 lg:pl-2.5 md:px-6 gap-4 border-none',
       )
     "
   >

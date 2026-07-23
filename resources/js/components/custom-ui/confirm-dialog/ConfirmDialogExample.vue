@@ -62,7 +62,7 @@ async function showErrorConfirm(): Promise<void> {
 </script>
 
 <template>
-  <Card>
+  <Card class="shrink-0">
     <CardHeader>
       <CardTitle>Renderless Confirm Dialog</CardTitle>
       <CardDescription>{{ confirmResult }}</CardDescription>
