@@ -43,9 +43,12 @@ test('datatable filter sheet dan selection', async ({ page }) => {
 
 test('datatable menampilkan initial loading', async ({ page }) => {
   await page.addInitScript(() => {
-    const setTimeout = window.setTimeout;
-    window.setTimeout = (handler, timeout, ...args) =>
-      setTimeout(handler, timeout === 1200 ? 10_000 : timeout, ...args);
+    const origSetTimeout = window.setTimeout;
+    (window as unknown as Record<string, unknown>).setTimeout = (
+      handler: TimerHandler,
+      timeout?: number,
+      ...args: unknown[]
+    ) => origSetTimeout(handler, timeout === 1200 ? 10_000 : timeout, ...args);
   });
   await page.goto('/');
   const table = page.locator('.datatable').nth(1);

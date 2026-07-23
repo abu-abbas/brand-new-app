@@ -236,7 +236,7 @@ describe('DataTable', () => {
     await nextTick();
     await nextTick();
 
-    await wrapper.get('[aria-label="Pilih baris 1"]').click();
+    await wrapper.get('[aria-label="Pilih baris 1"]').trigger('click');
     expect(wrapper.emitted('update:selected')?.at(-1)?.[0]).toEqual([rows[0]]);
 
     const input = wrapper.get('input[aria-label="Cari data"]');
@@ -272,7 +272,11 @@ describe('DataTable', () => {
 
     // Mock loaded lazy children in Element Plus store
     const elTable = wrapper.findComponent({ name: 'ElTable' });
-    (elTable.vm as unknown as { store: { states: { lazyTreeNodeMap: { value: Record<string, unknown[]> } } } }).store = {
+    (
+      elTable.vm as unknown as {
+        store: { states: { lazyTreeNodeMap: { value: Record<string, unknown[]> } } };
+      }
+    ).store = {
       states: {
         lazyTreeNodeMap: {
           value: {

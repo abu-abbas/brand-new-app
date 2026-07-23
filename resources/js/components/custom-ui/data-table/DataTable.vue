@@ -367,7 +367,9 @@ function expandAll(): void {
     }
   )?.store?.states?.lazyTreeNodeMap;
   const loadedLazyChildren =
-    (lazyMap && 'value' in lazyMap ? lazyMap.value : lazyMap) ?? {};
+    ((lazyMap && 'value' in lazyMap ? lazyMap.value : lazyMap) as
+      | Record<string | number, T[]>
+      | undefined) ?? {};
 
   const visit = (nodes: T[]) =>
     nodes.forEach((row) => {
