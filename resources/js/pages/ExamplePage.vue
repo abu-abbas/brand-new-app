@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Home, Layers, ShieldAlert, Sliders, Table } from '@lucide/vue';
+import { Home, Layers, Table, ShieldAlert, Sliders, Component as ComponentIcon } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
-import DataTableExample from '@/components/custom-ui/data-table/DataTableExample.vue';
-import ConfirmDialogExample from '@/components/custom-ui/confirm-dialog/ConfirmDialogExample.vue';
-import ComboboxExample from '@/components/custom-ui/combobox/ComboboxExample.vue';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -19,34 +16,64 @@ import {
 const route = useRoute();
 const router = useRouter();
 
+// Auto-discover all *Example.vue components inside resources/js/components/custom-ui/
+const exampleFiles = import.meta.glob<{ default: Component }>(
+  '/resources/js/components/custom-ui/**/*Example.vue',
+  { eager: true },
+);
+
+interface CustomComponentExample {
+  dirName: string;
+  name: string;
+  hash: string;
+  description: string;
+  component: Component;
+  icon: Component;
+}
+
+const descriptions: Record<string, string> = {
+  'data-table': 'Tabel data reusable mode lokal & server',
+  'confirm-dialog': 'Dialog konfirmasi global berbasis shadcn-vue',
+  'combobox': 'Autocomplete dropdown dengan pencarian & filter',
+};
+
+const icons: Record<string, Component> = {
+  'data-table': Table,
+  'confirm-dialog': ShieldAlert,
+  'combobox': Sliders,
+};
+
+const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([path, module]) => {
+  const match = path.match(/custom-ui\/([^/]+)\/([^/]+)\.vue$/);
+  const dirName = match ? match[1] : 'example';
+  const fileName = match ? match[2] : 'Example';
+  const name = fileName.replace(/Example$/, '');
+  const slug = dirName === 'data-table' ? 'data-tables' : dirName;
+  const hash = `#${slug}`;
+
+  return {
+    dirName,
+    name,
+    hash,
+    description: descriptions[dirName] || `Komponen kustom ${name}`,
+    component: module.default,
+    icon: icons[dirName] || ComponentIcon,
+  };
+});
+
+const defaultHash = examples[0]?.hash || '#data-tables';
+
 const activeHash = computed(() => {
-  if (route.path !== '/example-custom-component') return '#data-tables';
-  return route.hash || '#data-tables';
+  if (route.path !== '/example-custom-component') return defaultHash;
+  return route.hash || defaultHash;
 });
 
-const activeComponent = computed(() => {
-  switch (activeHash.value) {
-    case '#confirm-dialog':
-      return ConfirmDialogExample;
-    case '#combobox':
-      return ComboboxExample;
-    case '#data-tables':
-    default:
-      return DataTableExample;
-  }
+const activeExample = computed(() => {
+  return examples.find((ex) => ex.hash === activeHash.value) || examples[0];
 });
 
-const currentTitle = computed(() => {
-  switch (activeHash.value) {
-    case '#confirm-dialog':
-      return 'ConfirmDialog';
-    case '#combobox':
-      return 'Combobox';
-    case '#data-tables':
-    default:
-      return 'DataTable';
-  }
-});
+const activeComponent = computed(() => activeExample.value?.component);
+const currentTitle = computed(() => activeExample.value?.name || 'Example');
 
 function isItemActive(target: string, isExternal: boolean): boolean {
   if (isExternal) return route.path === target;
@@ -65,7 +92,7 @@ function navigate(target: string, isExternal: boolean) {
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="space-y-6">
-      <!-- Horizontal Navigation Menu (shadcn-vue top navbar style matching screenshot) -->
+      <!-- Horizontal Navigation Menu (shadcn-vue top navbar style) -->
       <div class="rounded-2xl border border-border bg-card p-2 shadow-xs">
         <NavigationMenu class="max-w-full justify-start">
           <NavigationMenuList class="flex items-center gap-1">
@@ -92,64 +119,22 @@ function navigate(target: string, isExternal: boolean) {
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                  <li>
+                  <li v-for="ex in examples" :key="ex.hash">
                     <NavigationMenuLink as-child>
                       <a
-                        href="#data-tables"
+                        :href="ex.hash"
                         :class="[
                           'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-                          activeHash === '#data-tables' && 'bg-accent/80 font-medium',
+                          activeHash === ex.hash && 'bg-accent/80 font-medium',
                         ]"
-                        @click.prevent="navigate('#data-tables', false)"
+                        @click.prevent="navigate(ex.hash, false)"
                       >
                         <div class="flex items-center gap-2 text-sm font-semibold leading-none">
-                          <Table class="size-4 text-primary" />
-                          DataTable
+                          <component :is="ex.icon" class="size-4 text-primary" />
+                          {{ ex.name }}
                         </div>
                         <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                          Tabel data reusable mode lokal & server
-                        </p>
-                      </a>
-                    </NavigationMenuLink>
-                  </li>
-
-                  <li>
-                    <NavigationMenuLink as-child>
-                      <a
-                        href="#confirm-dialog"
-                        :class="[
-                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-                          activeHash === '#confirm-dialog' && 'bg-accent/80 font-medium',
-                        ]"
-                        @click.prevent="navigate('#confirm-dialog', false)"
-                      >
-                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
-                          <ShieldAlert class="size-4 text-primary" />
-                          ConfirmDialog
-                        </div>
-                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                          Dialog konfirmasi global shadcn-vue
-                        </p>
-                      </a>
-                    </NavigationMenuLink>
-                  </li>
-
-                  <li>
-                    <NavigationMenuLink as-child>
-                      <a
-                        href="#combobox"
-                        :class="[
-                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-                          activeHash === '#combobox' && 'bg-accent/80 font-medium',
-                        ]"
-                        @click.prevent="navigate('#combobox', false)"
-                      >
-                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
-                          <Sliders class="size-4 text-primary" />
-                          Combobox
-                        </div>
-                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                          Autocomplete dropdown dengan filter
+                          {{ ex.description }}
                         </p>
                       </a>
                     </NavigationMenuLink>
@@ -158,46 +143,18 @@ function navigate(target: string, isExternal: boolean) {
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            <!-- Direct Quick Tabs (DataTable, ConfirmDialog, Combobox) -->
-            <NavigationMenuItem>
+            <!-- Direct Quick Tabs (Auto-scanned) -->
+            <NavigationMenuItem v-for="ex in examples" :key="ex.hash">
               <NavigationMenuLink
                 :class="[
                   navigationMenuTriggerStyle(),
                   'cursor-pointer gap-2 font-medium',
-                  activeHash === '#data-tables' && 'bg-primary/10 text-primary font-semibold',
+                  activeHash === ex.hash && 'bg-primary/10 text-primary font-semibold',
                 ]"
-                @click="navigate('#data-tables', false)"
+                @click="navigate(ex.hash, false)"
               >
-                <Table class="size-4" />
-                DataTable
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                :class="[
-                  navigationMenuTriggerStyle(),
-                  'cursor-pointer gap-2 font-medium',
-                  activeHash === '#confirm-dialog' && 'bg-primary/10 text-primary font-semibold',
-                ]"
-                @click="navigate('#confirm-dialog', false)"
-              >
-                <ShieldAlert class="size-4" />
-                ConfirmDialog
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                :class="[
-                  navigationMenuTriggerStyle(),
-                  'cursor-pointer gap-2 font-medium',
-                  activeHash === '#combobox' && 'bg-primary/10 text-primary font-semibold',
-                ]"
-                @click="navigate('#combobox', false)"
-              >
-                <Sliders class="size-4" />
-                Combobox
+                <component :is="ex.icon" class="size-4" />
+                {{ ex.name }}
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>
