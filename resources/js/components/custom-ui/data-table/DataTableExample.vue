@@ -108,12 +108,12 @@ function serverParams(params: DataTableParams): void {
       >
         <template #header(name)="{ column }">
           <span class="font-bold text-primary">
-            👤 {{ (column as DataTableField<UserRow>).label }}
+            👤 {{ (column as { label?: string }).label }}
           </span>
         </template>
         <template #header(active)="{ column }">
           <span class="text-xs tracking-wider uppercase text-muted-foreground">
-            {{ (column as DataTableField<UserRow>).label }}
+            {{ (column as { label?: string }).label }}
           </span>
         </template>
         <template #cell(active)="{ value }">

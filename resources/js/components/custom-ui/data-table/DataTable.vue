@@ -143,7 +143,7 @@ const emit = defineEmits<{
 
 const instanceKey = `datatable-${getCurrentInstance()?.uid ?? Math.random()}`;
 const slots = defineSlots<{
-  [name: string]: (props: Record<string, any>) => any;
+  [name: string]: (props: Record<string, unknown>) => unknown;
 }>();
 const mounted = ref(false);
 const page = ref(1);
