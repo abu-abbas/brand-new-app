@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Home, Layers, Table, ShieldAlert, Sliders, Component as ComponentIcon } from '@lucide/vue';
+import { Home, Table, ShieldAlert, Sliders, Component as ComponentIcon } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 
@@ -113,38 +111,6 @@ function navigate(target: string, isExternal: boolean) {
                 <Home class="size-4" />
                 Home
               </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            <!-- Components Dropdown -->
-            <NavigationMenuItem>
-              <NavigationMenuTrigger class="cursor-pointer gap-2 font-medium">
-                <Layers class="size-4" />
-                Components
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul class="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150">
-                  <li v-for="ex in examples" :key="ex.hash">
-                    <NavigationMenuLink as-child>
-                      <a
-                        :href="ex.hash"
-                        :class="[
-                          'block select-none space-y-1 rounded-xl p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-                          activeHash === ex.hash && 'bg-accent/80 font-medium',
-                        ]"
-                        @click.prevent="navigate(ex.hash, false)"
-                      >
-                        <div class="flex items-center gap-2 text-sm font-semibold leading-none">
-                          <component :is="ex.icon" class="size-4 text-primary" />
-                          {{ ex.name }}
-                        </div>
-                        <p class="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                          {{ ex.description }}
-                        </p>
-                      </a>
-                    </NavigationMenuLink>
-                  </li>
-                </ul>
-              </NavigationMenuContent>
             </NavigationMenuItem>
 
             <!-- Direct Quick Tabs (Auto-scanned) -->
