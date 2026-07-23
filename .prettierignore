@@ -10,3 +10,6 @@ dist
 *.php
 .husky
 .git
+.vscode
+test-results
+docs
