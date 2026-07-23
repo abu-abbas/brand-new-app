@@ -45,19 +45,26 @@ export function filterTreeRows<T>(
   fields: DataTableField<T>[],
   childrenKey = 'children',
   searchFields?: string[],
+  rowKey?: keyof T | ((row: T) => string | number),
 ): { rows: T[]; expandedKeys: Array<string | number> } {
   const phrase = search.trim();
   if (!phrase) return { rows, expandedKeys: [] };
   const expandedKeys: Array<string | number> = [];
+  const getRowKey = (row: T): string | number | undefined => {
+    if (typeof rowKey === 'function') return rowKey(row);
+    if (rowKey) return getPath(row, String(rowKey)) as string | number | undefined;
+    const id = getPath(row, 'id');
+    if (typeof id === 'string' || typeof id === 'number') return id;
+    return undefined;
+  };
   const visit = (nodes: T[]): T[] =>
     nodes.flatMap((row) => {
       const children = getPath(row, childrenKey);
       const matchingChildren = Array.isArray(children) ? visit(children as T[]) : [];
       const matches = searchRows([row], phrase, fields, searchFields).length > 0;
       if (!matches && !matchingChildren.length) return [];
-      const key = getPath(row, 'id');
-      if (matchingChildren.length && (typeof key === 'string' || typeof key === 'number'))
-        expandedKeys.push(key);
+      const key = getRowKey(row);
+      if (matchingChildren.length && key != null) expandedKeys.push(key);
       return [
         matchingChildren.length
           ? ({ ...(row as Record<string, unknown>), [childrenKey]: matchingChildren } as T)

@@ -108,3 +108,33 @@ test('tree mempertahankan ancestor, mengurutkan per level, dan menandai frasa', 
     { text: 'cocok', match: true },
   ]);
 });
+
+test('tree filter mendukung custom rowKey (string dan callback)', () => {
+  const customTree = [
+    {
+      uuid: 'parent-101',
+      name: 'Induk Utama',
+      subordinates: [{ uuid: 'child-202', name: 'Child Match' }],
+    },
+  ];
+  const stringKeyResult = filterTreeRows(
+    customTree,
+    'Match',
+    [{ key: 'name', label: 'Nama' }],
+    'subordinates',
+    undefined,
+    'uuid',
+  );
+  assert.deepEqual(stringKeyResult.expandedKeys, ['parent-101']);
+
+  const fnKeyResult = filterTreeRows(
+    customTree,
+    'Match',
+    [{ key: 'name', label: 'Nama' }],
+    'subordinates',
+    undefined,
+    (row) => `custom-${row.uuid}`,
+  );
+  assert.deepEqual(fnKeyResult.expandedKeys, ['custom-parent-101']);
+});
+

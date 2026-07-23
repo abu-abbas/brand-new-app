@@ -252,6 +252,7 @@ const localTreeResult = computed(() =>
     searchableFields.value,
     childrenKey.value,
     searchFields.value,
+    props.rowKey,
   ),
 );
 const localRows = computed(() => {
@@ -356,12 +357,30 @@ async function loadTree(row: T, _node: unknown, resolve: (rows: T[]) => void): P
 
 function expandAll(): void {
   const keys: Array<string | number> = [];
+  const lazyMap = (
+    table.value as unknown as {
+      store?: {
+        states?: {
+          lazyTreeNodeMap?: Record<string, T[]> | { value: Record<string, T[]> };
+        };
+      };
+    }
+  )?.store?.states?.lazyTreeNodeMap;
+  const loadedLazyChildren =
+    (lazyMap && 'value' in lazyMap ? lazyMap.value : lazyMap) ?? {};
+
   const visit = (nodes: T[]) =>
     nodes.forEach((row) => {
+      const key = rowIdentity(row);
       const children = getPath(row, childrenKey.value);
-      if (Array.isArray(children) && children.length) {
-        keys.push(rowIdentity(row));
-        visit(children as T[]);
+      const lazyChildren = loadedLazyChildren[String(key)] ?? loadedLazyChildren[key];
+      const effectiveChildren = (
+        Array.isArray(children) && children.length ? children : lazyChildren
+      ) as T[] | undefined;
+
+      if (Array.isArray(effectiveChildren) && effectiveChildren.length) {
+        keys.push(key);
+        visit(effectiveChildren);
       }
     });
   visit(rows.value);

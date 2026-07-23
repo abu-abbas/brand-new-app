@@ -223,4 +223,68 @@ describe('DataTable', () => {
     expect(signals.length).toBeGreaterThanOrEqual(2);
     expect(signals[0].aborted).toBe(true);
   });
+
+  it('membersihkan selection dan reset page ke 1 saat pencarian baru di-submit', async () => {
+    const wrapper = mountTable({
+      props: {
+        items: rows,
+        fields,
+        rowKey: 'id',
+        selection: 'multiple',
+      },
+    });
+    await nextTick();
+    await nextTick();
+
+    await wrapper.get('[aria-label="Pilih baris 1"]').click();
+    expect(wrapper.emitted('update:selected')?.at(-1)?.[0]).toEqual([rows[0]]);
+
+    const input = wrapper.get('input[aria-label="Cari data"]');
+    await input.setValue('Ani');
+    await input.trigger('keydown.enter');
+    await nextTick();
+
+    expect(wrapper.emitted('update:selected')?.at(-1)?.[0]).toEqual([]);
+    expect(wrapper.emitted('params-change')?.at(-1)?.[0]).toMatchObject({
+      page: 1,
+      search: 'Ani',
+    });
+  });
+
+  it('expandAll membuka tree node statis dan node anak hasil lazy loading', async () => {
+    const treeRows = [
+      {
+        id: 'parent-1',
+        name: 'Parent Node',
+        hasChildren: true,
+      },
+    ];
+    const wrapper = mountTable({
+      props: {
+        items: treeRows,
+        fields: [{ key: 'name', label: 'Nama' }],
+        rowKey: 'id',
+        tree: { lazy: true, hasChildren: 'hasChildren' },
+      },
+    });
+    await nextTick();
+    await nextTick();
+
+    // Mock loaded lazy children in Element Plus store
+    const elTable = wrapper.findComponent({ name: 'ElTable' });
+    (elTable.vm as unknown as { store: { states: { lazyTreeNodeMap: { value: Record<string, unknown[]> } } } }).store = {
+      states: {
+        lazyTreeNodeMap: {
+          value: {
+            'parent-1': [{ id: 'child-10', name: 'Child Node' }],
+          },
+        },
+      },
+    };
+
+    (wrapper.vm as unknown as { expandAll: () => void }).expandAll();
+    await nextTick();
+
+    expect(wrapper.emitted('update:expandedKeys')?.at(-1)?.[0]).toEqual(['parent-1']);
+  });
 });
