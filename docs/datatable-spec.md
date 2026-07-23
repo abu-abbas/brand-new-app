@@ -775,12 +775,9 @@ Tidak boleh disederhanakan:
 - [x] pagination/per-page;
 - [x] single/multiple selection;
 - [x] default/custom action;
-- [ ] loading/empty/error/refetch — parsial: pesan generik network/unknown dan notifikasi kegagalan
-      background refetch belum lengkap;
-- [ ] remember/session storage — parsial: route scope, column width, selection, serta cache rows/meta
-      server belum disimpan;
-- [ ] fixed/resizable columns, horizontal scroll, height/maxHeight — parsial: penyimpanan hasil resize
-      saat `remember` belum selesai;
+- [x] loading/empty/error/refetch;
+- [x] remember/session storage;
+- [x] fixed/resizable columns, horizontal scroll, height/maxHeight;
 - [x] row/cell events dan class callbacks;
 - [x] responsive shadcn-vue skin.
 
