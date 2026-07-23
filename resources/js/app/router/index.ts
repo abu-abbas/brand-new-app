@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '@/pages/HomePage.vue';
 import { exampleCustomComponentRoutes } from '@/modules/example-custom-component/routes';
 
 const router = createRouter({
@@ -6,7 +7,8 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/example-custom-component/data-table',
+      name: 'home',
+      component: HomePage,
     },
     ...exampleCustomComponentRoutes,
   ],
