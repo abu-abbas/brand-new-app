@@ -9,6 +9,12 @@ const router = useRouter();
 
 const navItems = [
   {
+    name: 'Home',
+    path: '/',
+    icon: Home,
+    description: 'Kembali ke Dashboard Utama',
+  },
+  {
     name: 'DataTable',
     path: '/example-custom-component/data-table',
     icon: Table,
@@ -25,12 +31,6 @@ const navItems = [
     path: '/example-custom-component/combobox',
     icon: Sliders,
     description: 'Autocomplete dropdown dengan filter',
-  },
-  {
-    name: 'Home',
-    path: '/',
-    icon: Home,
-    description: 'Kembali ke Dashboard Utama',
   },
 ];
 
