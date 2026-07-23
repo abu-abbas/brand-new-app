@@ -94,17 +94,17 @@ function navigate(target: string, isExternal: boolean) {
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="space-y-6">
-      <!-- Horizontal Navigation Menu (shadcn-vue top navbar style) -->
-      <div class="rounded-2xl border border-border bg-card p-2 shadow-xs">
-        <NavigationMenu class="max-w-full justify-start">
-          <NavigationMenuList class="flex items-center gap-1">
+      <!-- Horizontal Navigation Menu (Responsive & scrollable on small screens) -->
+      <div class="overflow-x-auto rounded-2xl border border-border bg-card p-2 shadow-xs">
+        <NavigationMenu class="w-full max-w-full justify-start">
+          <NavigationMenuList class="flex flex-wrap items-center gap-1">
             <!-- Home Link -->
             <NavigationMenuItem>
               <NavigationMenuLink
                 :class="[
                   navigationMenuTriggerStyle(),
-                  'cursor-pointer gap-2 font-medium',
-                  isItemActive('/', true) && 'bg-primary/10 text-primary font-semibold',
+                  'shrink-0 cursor-pointer gap-2 font-medium',
+                  isItemActive('/', true) && 'bg-primary/10 font-semibold text-primary',
                 ]"
                 @click="navigate('/', true)"
               >
@@ -118,8 +118,8 @@ function navigate(target: string, isExternal: boolean) {
               <NavigationMenuLink
                 :class="[
                   navigationMenuTriggerStyle(),
-                  'cursor-pointer gap-2 font-medium',
-                  activeHash === ex.hash && 'bg-primary/10 text-primary font-semibold',
+                  'shrink-0 cursor-pointer gap-2 font-medium',
+                  activeHash === ex.hash && 'bg-primary/10 font-semibold text-primary',
                 ]"
                 @click="navigate(ex.hash, false)"
               >
