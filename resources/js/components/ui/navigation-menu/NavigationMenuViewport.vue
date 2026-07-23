@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes } from 'vue';
-import {
-  NavigationMenuViewport,
-  type NavigationMenuViewportProps,
-  useForwardProps,
-} from 'reka-ui';
+import { NavigationMenuViewport, type NavigationMenuViewportProps, useForwardProps } from 'reka-ui';
 import { cn } from '@/lib/utils';
 
 const props = defineProps<NavigationMenuViewportProps & { class?: HTMLAttributes['class'] }>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
+  const delegated = { ...props };
+  delete delegated.class;
   return delegated;
 });
 
