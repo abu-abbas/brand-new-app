@@ -15,8 +15,8 @@ import { cn } from '@/lib/utils';
 const props = defineProps<NavigationMenuTriggerProps & { class?: HTMLAttributes['class'] }>();
 
 const delegatedProps = computed(() => {
-  const delegated = { ...props };
-  delete delegated.class;
+  const { class: _class, ...delegated } = props;
+  void _class;
   return delegated;
 });
 

@@ -12,8 +12,8 @@ const props = defineProps<NavigationMenuContentProps & { class?: HTMLAttributes[
 const emits = defineEmits<NavigationMenuContentEmits>();
 
 const delegatedProps = computed(() => {
-  const delegated = { ...props };
-  delete delegated.class;
+  const { class: _class, ...delegated } = props;
+  void _class;
   return delegated;
 });
 

@@ -16,8 +16,8 @@ const props = withDefaults(
 const emits = defineEmits<NavigationMenuRootEmits>();
 
 const delegatedProps = computed(() => {
-  const delegated = { ...props };
-  delete delegated.class;
+  const { class: _class, ...delegated } = props;
+  void _class;
   return delegated;
 });
 
