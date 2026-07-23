@@ -28,16 +28,9 @@ interface CustomComponentExample {
   dirName: string;
   name: string;
   hash: string;
-  description: string;
   component: Component;
   icon: Component;
 }
-
-const descriptions: Record<string, string> = {
-  'data-table': 'Tabel data reusable mode lokal & server',
-  'confirm-dialog': 'Dialog konfirmasi global berbasis shadcn-vue',
-  combobox: 'Autocomplete dropdown dengan pencarian & filter',
-};
 
 const icons: Record<string, Component> = {
   'data-table': Table,
@@ -58,7 +51,6 @@ const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([pa
     dirName,
     name,
     hash,
-    description: descriptions[dirName] || `Komponen kustom ${name}`,
     component: loadedModule.default,
     icon: icons[dirName] || ComponentIcon,
   };
