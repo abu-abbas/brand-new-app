@@ -282,14 +282,14 @@ const projectsMenu = [
                   <div
                     class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
-                    WS
+                    JD
                   </div>
                   <div class="flex flex-col group-data-[collapsible=icon]:hidden min-w-0 text-left">
                     <span class="text-sm font-semibold text-foreground truncate leading-tight">
-                      Wibowo Sulistiyo
+                      John Doe
                     </span>
                     <span class="text-[10px] text-muted-foreground truncate leading-none">
-                      wibowo@sulistiyo.com
+                      john.doe@example.com
                     </span>
                   </div>
                 </div>
@@ -304,14 +304,14 @@ const projectsMenu = [
                   <div
                     class="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
-                    WS
+                    JD
                   </div>
                   <div class="grid flex-1 text-left text-sm leading-tight">
                     <span class="truncate font-semibold text-xs text-foreground">
-                      Wibowo Sulistiyo
+                      John Doe
                     </span>
                     <span class="truncate text-[10px] text-muted-foreground">
-                      wibowo@sulistiyo.com
+                      john.doe@example.com
                     </span>
                   </div>
                 </div>
