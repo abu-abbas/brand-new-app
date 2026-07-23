@@ -773,8 +773,7 @@ Tidak boleh disederhanakan:
 - [x] advanced filter + draft/apply/reset;
 - [x] single/multi-sort;
 - [x] pagination/per-page;
-- [ ] single/multiple selection — parsial: select-all halaman aktif, validasi `rowKey` mode server,
-      pembaruan snapshot row, dan persistence selection belum selesai;
+- [x] single/multiple selection;
 - [x] default/custom action;
 - [ ] loading/empty/error/refetch — parsial: pesan generik network/unknown dan notifikasi kegagalan
       background refetch belum lengkap;

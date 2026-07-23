@@ -30,6 +30,11 @@ test('datatable filter sheet dan selection', async ({ page }) => {
   const sheet = page.getByRole('dialog', { name: 'Filter data' });
   await expect(sheet).toBeVisible();
   await expect(sheet).toHaveScreenshot('datatable-filter-sheet.png');
+
+  const status = sheet.getByRole('combobox', { name: 'Status' });
+  await status.click();
+  await page.getByRole('option', { name: 'Ya', exact: true }).click();
+  await expect(status).toContainText('Ya');
   await page.keyboard.press('Escape');
 
   await table.getByLabel('Pilih baris 1', { exact: true }).click();

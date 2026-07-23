@@ -94,6 +94,48 @@ describe('DataTable', () => {
     expect(wrapper.emitted('row-dblclick')?.[0]?.[0]).toEqual(rows[0]);
   });
 
+  it('memilih halaman aktif, memperbarui snapshot, dan menyimpan selection', async () => {
+    const wrapper = mountTable({
+      props: {
+        items: rows,
+        fields,
+        rowKey: 'id',
+        selection: 'multiple',
+        remember: 'selection-test',
+      },
+    });
+    await nextTick();
+    await nextTick();
+
+    await wrapper.get('[aria-label="Pilih semua baris di halaman ini"]').trigger('click');
+    expect(wrapper.emitted('update:selected')?.at(-1)?.[0]).toEqual(rows);
+
+    const updatedRows = [{ ...rows[0], name: 'Budi Baru' }, rows[1]];
+    await wrapper.setProps({ items: updatedRows });
+    await nextTick();
+
+    expect(wrapper.emitted('update:selected')?.at(-1)?.[0]).toEqual(updatedRows);
+    expect(
+      JSON.parse(sessionStorage.getItem('datatable:default:selection-test') ?? '{}').selected,
+    ).toEqual(updatedRows);
+  });
+
+  it('memperingatkan rowKey yang hilang pada multiple selection mode server', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    mountTable({
+      props: {
+        fields,
+        selection: 'multiple',
+        fetcher: vi.fn().mockResolvedValue({ data: rows, message: 'OK' }),
+      },
+    });
+    await nextTick();
+
+    expect(warn).toHaveBeenCalledWith(
+      '[DataTable] rowKey wajib untuk multiple selection mode server.',
+    );
+  });
+
   it('mengekspos reset, selection, scroll, dan tree expansion', () => {
     const wrapper = mountTable();
 

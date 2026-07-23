@@ -239,6 +239,15 @@ const rows = computed(() => {
   const start = (page.value - 1) * perPage.value;
   return localRows.value.slice(start, start + perPage.value);
 });
+const selectableRows = computed(() =>
+  rows.value.filter((row) => props.rowSelectable?.(row) !== false),
+);
+const pageSelection = computed(() => {
+  const selected = selectableRows.value.filter((row) =>
+    selectedKeys.value.has(rowIdentity(row)),
+  ).length;
+  return selected === 0 ? false : selected === selectableRows.value.length ? true : 'indeterminate';
+});
 const rootKeys = computed(() => new Set(rows.value.map(rowIdentity)));
 const meta = computed<DataTableMeta | undefined>(() => query.data.value?.meta);
 const total = computed(() =>
@@ -397,6 +406,17 @@ function toggleMultiple(row: T, selected: boolean): void {
   emit('update:selected', [...selectedKeys.value.values()]);
 }
 
+function togglePage(selected: boolean): void {
+  const next = new Map(selectedKeys.value);
+  selectableRows.value.forEach((row) => {
+    const key = rowIdentity(row);
+    if (selected) next.set(key, row);
+    else next.delete(key);
+  });
+  selectedKeys.value = next;
+  emit('update:selected', [...next.values()]);
+}
+
 function selectSingle(row: T): void {
   selectedKeys.value = new Map([[rowIdentity(row), row]]);
   emit('update:selected', row);
@@ -484,6 +504,13 @@ function loadMemory(): void {
     activeFilters.value = draftFilters.value = value.filters ?? {};
     sorts.value = value.sorts ?? [];
     internalExpandedKeys.value = value.expandedKeys ?? [];
+    const selected = Array.isArray(value.selected)
+      ? value.selected
+      : value.selected
+        ? [value.selected]
+        : [];
+    selectedKeys.value = new Map(selected.map((row: T) => [rowIdentity(row), row]));
+    emit('update:selected', props.selection === 'multiple' ? selected : (selected[0] ?? null));
   } catch {
     globalThis.sessionStorage.removeItem(memoryKey.value);
   }
@@ -515,6 +542,7 @@ watch(
       activeFilters.value,
       sorts.value,
       internalExpandedKeys.value,
+      selectedKeys.value,
     ],
   () => {
     if (!memoryKey.value) return;
@@ -528,6 +556,10 @@ watch(
         filters: activeFilters.value,
         sorts: sorts.value,
         expandedKeys: internalExpandedKeys.value,
+        selected:
+          props.selection === 'multiple'
+            ? [...selectedKeys.value.values()]
+            : (selectedKeys.value.values().next().value ?? null),
       }),
     );
   },
@@ -542,6 +574,23 @@ watch(
   (value) => {
     if (value) emit('loaded', { rows: value.data, meta: value.meta, message: value.message });
   },
+);
+watch(
+  rows,
+  (value) => {
+    if (!selectedKeys.value.size) return;
+    const next = new Map(selectedKeys.value);
+    value.forEach((row) => {
+      const key = rowIdentity(row);
+      if (next.has(key)) next.set(key, row);
+    });
+    selectedKeys.value = next;
+    emit(
+      'update:selected',
+      props.selection === 'multiple' ? [...next.values()] : (next.values().next().value ?? null),
+    );
+  },
+  { deep: true },
 );
 watch(
   () => query.error.value,
@@ -578,6 +627,8 @@ onMounted(async () => {
     globalThis.console.warn(
       '[DataTable] queryKey eksplisit direkomendasikan saat remember digunakan.',
     );
+  if (props.fetcher && props.selection === 'multiple' && !props.rowKey)
+    globalThis.console.warn('[DataTable] rowKey wajib untuk multiple selection mode server.');
   loadMemory();
   await nextTick();
   mounted.value = true;
@@ -667,7 +718,17 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
           </template>
         </ElTableColumn>
         <ElTableColumn v-if="selection" width="48" fixed="left" align="center">
-          <template #header><span class="sr-only">Pilih</span></template>
+          <template #header>
+            <Checkbox
+              v-if="selection === 'multiple'"
+              :model-value="pageSelection"
+              :disabled="selectableRows.length === 0"
+              class="mx-auto"
+              aria-label="Pilih semua baris di halaman ini"
+              @update:model-value="(value) => togglePage(value === true)"
+            />
+            <span v-else class="sr-only">Pilih</span>
+          </template>
           <template #default="{ row }">
             <div class="flex justify-center">
               <Checkbox
@@ -871,7 +932,9 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
             </Select>
             <Select
               v-else-if="filter.type === 'boolean'"
-              :model-value="draftFilters[filter.key] as any"
+              :model-value="
+                draftFilters[filter.key] == null ? undefined : String(draftFilters[filter.key])
+              "
               @update:model-value="updateFilterValue(filter, $event)"
             >
               <SelectTrigger :id="`datatable-filter-${filter.key}`" class="w-full">
@@ -956,6 +1019,10 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
   --el-table-header-bg-color: var(--muted);
   --el-table-row-hover-bg-color: var(--accent);
   color: var(--foreground);
+}
+
+:deep(.el-table__header th.el-table__cell) {
+  height: 52px;
 }
 
 :deep(.datatable-row-selected),
