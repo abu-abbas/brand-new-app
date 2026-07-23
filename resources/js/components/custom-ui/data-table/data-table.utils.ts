@@ -198,8 +198,15 @@ export function normalizeError(error: unknown): DataTableError {
     };
   };
   const data = candidate?.response?.data ?? candidate;
+  const rawMessage = typeof data?.message === 'string' ? data.message.trim() : '';
+  const isTechnicalError =
+    !rawMessage ||
+    /^(network error|failed to fetch|axioserror|request failed|500 internal|fetch failed)/i.test(
+      rawMessage,
+    );
+
   return {
-    message: data?.message || 'Terjadi kesalahan. Silakan coba lagi.',
+    message: isTechnicalError ? 'Terjadi kesalahan saat memuat data.' : rawMessage,
     code: data?.code,
     retryable:
       data?.retryable ?? (!candidate?.response?.status || candidate.response.status >= 500),

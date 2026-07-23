@@ -50,6 +50,7 @@ import type {
   DataTableMeta,
   DataTableSort,
   DataTableSpanMethod,
+  LaravelDataTableResponse,
 } from './data-table.types';
 import {
   buildParams,
@@ -171,9 +172,36 @@ const loadControllers = new Map<
   string | number,
   { abort: () => void; signal: Parameters<DataTableFetcher<T>>[0]['signal'] }
 >();
+const columnWidths = ref<Record<string, number>>({});
+const cachedServerResponse = shallowRef<LaravelDataTableResponse<T> | null>(null);
+
+function getRouteScope(): string {
+  if (props.rememberScope) return props.rememberScope;
+  const instance = getCurrentInstance();
+  const route = instance?.appContext.config.globalProperties?.$route as
+    { matched?: Array<{ name?: string; path?: string }>; path?: string } | undefined;
+  if (route?.matched?.length) {
+    return route.matched[0].name || route.matched[0].path || route.path || 'default';
+  }
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  return pathname && pathname !== '/' && pathname !== '/blank' ? pathname : 'default';
+}
+
+function handleHeaderDragend(
+  newWidth: number,
+  _oldWidth: number,
+  column: { property?: string },
+): void {
+  if (column?.property) {
+    columnWidths.value = {
+      ...columnWidths.value,
+      [column.property]: newWidth,
+    };
+  }
+}
 
 const memoryKey = computed(() =>
-  props.remember ? `datatable:${props.rememberScope ?? 'default'}:${props.remember}` : '',
+  props.remember ? `datatable:${getRouteScope()}:${props.remember}` : '',
 );
 const visibleFields = computed(() => props.fields.filter((field) => !field.hidden));
 const searchableFields = computed(() => leafFields(props.fields));
@@ -206,11 +234,13 @@ const query = useQuery({
   queryKey: finalQueryKey,
   enabled: computed(() => mounted.value && Boolean(props.fetcher) && props.enabled),
   queryFn: ({ signal }) => props.fetcher!({ params: params.value, signal }),
-  placeholderData: (previous) => previous,
+  placeholderData: (previous) => previous ?? cachedServerResponse.value ?? undefined,
   retry: (count, error) => {
     const normalized = normalizeError(error);
+    if (!normalized.retryable) return false;
     const status = (error as { response?: { status?: number } })?.response?.status;
-    return count < 2 && (normalized.retryable || !status || status >= 500);
+    if (status && status < 500) return false;
+    return count < 2;
   },
   retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
 });
@@ -233,22 +263,22 @@ const localRows = computed(() => {
     ? sortTreeRows(filtered, sorts.value, childrenKey.value)
     : sortRows(filtered, sorts.value);
 });
-const rows = computed(() => {
+const rows = computed<T[]>(() => {
   if (props.fetcher) return query.data.value?.data ?? [];
   if (!props.paginated) return localRows.value;
   const start = (page.value - 1) * perPage.value;
   return localRows.value.slice(start, start + perPage.value);
 });
-const selectableRows = computed(() =>
-  rows.value.filter((row) => props.rowSelectable?.(row) !== false),
+const selectableRows = computed<T[]>(() =>
+  rows.value.filter((row: T) => props.rowSelectable?.(row) !== false),
 );
 const pageSelection = computed(() => {
-  const selected = selectableRows.value.filter((row) =>
+  const selected = selectableRows.value.filter((row: T) =>
     selectedKeys.value.has(rowIdentity(row)),
   ).length;
   return selected === 0 ? false : selected === selectableRows.value.length ? true : 'indeterminate';
 });
-const rootKeys = computed(() => new Set(rows.value.map(rowIdentity)));
+const rootKeys = computed(() => new Set(rows.value.map((row: T) => rowIdentity(row))));
 const meta = computed<DataTableMeta | undefined>(() => query.data.value?.meta);
 const total = computed(() =>
   props.fetcher ? (meta.value?.total ?? rows.value.length) : localRows.value.length,
@@ -408,7 +438,7 @@ function toggleMultiple(row: T, selected: boolean): void {
 
 function togglePage(selected: boolean): void {
   const next = new Map(selectedKeys.value);
-  selectableRows.value.forEach((row) => {
+  selectableRows.value.forEach((row: T) => {
     const key = rowIdentity(row);
     if (selected) next.set(key, row);
     else next.delete(key);
@@ -503,7 +533,11 @@ function loadMemory(): void {
     searchFields.value = draftSearchFields.value = value.searchFields ?? searchFields.value;
     activeFilters.value = draftFilters.value = value.filters ?? {};
     sorts.value = value.sorts ?? [];
+    columnWidths.value = value.columnWidths ?? {};
     internalExpandedKeys.value = value.expandedKeys ?? [];
+    if (value.serverCache) {
+      cachedServerResponse.value = value.serverCache;
+    }
     const selected = Array.isArray(value.selected)
       ? value.selected
       : value.selected
@@ -541,8 +575,10 @@ watch(
       searchFields.value,
       activeFilters.value,
       sorts.value,
+      columnWidths.value,
       internalExpandedKeys.value,
       selectedKeys.value,
+      query.data.value,
     ],
   () => {
     if (!memoryKey.value) return;
@@ -555,11 +591,19 @@ watch(
         searchFields: searchFields.value,
         filters: activeFilters.value,
         sorts: sorts.value,
+        columnWidths: columnWidths.value,
         expandedKeys: internalExpandedKeys.value,
         selected:
           props.selection === 'multiple'
             ? [...selectedKeys.value.values()]
             : (selectedKeys.value.values().next().value ?? null),
+        serverCache: query.data.value
+          ? {
+              data: query.data.value.data,
+              meta: query.data.value.meta,
+              message: query.data.value.message,
+            }
+          : cachedServerResponse.value,
       }),
     );
   },
@@ -577,10 +621,10 @@ watch(
 );
 watch(
   rows,
-  (value) => {
+  (value: T[]) => {
     if (!selectedKeys.value.size) return;
     const next = new Map(selectedKeys.value);
-    value.forEach((row) => {
+    value.forEach((row: T) => {
       const key = rowIdentity(row);
       if (next.has(key)) next.set(key, row);
     });
@@ -707,6 +751,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         :row-class-name="rowClassName"
         :cell-class-name="cellClassName"
         class="w-full"
+        @header-dragend="handleHeaderDragend"
         @row-click="(row, column, event) => emit('row-click', row, column, event)"
         @row-dblclick="(row, column, event) => emit('row-dblclick', row, column, event)"
         @row-contextmenu="(row, column, event) => emit('row-contextmenu', row, column, event)"
@@ -791,6 +836,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
           :tree="Boolean(tree)"
           :value-for="valueFor"
           :highlight="highlighted"
+          :column-widths="columnWidths"
           @sort="changeSort"
         />
 

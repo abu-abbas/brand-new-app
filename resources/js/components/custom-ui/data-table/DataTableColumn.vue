@@ -13,6 +13,7 @@ defineProps<{
   tree: boolean;
   valueFor: (row: T, field: DataTableField<T>, rowIndex: number) => unknown;
   highlight: (value: unknown) => Array<{ text: string; match: boolean }>;
+  columnWidths?: Record<string, number>;
 }>();
 
 const emit = defineEmits<{
@@ -37,6 +38,7 @@ const emit = defineEmits<{
       :tree="tree"
       :value-for="valueFor"
       :highlight="highlight"
+      :column-widths="columnWidths"
       @sort="(childField, event) => emit('sort', childField, event)"
     />
   </ElTableColumn>
@@ -45,7 +47,7 @@ const emit = defineEmits<{
     v-else
     :prop="field.key"
     :label="field.label"
-    :width="field.width"
+    :width="columnWidths?.[field.key] ?? field.width"
     :min-width="field.minWidth"
     :align="field.align"
     :header-align="field.headerAlign"

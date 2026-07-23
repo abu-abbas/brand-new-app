@@ -148,4 +148,79 @@ describe('DataTable', () => {
       collapseAll: expect.any(Function),
     });
   });
+
+  it('menampilkan pesan ramah pengguna ketika terjadi network/technical error', async () => {
+    const error = Object.assign(new Error('Network Error'), { retryable: false });
+    const fetcher = vi.fn().mockRejectedValue(error);
+    const wrapper = mountTable({
+      props: {
+        fields,
+        fetcher,
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await nextTick();
+
+    expect(fetcher).toHaveBeenCalled();
+    expect(wrapper.text()).toContain('Terjadi kesalahan saat memuat data.');
+  });
+
+  it('menyimpan dan memulihkan columnWidths saat remember aktif', async () => {
+    const wrapper = mountTable({
+      props: {
+        items: rows,
+        fields,
+        remember: 'column-width-test',
+        rememberScope: 'custom-scope',
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+
+    // trigger header-dragend event
+    await wrapper
+      .findComponent({ name: 'ElTable' })
+      .vm.$emit('header-dragend', 250, 150, { property: 'name' });
+    await nextTick();
+
+    const stored = JSON.parse(
+      sessionStorage.getItem('datatable:custom-scope:column-width-test') ?? '{}',
+    );
+    expect(stored.columnWidths).toEqual({ name: 250 });
+  });
+
+  it('membatalkan request lama (AbortSignal.aborted) saat search param berubah sebelum fetcher terdahulu selesai', async () => {
+    const signals: AbortSignal[] = [];
+    const fetcher = vi.fn().mockImplementation(({ signal }: { signal: AbortSignal }) => {
+      signals.push(signal);
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ data: rows, message: 'OK' });
+        }, 200);
+      });
+    });
+
+    const wrapper = mountTable({
+      props: {
+        fields,
+        fetcher,
+      },
+    });
+
+    await nextTick();
+    await nextTick();
+
+    const input = wrapper.get('input[aria-label="Cari data"]');
+    await input.setValue('Ani');
+    await input.trigger('keydown.enter');
+    await nextTick();
+    await nextTick();
+
+    expect(signals.length).toBeGreaterThanOrEqual(2);
+    expect(signals[0].aborted).toBe(true);
+  });
 });
