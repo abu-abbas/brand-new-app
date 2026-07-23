@@ -293,6 +293,14 @@ const error = computed(() => (query.error.value ? normalizeError(query.error.val
 const hasActiveState = computed(() =>
   Boolean(search.value || Object.keys(activeFilters.value).length),
 );
+const hasAppliedFilters = computed(() =>
+  Object.values(activeFilters.value).some((value) => {
+    if (value === undefined || value === null || value === '') return false;
+    if (Array.isArray(value))
+      return value.some((item) => item !== undefined && item !== null && item !== '');
+    return true;
+  }),
+);
 const showFilterButton = computed(
   () =>
     props.showFilter &&
@@ -728,6 +736,11 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         v-if="showFilterButton"
         variant="outline"
         size="icon"
+        :class="[
+          'transition-colors',
+          hasAppliedFilters &&
+            'border-primary/30 bg-primary/10 font-semibold text-primary hover:bg-primary/20 hover:text-primary',
+        ]"
         aria-label="Buka filter"
         @click="filterOpen = true"
       >
