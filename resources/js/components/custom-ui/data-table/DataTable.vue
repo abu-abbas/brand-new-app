@@ -143,7 +143,7 @@ const emit = defineEmits<{
 
 const instanceKey = `datatable-${getCurrentInstance()?.uid ?? Math.random()}`;
 const slots = defineSlots<{
-  [name: string]: (props: Record<string, unknown>) => unknown;
+  [name: string]: (props: Record<string, any>) => any;
 }>();
 const mounted = ref(false);
 const page = ref(1);
@@ -367,9 +367,8 @@ function expandAll(): void {
     }
   )?.store?.states?.lazyTreeNodeMap;
   const loadedLazyChildren =
-    ((lazyMap && 'value' in lazyMap ? lazyMap.value : lazyMap) as
-      | Record<string | number, T[]>
-      | undefined) ?? {};
+    ((lazyMap && 'value' in lazyMap ? lazyMap.value : lazyMap) as Record<string | number, T[]>) ??
+    {};
 
   const visit = (nodes: T[]) =>
     nodes.forEach((row) => {
