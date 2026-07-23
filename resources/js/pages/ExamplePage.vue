@@ -96,7 +96,7 @@ function navigate(target: string, isExternal: boolean) {
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="space-y-6">
       <!-- Horizontal Navigation Menu (shadcn-vue ScrollArea with horizontal ScrollBar) -->
-      <ScrollArea class="w-full rounded-2xl border border-border bg-card p-2 shadow-xs">
+      <ScrollArea class="w-full">
         <NavigationMenu class="w-full max-w-full justify-start">
           <NavigationMenuList class="flex w-max flex-nowrap items-center gap-1 pr-4">
             <!-- Home Link -->

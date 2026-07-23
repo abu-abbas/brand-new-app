@@ -33,7 +33,7 @@ function goToExamples() {
     >
       <div class="flex items-center gap-3">
         <div
-          class="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs"
+          class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs"
         >
           <Sparkles class="size-5" />
         </div>
@@ -45,7 +45,7 @@ function goToExamples() {
           </p>
         </div>
       </div>
-      <Button class="gap-2 font-medium" @click="goToExamples">
+      <Button class="w-full gap-2 font-medium sm:w-auto" @click="goToExamples">
         Buka Example Custom Components
         <ArrowRight class="size-4" />
       </Button>
