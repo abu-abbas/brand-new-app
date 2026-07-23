@@ -6,6 +6,12 @@ import AdminLayout from '@/components/AdminLayout.vue';
 import DataTableExample from '@/components/custom-ui/data-table/DataTableExample.vue';
 import ConfirmDialogExample from '@/components/custom-ui/confirm-dialog/ConfirmDialogExample.vue';
 import ComboboxExample from '@/components/custom-ui/combobox/ComboboxExample.vue';
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from '@/components/ui/navigation-menu';
 
 const route = useRoute();
 const router = useRouter();
@@ -83,7 +89,7 @@ function navigate(target: string, isExternal: boolean) {
 <template>
   <AdminLayout parent-title="Examples" :title="currentTitle">
     <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
-      <!-- Left Sidebar Navigation Card -->
+      <!-- Left Sidebar Navigation Card (Using shadcn-vue NavigationMenu) -->
       <aside class="lg:col-span-3">
         <div class="sticky top-0 rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div class="px-3 pt-2 pb-3">
@@ -92,31 +98,35 @@ function navigate(target: string, isExternal: boolean) {
             </h3>
           </div>
 
-          <nav class="flex flex-col gap-1.5" aria-label="Component Navigation">
-            <button
-              v-for="item in navItems"
-              :key="item.target"
-              type="button"
-              :class="[
-                'flex w-full items-center gap-3.5 rounded-xl px-3.5 py-3 text-left transition-colors duration-150',
-                isItemActive(item.target, item.isExternal)
-                  ? 'bg-primary/10 font-semibold text-primary shadow-xs'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-              ]"
-              @click="navigate(item.target, item.isExternal)"
-            >
-              <component
-                :is="item.icon"
-                :class="[
-                  'size-5 shrink-0 transition-colors',
-                  isItemActive(item.target, item.isExternal)
-                    ? 'text-primary'
-                    : 'text-muted-foreground',
-                ]"
-              />
-              <span class="text-sm tracking-tight">{{ item.name }}</span>
-            </button>
-          </nav>
+          <NavigationMenu class="max-w-full justify-start">
+            <NavigationMenuList class="w-full flex-col items-stretch space-x-0 space-y-1.5">
+              <NavigationMenuItem v-for="item in navItems" :key="item.target">
+                <NavigationMenuLink as-child>
+                  <button
+                    type="button"
+                    :class="[
+                      'flex w-full items-center gap-3.5 rounded-xl px-3.5 py-3 text-left transition-colors duration-150',
+                      isItemActive(item.target, item.isExternal)
+                        ? 'bg-primary/10 font-semibold text-primary shadow-xs'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                    ]"
+                    @click="navigate(item.target, item.isExternal)"
+                  >
+                    <component
+                      :is="item.icon"
+                      :class="[
+                        'size-5 shrink-0 transition-colors',
+                        isItemActive(item.target, item.isExternal)
+                          ? 'text-primary'
+                          : 'text-muted-foreground',
+                      ]"
+                    />
+                    <span class="text-sm tracking-tight">{{ item.name }}</span>
+                  </button>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+            </NavigationMenuList>
+          </NavigationMenu>
         </div>
       </aside>
 

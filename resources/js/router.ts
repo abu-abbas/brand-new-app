@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/pages/HomePage.vue';
-import ExampleCustomComponentPage from '@/pages/ExampleCustomComponentPage.vue';
+import ExampleCustomComponentPage from '@/pages/ExamplePage.vue';
 
 const router = createRouter({
   history: createWebHistory(),
