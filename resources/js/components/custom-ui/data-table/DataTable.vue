@@ -3,7 +3,6 @@ import { computed, getCurrentInstance, nextTick, onMounted, ref, shallowRef, wat
 import { useQuery } from '@tanstack/vue-query';
 import { ElTable, ElTableColumn } from 'element-plus';
 import {
-  AlertCircle,
   ChevronLeft,
   ChevronRight,
   ListFilter,
@@ -65,6 +64,7 @@ import {
   sortTreeRows,
 } from './data-table.utils';
 import DataTableColumn from './DataTableColumn.vue';
+import DataTableErrorAlert from './DataTableErrorAlert.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -918,11 +918,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               <span>Memuat data…</span>
             </template>
             <template v-else-if="error">
-              <AlertCircle />
-              <span>{{ error.message }}</span>
-              <Button v-if="error.retryable" variant="outline" size="sm" @click="refresh"
-                >Coba lagi</Button
-              >
+              <DataTableErrorAlert :error="error" @retry="refresh" />
             </template>
             <span v-else>{{ hasActiveState ? 'Data tidak ditemukan.' : 'Belum ada data.' }}</span>
           </div>

@@ -78,7 +78,10 @@ const emit = defineEmits<{
         />
         <template v-else>{{ field.label }}</template>
 
-        <span v-if="sorts.find((sort) => sort.key === field.key)" class="inline-flex items-center text-xs">
+        <span
+          v-if="sorts.find((sort) => sort.key === field.key)"
+          class="inline-flex items-center text-xs"
+        >
           <ArrowUp
             v-if="sorts.find((sort) => sort.key === field.key)?.direction === 'asc'"
             class="size-3.5"
