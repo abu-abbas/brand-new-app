@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { ModalSize } from './Modal.vue';
 import { ref } from 'vue';
+import { CheckCircle2, X } from '@lucide/vue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Modal } from './index';
@@ -68,13 +70,26 @@ const handleFormSubmit = () => {
     </div>
 
     <!-- Alert Notifikasi Berhasil -->
-    <div
-      v-if="successNotification"
-      class="flex items-center justify-between rounded-lg bg-emerald-500/10 p-4 text-sm font-medium text-emerald-600 dark:text-emerald-400"
-    >
-      <span>{{ successNotification }}</span>
-      <Button variant="ghost" size="sm" @click="successNotification = ''">Tutup</Button>
-    </div>
+    <Alert v-if="successNotification" class="flex items-start justify-between">
+      <div class="flex items-start gap-3">
+        <CheckCircle2 class="mt-0.5 size-4 text-emerald-500" />
+        <div>
+          <AlertTitle class="text-emerald-600 dark:text-emerald-400">Berhasil</AlertTitle>
+          <AlertDescription>
+            {{ successNotification }}
+          </AlertDescription>
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        class="size-7 text-muted-foreground hover:text-foreground"
+        @click="successNotification = ''"
+      >
+        <X class="size-4" />
+        <span class="sr-only">Tutup</span>
+      </Button>
+    </Alert>
 
     <!-- Grid Demo Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
