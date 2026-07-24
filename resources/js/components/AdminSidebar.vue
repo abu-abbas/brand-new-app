@@ -307,9 +307,7 @@ const projectsMenu = [
                     JD
                   </div>
                   <div class="grid flex-1 text-left text-sm leading-tight">
-                    <span class="truncate font-semibold text-xs text-foreground">
-                      John Doe
-                    </span>
+                    <span class="truncate font-semibold text-xs text-foreground"> John Doe </span>
                     <span class="truncate text-[10px] text-muted-foreground">
                       john.doe@example.com
                     </span>

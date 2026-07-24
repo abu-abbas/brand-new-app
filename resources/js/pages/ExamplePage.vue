@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Home, Table, ShieldAlert, Sliders, Component as ComponentIcon } from '@lucide/vue';
+import {
+  Home,
+  Table,
+  ShieldAlert,
+  Sliders,
+  Component as ComponentIcon,
+  Sparkles,
+  FileText,
+  SquareStack,
+} from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
@@ -36,6 +45,9 @@ const icons: Record<string, Component> = {
   'data-table': Table,
   'confirm-dialog': ShieldAlert,
   combobox: Sliders,
+  'border-beam': Sparkles,
+  'markdown-text': FileText,
+  modal: SquareStack,
 };
 
 const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([path, mod]) => {
