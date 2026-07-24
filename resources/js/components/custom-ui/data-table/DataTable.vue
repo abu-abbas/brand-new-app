@@ -363,6 +363,24 @@ async function loadTree(row: T, _node: unknown, resolve: (rows: T[]) => void): P
   }
 }
 
+function syncTreeExpansion(keys?: Array<string | number>): void {
+  if (!props.tree || !table.value) return;
+  const targetKeys = new Set((keys ?? activeExpandedKeys.value).map(String));
+
+  const visit = (nodes: T[]) => {
+    nodes.forEach((node) => {
+      const key = String(rowIdentity(node));
+      const children = getPath(node, childrenKey.value) as T[] | undefined;
+      if (Array.isArray(children) && children.length) {
+        const isExpanded = targetKeys.has(key);
+        table.value?.toggleRowExpansion(node, isExpanded);
+        visit(children);
+      }
+    });
+  };
+  visit(rows.value);
+}
+
 function expandAll(): void {
   const keys: Array<string | number> = [];
   const lazyMap = (
@@ -395,11 +413,13 @@ function expandAll(): void {
   visit(rows.value);
   internalExpandedKeys.value = keys;
   emit('update:expandedKeys', keys);
+  syncTreeExpansion(keys);
 }
 
 function collapseAll(): void {
   internalExpandedKeys.value = [];
   emit('update:expandedKeys', []);
+  syncTreeExpansion([]);
 }
 
 function submitSearch(event?: unknown): void {
@@ -687,9 +707,16 @@ watch(
     if (props.tree && search.value && !props.fetcher) {
       internalExpandedKeys.value = localTreeResult.value.expandedKeys;
       emit('update:expandedKeys', localTreeResult.value.expandedKeys);
+    } else if (
+      props.tree &&
+      treeConfig.value.defaultExpandAll &&
+      !internalExpandedKeys.value.length &&
+      !props.expandedKeys
+    ) {
+      expandAll();
     }
   },
-  { deep: true },
+  { deep: true, immediate: true },
 );
 
 onMounted(async () => {
@@ -703,6 +730,14 @@ onMounted(async () => {
     globalThis.console.warn('[DataTable] rowKey wajib untuk multiple selection mode server.');
   loadMemory();
   await nextTick();
+  if (
+    props.tree &&
+    treeConfig.value.defaultExpandAll &&
+    !internalExpandedKeys.value.length &&
+    !props.expandedKeys
+  ) {
+    expandAll();
+  }
   mounted.value = true;
 });
 
@@ -779,7 +814,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         :lazy="treeConfig.lazy"
         :load="loadTree"
         :default-expand-all="treeConfig.defaultExpandAll"
-        :expand-row-keys="activeExpandedKeys.map(String)"
+        :expand-row-keys="!tree && $slots.expand ? activeExpandedKeys.map(String) : undefined"
         :span-method="tableSpanMethod"
         :row-class-name="rowClassName"
         :cell-class-name="cellClassName"
@@ -1124,6 +1159,21 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
 
 :deep(.el-table__body tr:last-child td.el-table__cell) {
   border-bottom: 0;
+}
+
+:deep(.el-table__cell .cell) {
+  display: flex;
+  align-items: flex-start;
+}
+
+:deep(.el-table__indent) {
+  flex-shrink: 0;
+}
+
+:deep(.el-table__expand-icon) {
+  flex-shrink: 0;
+  margin-right: 4px;
+  margin-top: 2px;
 }
 
 :deep(.datatable-cell-nowrap .cell) {

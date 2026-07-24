@@ -272,19 +272,18 @@ describe('DataTable', () => {
 
     // Mock loaded lazy children in Element Plus store
     const elTable = wrapper.findComponent({ name: 'ElTable' });
-    (
-      elTable.vm as unknown as {
-        store: { states: { lazyTreeNodeMap: { value: Record<string, unknown[]> } } };
-      }
-    ).store = {
+    const lazyStore = {
       states: {
         lazyTreeNodeMap: {
-          value: {
-            'parent-1': [{ id: 'child-10', name: 'Child Node' }],
-          },
+          'parent-1': [{ id: 'child-10', name: 'Child Node' }],
         },
       },
     };
+    (elTable.vm as unknown as { store: typeof lazyStore }).store = lazyStore;
+    const vm = wrapper.vm as unknown as { table?: { store: typeof lazyStore } };
+    if (vm.table) {
+      vm.table.store = lazyStore;
+    }
 
     (wrapper.vm as unknown as { expandAll: () => void }).expandAll();
     await nextTick();

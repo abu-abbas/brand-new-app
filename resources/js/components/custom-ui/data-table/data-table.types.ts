@@ -86,3 +86,12 @@ export interface DataTableError {
   validationErrors?: Record<string, unknown>;
   requestId?: string;
 }
+
+export interface DataTableInstance {
+  refresh: () => Promise<void>;
+  resetFilters: () => Promise<void>;
+  clearSelection: () => void;
+  scrollToTop: () => void;
+  expandAll: () => void;
+  collapseAll: () => void;
+}
