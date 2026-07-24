@@ -13,3 +13,7 @@ dist
 .vscode
 test-results
 docs
+# EDF error-codes.ts has a byte-exact quoted-key format required by the
+# error-definition-framework contract; Prettier's quoteProps would strip it
+# and break `php artisan error-definition:generate --check`.
+resources/js/generated
