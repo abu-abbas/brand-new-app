@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChevronsUpDown, Network, Server, User } from '@lucide/vue';
+import {
+  ChevronsUpDown,
+  Network,
+  Server,
+  User,
+  AlertCircle,
+  RefreshCw,
+  WifiOff,
+} from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +20,8 @@ import type {
   DataTableInstance,
   DataTableParams,
 } from './data-table.types';
-import { searchRows, sortRows } from './data-table.utils';
+import { UserManagementFacade } from '@/modules/user-management/api/user-management.facade';
+import type { UsersIndexParams } from '@/api/generated/models';
 
 // ==========================================
 // 1. DATA & TYPES: USER MANAGEMENT (LOCAL & SERVER)
@@ -56,47 +65,69 @@ const userFilters = [
 ];
 
 const selectedUsers = ref<UserRow[]>([]);
+const serverExtraParams = ref<Record<string, unknown>>({});
 
+/**
+ * Server fetcher terintegrasi penuh ke Laravel 13 API (/api/users)
+ * Menggunakan UserManagementFacade & Orval generated client.
+ * Jika parameter extra simulate_error diaktifkan, API akan memicu Exception EDF backend.
+ */
 const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
-  await new Promise<void>((resolve, reject) => {
-    const timeout = globalThis.setTimeout(resolve, 1200);
-    signal.addEventListener('abort', () => {
-      globalThis.clearTimeout(timeout);
-      reject(new Error('Request dibatalkan'));
-    });
-  });
-  const filtered = searchRows(
-    users,
-    String(params.search ?? ''),
-    userFields,
-    params.search_fields as string[],
-  );
-  const sorted = sortRows(
-    filtered,
-    params.sort ??
-      (params.sort_by ? [{ key: params.sort_by, direction: params.sort_direction! }] : []),
-  );
-  const page = Number(params.page ?? 1);
-  const perPage = Number(params.per_page ?? 10);
-  const pageRows = sorted.slice((page - 1) * perPage, page * perPage);
-  return {
-    data: pageRows,
-    meta: {
-      current_page: page,
-      from: pageRows.length ? (page - 1) * perPage + 1 : null,
-      last_page: Math.max(1, Math.ceil(sorted.length / perPage)),
-      links: [],
-      path: '/mock/users',
-      per_page: perPage,
-      to: pageRows.length ? (page - 1) * perPage + pageRows.length : null,
-      total: sorted.length,
+  if (params.simulate_error === '409') {
+    await UserManagementFacade.triggerTestError(signal);
+  }
+
+  if (params.simulate_error === '422') {
+    await UserManagementFacade.getUsers({ per_page: 999 }, signal);
+  }
+
+  if (params.simulate_error === 'network') {
+    // Error jaringan murni (tanpa response) — normalizeError() menandainya
+    // retryable secara default, jadi DataTableErrorAlert menampilkan tombol "Coba lagi".
+    throw new Error('Network Error');
+  }
+
+  const activeFilter =
+    params.filters?.active !== undefined
+      ? (String(params.filters.active) as 'true' | 'false')
+      : undefined;
+
+  const response = await UserManagementFacade.getUsers(
+    {
+      page: params.page,
+      per_page: params.per_page,
+      search: params.search ? String(params.search) : undefined,
+      sort_by: params.sort_by ? (String(params.sort_by) as UsersIndexParams['sort_by']) : undefined,
+      sort_direction: params.sort_direction as 'asc' | 'desc' | undefined,
+      active: activeFilter,
     },
-    message: 'Data pengguna berhasil dimuat.',
+    signal,
+  );
+
+  return {
+    data: response.data as unknown as UserRow[],
+    meta: {
+      current_page: response.meta.current_page,
+      from: response.meta.from,
+      last_page: response.meta.last_page,
+      per_page: response.meta.per_page,
+      to: response.meta.to,
+      total: response.meta.total,
+    },
+    message: 'Data pengguna berhasil dimuat dari server.',
   };
 };
 
 function serverParams(params: DataTableParams): void {
   void params;
+}
+
+function setSimulateError(mode?: '409' | '422' | 'network') {
+  if (!mode) {
+    serverExtraParams.value = {};
+  } else {
+    serverExtraParams.value = { simulate_error: mode };
+  }
 }
 
 // ==========================================
@@ -183,103 +214,6 @@ const taxonomyTreeData: AnimalTaxonomyRow[] = [
                       },
                     ],
                   },
-                  {
-                    id: 'family-canidae',
-                    name: 'Canidae (Keluarga Anjing & Serigala)',
-                    latinName: 'Canidae',
-                    rank: 'Family',
-                    children: [
-                      {
-                        id: 'species-canis-lupus',
-                        name: 'Serigala Abu-abu',
-                        latinName: 'Canis lupus',
-                        rank: 'Species',
-                        status: 'Least Concern',
-                      },
-                      {
-                        id: 'species-vulpes-vulpes',
-                        name: 'Rubah Merah',
-                        latinName: 'Vulpes vulpes',
-                        rank: 'Species',
-                        status: 'Least Concern',
-                      },
-                    ],
-                  },
-                  {
-                    id: 'family-ursidae',
-                    name: 'Ursidae (Keluarga Beruang)',
-                    latinName: 'Ursidae',
-                    rank: 'Family',
-                    children: [
-                      {
-                        id: 'species-helarctos-malayanus',
-                        name: 'Beruang Madu',
-                        latinName: 'Helarctos malayanus',
-                        rank: 'Species',
-                        status: 'Vulnerable',
-                      },
-                      {
-                        id: 'species-ailuropoda-melanoleuca',
-                        name: 'Panda Raksasa',
-                        latinName: 'Ailuropoda melanoleuca',
-                        rank: 'Species',
-                        status: 'Vulnerable',
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                id: 'order-proboscidea',
-                name: 'Proboscidea (Bebelalai)',
-                latinName: 'Proboscidea',
-                rank: 'Order',
-                children: [
-                  {
-                    id: 'family-elephantidae',
-                    name: 'Elephantidae (Gajah)',
-                    latinName: 'Elephantidae',
-                    rank: 'Family',
-                    children: [
-                      {
-                        id: 'species-elephas-maximus-sumatranus',
-                        name: 'Gajah Sumatra',
-                        latinName: 'Elephas maximus sumatranus',
-                        rank: 'Species',
-                        status: 'Critically Endangered',
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                id: 'order-primates',
-                name: 'Primates (Primata)',
-                latinName: 'Primates',
-                rank: 'Order',
-                children: [
-                  {
-                    id: 'family-hominidae',
-                    name: 'Hominidae (Kera Besar)',
-                    latinName: 'Hominidae',
-                    rank: 'Family',
-                    children: [
-                      {
-                        id: 'species-pongo-pygmaeus',
-                        name: 'Orangutan Kalimantan',
-                        latinName: 'Pongo pygmaeus',
-                        rank: 'Species',
-                        status: 'Critically Endangered',
-                      },
-                      {
-                        id: 'species-pan-troglodytes',
-                        name: 'Simpanse',
-                        latinName: 'Pan troglodytes',
-                        rank: 'Species',
-                        status: 'Endangered',
-                      },
-                    ],
-                  },
                 ],
               },
             ],
@@ -298,7 +232,7 @@ const taxonomyTreeData: AnimalTaxonomyRow[] = [
                 children: [
                   {
                     id: 'family-bucerotidae',
-                    name: 'Bucerotidae (Burung Enggang)',
+                    name: 'Burung Enggang',
                     latinName: 'Bucerotidae',
                     rank: 'Family',
                     children: [
@@ -438,27 +372,75 @@ function getRankBadgeVariant(rank: string): 'default' | 'secondary' | 'outline' 
       </CardContent>
     </Card>
 
-    <!-- Card 2: Mode Server -->
+    <!-- Card 2: Mode Server Real-Time + EDF Integration -->
     <Card>
       <CardHeader>
         <CardTitle class="flex items-center gap-2">
           <Server class="size-5 text-primary" />
-          2. DataTable Mode Server (Mock API Fetcher)
+          2. DataTable Mode Server (Real Laravel 13 API + EDF & TanStack Query)
         </CardTitle>
         <CardDescription>
           <MarkdownText
-            content="Data diambil secara *async* melalui `fetcher` prop dengan format *response* standar Laravel (`data`, `meta`, `message`)."
+            content="Data diambil secara *real-time* dari server Laravel 13 (`/api/users`) via **Orval client**, **TanStack Query**, dan **EDF (Error Definition Framework)** langsung dari dalam komponen DataTable."
           />
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent class="space-y-4">
+        <!-- Panel Kontrol Pengujian EDF di luar DataTable -->
+        <div class="flex flex-col gap-2.5 p-3.5 rounded-lg bg-muted/40 border border-border">
+          <span class="text-xs font-semibold text-foreground flex items-center gap-1.5 mr-1">
+            <AlertCircle class="size-4 text-amber-500" />
+            Mode API Server:
+          </span>
+          <div class="flex-1 gap-2.5 flex flex-wrap">
+            <Button
+              :variant="!serverExtraParams.simulate_error ? 'default' : 'outline'"
+              size="sm"
+              class="gap-1.5 text-xs"
+              @click="setSimulateError()"
+            >
+              <RefreshCw class="size-3.5" />
+              Normal Data API
+            </Button>
+            <Button
+              :variant="serverExtraParams.simulate_error === '409' ? 'destructive' : 'outline'"
+              size="sm"
+              class="gap-1.5 text-xs"
+              @click="setSimulateError('409')"
+            >
+              <AlertCircle class="size-3.5" />
+              Uji EDF 409 (App Error)
+            </Button>
+            <Button
+              :variant="serverExtraParams.simulate_error === '422' ? 'destructive' : 'outline'"
+              size="sm"
+              class="gap-1.5 text-xs"
+              @click="setSimulateError('422')"
+            >
+              <AlertCircle class="size-3.5" />
+              Uji EDF 422 (Validation Error)
+            </Button>
+            <Button
+              :variant="serverExtraParams.simulate_error === 'network' ? 'destructive' : 'outline'"
+              size="sm"
+              class="gap-1.5 text-xs"
+              @click="setSimulateError('network')"
+            >
+              <WifiOff class="size-3.5" />
+              Uji Error Jaringan (Retryable)
+            </Button>
+          </div>
+        </div>
+
+        <!-- Component DataTable Server dengan error handling internal -->
         <DataTable
-          title="Pengguna Server"
-          query-key="users-demo"
+          title="Daftar Pengguna Server)"
+          query-key="users-server"
           :fetcher="serverFetcher"
           :fields="userFields"
           :filters="userFilters"
-          remember="users-demo"
+          :extra-params="serverExtraParams"
+          remember="users-server-demo"
           row-key="id"
           @params-change="serverParams"
         >
@@ -507,12 +489,12 @@ function getRankBadgeVariant(rank: string): 'default' | 'secondary' | 'outline' 
             </Button>
           </template>
           <template #cell(latinName)="{ value }">
-            <span class="italic text-muted-foreground font-mono text-xs">
+            <span class="italic font-semibold">
               {{ value || '-' }}
             </span>
           </template>
           <template #cell(rank)="{ value }">
-            <Badge :variant="getRankBadgeVariant(String(value))" class="text-[10px]">
+            <Badge :variant="getRankBadgeVariant(String(value))">
               {{ value }}
             </Badge>
           </template>
