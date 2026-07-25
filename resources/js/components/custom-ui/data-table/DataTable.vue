@@ -5,6 +5,7 @@ import { ElTable, ElTableColumn } from 'element-plus';
 import {
   ChevronLeft,
   ChevronRight,
+  CornerDownLeft,
   ListFilter,
   Pencil,
   RefreshCw,
@@ -423,17 +424,16 @@ function collapseAll(): void {
   syncTreeExpansion([]);
 }
 
-function submitSearch(event?: unknown): void {
-  const input = (event as { currentTarget?: { value?: unknown } })?.currentTarget?.value;
-  search.value = (typeof input === 'string' ? input : searchDraft.value).trim();
+function submitSearch(): void {
+  search.value = searchDraft.value.trim();
   searchDraft.value = search.value;
   page.value = 1;
   clearSelection();
 }
 
 function clearSearch(event?: unknown): void {
-  const input = (event as { currentTarget?: { value?: unknown } })?.currentTarget?.value;
-  if (typeof input === 'string' && input) return;
+  const inputVal = (event as { currentTarget?: { value?: unknown } })?.currentTarget?.value;
+  if (typeof inputVal === 'string' && inputVal.length > 0) return;
   searchDraft.value = '';
   submitSearch();
 }
@@ -792,24 +792,40 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
             :class="
               cn(
                 'pl-9 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-cancel-button]:hidden',
-                searchDraft && 'pr-9',
+                searchDraft.trim() !== search.trim() ? 'pr-14' : search.trim() !== '' ? 'pr-9' : '',
               )
             "
             type="search"
             placeholder="Pencarian..."
             aria-label="Cari data"
-            @keydown.enter="submitSearch($event)"
+            @keydown.enter="submitSearch()"
             @search="clearSearch"
           />
-          <button
-            v-if="searchDraft"
-            type="button"
-            class="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer p-0.5 rounded-xs"
-            aria-label="Hapus pencarian"
-            @click="clearSearch"
-          >
-            <X class="size-4" />
-          </button>
+          <template v-if="searchDraft || search">
+            <button
+              v-if="searchDraft.trim() !== search.trim()"
+              type="button"
+              class="absolute top-1/2 right-1.5 -translate-y-1/2 flex items-center justify-center cursor-pointer"
+              aria-label="Tekan Enter untuk mencari"
+              @click.stop.prevent="submitSearch()"
+            >
+              <kbd
+                class="inline-flex h-5 select-none items-center justify-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium leading-none text-muted-foreground/80 hover:text-foreground transition-colors"
+              >
+                <CornerDownLeft class="size-2.5" />
+                <span>Enter</span>
+              </kbd>
+            </button>
+            <button
+              v-else-if="search.trim() !== ''"
+              type="button"
+              class="absolute top-1/2 right-2.5 -translate-y-1/2 flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer p-0.5 rounded-xs"
+              aria-label="Hapus pencarian"
+              @click.stop.prevent="clearSearch()"
+            >
+              <X class="size-4" />
+            </button>
+          </template>
         </div>
       </div>
     </header>
