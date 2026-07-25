@@ -98,4 +98,31 @@ describe('DataTableErrorAlert Component', () => {
 
     wrapper.unmount();
   });
+
+  it('copies the support ID to the clipboard when the copy button is clicked', async () => {
+    const wrapper = mount(DataTableErrorAlert, {
+      props: {
+        error: {
+          message: 'Ditolak firewall.',
+          retryable: false,
+          supportId: '4499979717396997446',
+        },
+      },
+      attachTo: document.body,
+    });
+
+    await nextTick();
+
+    expect(wrapper.text()).toContain('Support ID: 4499979717396997446');
+
+    const copyButton = document.body.querySelector('button');
+    expect(copyButton).not.toBeNull();
+
+    copyButton?.click();
+    await nextTick();
+
+    expect(document.execCommand).toHaveBeenCalledWith('copy');
+
+    wrapper.unmount();
+  });
 });

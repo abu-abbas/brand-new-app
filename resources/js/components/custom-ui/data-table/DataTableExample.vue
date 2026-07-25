@@ -8,6 +8,7 @@ import {
   AlertCircle,
   RefreshCw,
   WifiOff,
+  ShieldAlert,
 } from '@lucide/vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import type {
 } from './data-table.types';
 import { UserManagementFacade } from '@/modules/user-management/api/user-management.facade';
 import type { UsersIndexParams } from '@/api/generated/models';
+import { axiosInstance } from '@/lib/axios';
 
 // ==========================================
 // 1. DATA & TYPES: USER MANAGEMENT (LOCAL & SERVER)
@@ -70,7 +72,7 @@ const serverExtraParams = ref<Record<string, unknown>>({});
 /**
  * Server fetcher terintegrasi penuh ke Laravel 13 API (/api/users)
  * Menggunakan UserManagementFacade & Orval generated client.
- * Jika parameter extra simulate_error diaktifkan, API akan memicu Exception EDF backend.
+ * Jika parameter extra simulate_error diaktifkan, API akan memicu Exception EDF backend atau simulasi firewall block.
  */
 const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
   if (params.simulate_error === '409') {
@@ -85,6 +87,38 @@ const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
     // Error jaringan murni (tanpa response) — normalizeError() menandainya
     // retryable secara default, jadi DataTableErrorAlert menampilkan tombol "Coba lagi".
     throw new Error('Network Error');
+  }
+
+  if (params.simulate_error === 'firewall') {
+    // Simulasi respons HTTP 200 dari Firewall yang membawa HTML support-id
+    const mockFirewallHtml = `
+      <!DOCTYPE html>
+      <html>
+      <body>
+          <div class="content">
+              <h2><span>&#9888;</span> URL YANG DIMINTA DI TOLAK <span>&#9888;</span></h2>
+              <p><b>Silahkan Konsultasikan dengan Call Center UP Layanan Teknologi Informasi dan Komunikasi</b></p>
+              <div class="red-box"><p>Support ID Anda : <span id="sp-id">4499979717396997446</span></p></div>
+          </div>
+      </body>
+      </html>
+    `;
+    const mockResponse = {
+      data: mockFirewallHtml,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+      config: { headers: {} } as unknown,
+    };
+    // Jalankan melalui interceptor response axiosInstance agar terdeteksi secara otomatis
+    const handlers = (
+      axiosInstance.interceptors.response as unknown as {
+        handlers: Array<{ fulfilled: (res: unknown) => unknown }>;
+      }
+    ).handlers;
+    if (handlers && handlers[0] && handlers[0].fulfilled) {
+      await handlers[0].fulfilled(mockResponse);
+    }
   }
 
   const activeFilter =
@@ -122,7 +156,7 @@ function serverParams(params: DataTableParams): void {
   void params;
 }
 
-function setSimulateError(mode?: '409' | '422' | 'network') {
+function setSimulateError(mode?: '409' | '422' | 'network' | 'firewall') {
   if (!mode) {
     serverExtraParams.value = {};
   } else {
@@ -428,6 +462,15 @@ function getRankBadgeVariant(rank: string): 'default' | 'secondary' | 'outline' 
             >
               <WifiOff class="size-3.5" />
               Uji Error Jaringan (Retryable)
+            </Button>
+            <Button
+              :variant="serverExtraParams.simulate_error === 'firewall' ? 'destructive' : 'outline'"
+              size="sm"
+              class="gap-1.5 text-xs"
+              @click="setSimulateError('firewall')"
+            >
+              <ShieldAlert class="size-3.5" />
+              Uji Firewall Block (200 HTML)
             </Button>
           </div>
         </div>

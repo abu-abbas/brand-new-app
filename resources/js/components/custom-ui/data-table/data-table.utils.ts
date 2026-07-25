@@ -200,6 +200,8 @@ export function normalizeError(error: unknown): DataTableError {
         code?: string;
         retryable?: boolean;
         errors?: Record<string, unknown>;
+        support_id?: string;
+        whatsapp_url?: string;
       };
       headers?: Record<string, string>;
     };
@@ -212,7 +214,7 @@ export function normalizeError(error: unknown): DataTableError {
       rawMessage,
     );
 
-  return {
+  const result: DataTableError = {
     message: isTechnicalError ? 'Terjadi kesalahan saat memuat data.' : rawMessage,
     code: data?.code,
     retryable:
@@ -220,6 +222,18 @@ export function normalizeError(error: unknown): DataTableError {
     validationErrors: data?.errors,
     requestId: candidate?.requestId ?? candidate?.response?.headers?.['x-request-id'],
   };
+
+  const supportId = (data as Record<string, unknown>)?.support_id;
+  if (typeof supportId === 'string') {
+    result.supportId = supportId;
+  }
+
+  const whatsappUrl = (data as Record<string, unknown>)?.whatsapp_url;
+  if (typeof whatsappUrl === 'string') {
+    result.whatsappUrl = whatsappUrl;
+  }
+
+  return result;
 }
 
 export function clearDataTableMemory(): void {

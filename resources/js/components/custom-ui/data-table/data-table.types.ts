@@ -85,6 +85,8 @@ export interface DataTableError {
   retryable: boolean;
   validationErrors?: Record<string, unknown>;
   requestId?: string;
+  supportId?: string;
+  whatsappUrl?: string;
 }
 
 export interface DataTableInstance {
