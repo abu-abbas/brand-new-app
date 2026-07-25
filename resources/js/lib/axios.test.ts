@@ -1,24 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extractSupportId, extractPhoneNumber, buildWhatsappUrl, isFirewallBlocked } from './axios';
-
-const mockFirewallHtml = `
-<!DOCTYPE html>
-<html>
-<head><title>Firewall Blocked</title></head>
-<body>
-    <div class="content">
-        <h2><span>&#9888;</span> URL YANG DIMINTA DI TOLAK <span>&#9888;</span></h2>
-        <p><b>Silahkan Konsultasikan dengan Call Center UP Layanan Teknologi Informasi dan Komunikasi</b></p>
-        <div class="red-box">
-            <p>Support ID Anda : <span id="sp-id">
-                4499979717396997446
-            </span></p>
-        </div>
-        <h3><a id="wa_ccltik" href="#">&#128222;+6281313588684</a></h3>
-    </div>
-</body>
-</html>
-`;
+import mockFirewallHtml from '../../views/support-id.blade.php?raw';
 
 describe('Axios Firewall Interceptor', () => {
   it('dapat mendeteksi respons HTML firewall block', () => {

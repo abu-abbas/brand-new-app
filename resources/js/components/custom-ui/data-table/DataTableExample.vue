@@ -25,6 +25,8 @@ import { UserManagementFacade } from '@/modules/user-management/api/user-managem
 import type { UsersIndexParams } from '@/api/generated/models';
 import { axiosInstance } from '@/lib/axios';
 
+import supportIdBlade from '../../../../views/support-id.blade.php?raw';
+
 // ==========================================
 // 1. DATA & TYPES: USER MANAGEMENT (LOCAL & SERVER)
 // ==========================================
@@ -90,19 +92,8 @@ const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
   }
 
   if (params.simulate_error === 'firewall') {
-    // Simulasi respons HTTP 200 dari Firewall yang membawa HTML support-id
-    const mockFirewallHtml = `
-      <!DOCTYPE html>
-      <html>
-      <body>
-          <div class="content">
-              <h2><span>&#9888;</span> URL YANG DIMINTA DI TOLAK <span>&#9888;</span></h2>
-              <p><b>Silahkan Konsultasikan dengan Call Center UP Layanan Teknologi Informasi dan Komunikasi</b></p>
-              <div class="red-box"><p>Support ID Anda : <span id="sp-id">4499979717396997446</span></p></div>
-          </div>
-      </body>
-      </html>
-    `;
+    // Membaca langsung isi file support-id.blade.php via Vite ?raw import
+    const mockFirewallHtml = supportIdBlade;
     const mockResponse = {
       data: mockFirewallHtml,
       status: 200,
@@ -111,13 +102,13 @@ const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
       config: { headers: {} } as unknown,
     };
     // Jalankan melalui interceptor response axiosInstance agar terdeteksi secara otomatis
-    const handlers = (
+    const handler = (
       axiosInstance.interceptors.response as unknown as {
         handlers: Array<{ fulfilled: (res: unknown) => unknown }>;
       }
-    ).handlers;
-    if (handlers && handlers[0] && handlers[0].fulfilled) {
-      await handlers[0].fulfilled(mockResponse);
+    ).handlers?.[0];
+    if (handler) {
+      await handler.fulfilled(mockResponse);
     }
   }
 

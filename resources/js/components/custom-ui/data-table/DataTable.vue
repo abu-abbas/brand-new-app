@@ -861,20 +861,27 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
             <slot name="expand" :row="row" :expanded="detailExpandedRow === row" />
           </template>
         </ElTableColumn>
-        <ElTableColumn v-if="selection" width="48" fixed="left" align="center">
+        <ElTableColumn
+          v-if="selection"
+          width="48"
+          fixed="left"
+          align="center"
+          header-align="center"
+        >
           <template #header>
-            <Checkbox
-              v-if="selection === 'multiple'"
-              :model-value="pageSelection"
-              :disabled="selectableRows.length === 0"
-              class="mx-auto"
-              aria-label="Pilih semua baris di halaman ini"
-              @update:model-value="(value) => togglePage(value === true)"
-            />
-            <span v-else class="sr-only">Pilih</span>
+            <div class="flex items-center justify-center w-full">
+              <Checkbox
+                v-if="selection === 'multiple'"
+                :model-value="pageSelection"
+                :disabled="selectableRows.length === 0"
+                aria-label="Pilih semua baris di halaman ini"
+                @update:model-value="(value) => togglePage(value === true)"
+              />
+              <span v-else class="sr-only">Pilih</span>
+            </div>
           </template>
           <template #default="{ row }">
-            <div class="flex justify-center">
+            <div class="flex items-center justify-center w-full">
               <Checkbox
                 v-if="selection === 'multiple'"
                 :model-value="selectedKeys.has(rowIdentity(row))"
@@ -885,6 +892,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               <RadioGroup
                 v-else
                 :model-value="String([...selectedKeys.keys()][0] ?? '')"
+                class="flex items-center justify-center"
                 @update:model-value="selectSingle(row)"
               >
                 <RadioGroupItem
@@ -1191,6 +1199,18 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
 :deep(.el-table__cell .cell) {
   display: flex;
   align-items: flex-start;
+}
+
+:deep(.el-table__cell.is-center .cell) {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+:deep(.el-table__cell.is-right .cell) {
+  justify-content: flex-end;
+  align-items: center;
+  text-align: right;
 }
 
 :deep(.el-table__indent) {
