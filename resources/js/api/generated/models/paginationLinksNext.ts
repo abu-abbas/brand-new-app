@@ -5,7 +5,4 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * @minimum 1
- */
-export type UsersIndex200MetaFrom = number | null;
+export type PaginationLinksNext = string | null;

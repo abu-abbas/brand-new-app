@@ -5,11 +5,11 @@
  * OpenAPI spec version: 0.0.1
  */
 import type { UserResource } from './userResource';
-import type { UsersIndex200Links } from './usersIndex200Links';
-import type { UsersIndex200Meta } from './usersIndex200Meta';
+import type { PaginationLinks } from './paginationLinks';
+import type { PaginationMeta } from './paginationMeta';
 
 export type UsersIndex200 = {
   data: UserResource[];
-  links: UsersIndex200Links;
-  meta: UsersIndex200Meta;
+  links: PaginationLinks;
+  meta: PaginationMeta;
 };

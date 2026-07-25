@@ -6,7 +6,6 @@
  */
 
 /**
- * Number of the last item in the slice.
- * @minimum 1
+ * Base path for paginator generated URLs.
  */
-export type UsersIndex200MetaTo = number | null;
+export type PaginationMetaPath = string | null;

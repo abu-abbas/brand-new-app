@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type UsersIndex200LinksPrev = string | null;
+export type PaginationLinksPrev = string | null;

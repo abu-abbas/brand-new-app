@@ -5,4 +5,4 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type UsersIndex200MetaLinksItemUrl = string | null;
+export type PaginationMetaLinksItemUrl = string | null;

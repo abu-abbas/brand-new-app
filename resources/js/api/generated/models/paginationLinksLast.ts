@@ -5,7 +5,4 @@
  * OpenAPI spec version: 0.0.1
  */
 
-/**
- * Base path for paginator generated URLs.
- */
-export type UsersIndex200MetaPath = string | null;
+export type PaginationLinksLast = string | null;

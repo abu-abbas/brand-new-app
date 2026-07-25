@@ -4,22 +4,22 @@
  * Laravel
  * OpenAPI spec version: 0.0.1
  */
-import type { UsersIndex200MetaFrom } from './usersIndex200MetaFrom';
-import type { UsersIndex200MetaLinksItem } from './usersIndex200MetaLinksItem';
-import type { UsersIndex200MetaPath } from './usersIndex200MetaPath';
-import type { UsersIndex200MetaTo } from './usersIndex200MetaTo';
+import type { PaginationMetaFrom } from './paginationMetaFrom';
+import type { PaginationMetaLinksItem } from './paginationMetaLinksItem';
+import type { PaginationMetaPath } from './paginationMetaPath';
+import type { PaginationMetaTo } from './paginationMetaTo';
 
-export type UsersIndex200Meta = {
+export interface PaginationMeta {
   /** @minimum 1 */
   current_page: number;
   /** @minimum 1 */
-  from: UsersIndex200MetaFrom;
+  from: PaginationMetaFrom;
   /** @minimum 1 */
   last_page: number;
   /** Generated paginator links. */
-  links: UsersIndex200MetaLinksItem[];
+  links: PaginationMetaLinksItem[];
   /** Base path for paginator generated URLs. */
-  path: UsersIndex200MetaPath;
+  path: PaginationMetaPath;
   /**
    * Number of items shown per page.
    * @minimum 0
@@ -29,10 +29,10 @@ export type UsersIndex200Meta = {
    * Number of the last item in the slice.
    * @minimum 1
    */
-  to: UsersIndex200MetaTo;
+  to: PaginationMetaTo;
   /**
    * Total number of items being paginated.
    * @minimum 0
    */
   total: number;
-};
+}

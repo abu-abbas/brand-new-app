@@ -8,4 +8,4 @@
 /**
  * A detailed description of each field that failed validation.
  */
-export type ValidationExceptionResponseErrors = { [key: string]: string[] };
+export type ValidationExceptionResponseErrors = {[key: string]: string[]};

@@ -17,3 +17,5 @@ docs
 # error-definition-framework contract; Prettier's quoteProps would strip it
 # and break `php artisan error-definition:generate --check`.
 resources/js/generated
+# Orval generated client — auto-generated, jangan di-format manual.
+resources/js/api/generated

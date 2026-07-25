@@ -6,21 +6,20 @@
  */
 
 export type UsersIndexParams = {
-  /**
-   * @minimum 1
-   */
-  page?: number | null;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  per_page?: number | null;
-  /**
-   * @maxLength 100
-   */
-  search?: string | null;
-  sort_by?:
-    'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
-  sort_direction?: 'asc' | 'desc' | null;
-  active?: 'true' | 'false' | '1' | '0' | null;
+/**
+ * @minimum 1
+ */
+page?: number | null;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number | null;
+/**
+ * @maxLength 100
+ */
+search?: string | null;
+sort_by?: 'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
+sort_direction?: 'asc' | 'desc' | null;
+active?: 'true' | 'false' | '1' | '0' | null;
 };

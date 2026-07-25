@@ -21,6 +21,7 @@ export default tseslint.config(
       'dist/**',
       '.vscode/**',
       '**/*.php',
+      'resources/js/api/generated/**',
       'resources/js/generated/**',
     ],
   },

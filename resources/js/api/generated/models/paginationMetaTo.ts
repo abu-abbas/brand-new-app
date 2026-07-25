@@ -5,4 +5,8 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export type UsersIndex200LinksLast = string | null;
+/**
+ * Number of the last item in the slice.
+ * @minimum 1
+ */
+export type PaginationMetaTo = number | null;
