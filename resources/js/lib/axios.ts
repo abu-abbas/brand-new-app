@@ -1,4 +1,4 @@
-import axios, { type AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 
 export const axiosInstance = axios.create({
   baseURL: '/api',
@@ -17,8 +17,92 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+export function extractSupportId(html: string): string | null {
+  const spanMatch = html.match(/<span[^>]*id=["']sp-id["'][^>]*>([\s\S]*?)<\/span>/i);
+  if (spanMatch && spanMatch[1]) {
+    const extracted = spanMatch[1].trim();
+    if (extracted) return extracted;
+  }
+
+  const textMatch = html.match(/Support ID Anda\s*:\s*([\d\w-]+)/i);
+  if (textMatch && textMatch[1]) {
+    return textMatch[1].trim();
+  }
+
+  return null;
+}
+
+export function extractPhoneNumber(html: string): string | null {
+  const waMatch = html.match(/phone=([0-9]+)/i);
+  if (waMatch && waMatch[1]) {
+    return waMatch[1].trim();
+  }
+
+  const textMatch = html.match(/(\+?62\d{9,13})/i);
+  if (textMatch && textMatch[1]) {
+    return textMatch[1].replace(/^\+/, '').trim();
+  }
+
+  return null;
+}
+
+export function buildWhatsappUrl(
+  phoneNumber: string | null,
+  supportId: string | null,
+): string | null {
+  if (!phoneNumber) return null;
+  const cleanPhone = phoneNumber.replace(/^\+/, '');
+  const messageText = supportId
+    ? `Halo Admin Saya terkena Support id ${supportId}`
+    : 'Halo Admin Saya terkena penolakan firewall';
+  return `https://api.whatsapp.com/send/?phone=${cleanPhone}&type=phone_number&app_absent=0&text=${encodeURIComponent(messageText)}`;
+}
+
+export function isFirewallBlocked(data: string): boolean {
+  if (typeof data !== 'string') return false;
+  return (
+    data.includes('URL YANG DIMINTA DI TOLAK') ||
+    data.includes('URL YANG DIMINTA DITOLAK') ||
+    data.includes('id="sp-id"') ||
+    data.includes('Support ID Anda')
+  );
+}
+
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Deteksi jika response status 2xx tetapi berisi HTML block dari firewall
+    if (typeof response.data === 'string' && isFirewallBlocked(response.data)) {
+      const supportId = extractSupportId(response.data);
+      const phoneNumber = extractPhoneNumber(response.data) || '6281313588684';
+      const whatsappUrl = buildWhatsappUrl(phoneNumber, supportId);
+
+      const message = 'Permintaan ditolak oleh firewall. Silakan hubungi Call Center.';
+
+      const firewallError = new AxiosError(
+        message,
+        'ERR_FIREWALL_BLOCKED',
+        response.config,
+        response.request,
+        {
+          ...response,
+          status: 403,
+          statusText: 'Forbidden (Firewall Blocked)',
+          data: {
+            message,
+            code: 'SYS-FW-001',
+            retryable: false,
+            support_id: supportId,
+            phone_number: phoneNumber,
+            whatsapp_url: whatsappUrl,
+          },
+        },
+      );
+
+      return Promise.reject(firewallError);
+    }
+
+    return response;
+  },
   (error) => {
     // 422 validation error diserahkan ke penangan form / caller
     if (error.response?.status === 422) {
