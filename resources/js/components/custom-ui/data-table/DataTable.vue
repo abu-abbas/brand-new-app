@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
+  X,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -788,13 +789,27 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
           />
           <Input
             v-model="searchDraft"
-            class="pl-9"
+            :class="
+              cn(
+                'pl-9 [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-cancel-button]:hidden',
+                searchDraft && 'pr-9',
+              )
+            "
             type="search"
             placeholder="Pencarian..."
             aria-label="Cari data"
             @keydown.enter="submitSearch($event)"
             @search="clearSearch"
           />
+          <button
+            v-if="searchDraft"
+            type="button"
+            class="absolute top-1/2 right-2.5 -translate-y-1/2 text-muted-foreground/75 hover:text-foreground transition-colors cursor-pointer p-0.5 rounded-xs"
+            aria-label="Hapus pencarian"
+            @click="clearSearch"
+          >
+            <X class="size-4" />
+          </button>
         </div>
       </div>
     </header>
