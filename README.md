@@ -24,6 +24,10 @@ Aplikasi kerangka kerja (dashboard admin) modern yang dibangun menggunakan perpa
   - **Lucide Vue** (Ikon UI)
 - **State & Core Utilities**: `@vueuse/core`
 
+## Dokumentasi Arsitektur & Alur
+
+- 📖 [Alur Request & Response (Vue ↔ Laravel API)](docs/request-response-flow.md) — Panduan lengkap alur pemanggilan API dari Vue Component, Query Hook, Facade, Orval Generated Client/Types, hingga Controller, Service, dan Scramble OpenAPI Spec. Menjelaskan perbedaan file buatan programmer (manual) vs auto-generated.
+
 ## Cara Menjalankan Project
 
 1. Pastikan seluruh dependensi frontend terinstall:
