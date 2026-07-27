@@ -31,8 +31,7 @@ const emit = defineEmits<{
 }>();
 
 const isCopied = ref(false);
-let timer: ReturnType<typeof window.setTimeout> | ReturnType<typeof setTimeout> | number | null =
-  null;
+let timer: ReturnType<typeof window.setTimeout> | number | null = null;
 
 async function handleCopy() {
   if (!props.text) return;
@@ -64,14 +63,19 @@ async function handleCopy() {
     :size="size"
     :class="
       cn(
-        'gap-1.5 font-medium transition-all text-xs text-muted-foreground hover:text-foreground',
-        isCopied && 'text-emerald-500 hover:text-emerald-600',
+        'gap-1.5 font-medium transition-all text-xs',
+        variant === 'ghost' && 'text-muted-foreground hover:text-foreground',
+        isCopied && variant === 'ghost' && 'text-emerald-500 hover:text-emerald-600',
+        isCopied && variant !== 'ghost' && 'bg-emerald-600 text-white hover:bg-emerald-700',
         props.class,
       )
     "
     @click="handleCopy"
   >
-    <Check v-if="isCopied" class="size-3.5 text-emerald-500 shrink-0" />
+    <Check
+      v-if="isCopied"
+      :class="cn('size-3.5 shrink-0', variant === 'ghost' && 'text-emerald-500')"
+    />
     <Copy v-else class="size-3.5 shrink-0" />
     <span v-if="showLabel">
       {{ isCopied ? copiedLabel : label }}
