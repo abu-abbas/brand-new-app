@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/* global IntersectionObserver */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { BookOpen, Check, Copy, List, CheckSquare, Square, ChevronRight } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
@@ -179,7 +180,7 @@ function scrollToSection(id: string) {
   }
 }
 
-let observer: { observe: (el: Element) => void; disconnect: () => void } | null = null;
+let observer: IntersectionObserver | null = null;
 
 onMounted(() => {
   if (typeof window === 'undefined' || !window.IntersectionObserver) return;
