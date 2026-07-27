@@ -13,6 +13,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { MarkdownText } from '@/components/custom-ui/markdown-text';
 import DataTable from './DataTable.vue';
 import type {
@@ -65,6 +73,14 @@ const userFilters = [
     key: 'active',
     label: 'Status',
     type: 'boolean' as const,
+  },
+];
+
+const serverFilters = [
+  {
+    key: 'active',
+    label: 'Status',
+    type: 'custom' as const,
   },
 ];
 
@@ -468,16 +484,37 @@ function getRankBadgeVariant(rank: string): 'default' | 'secondary' | 'outline' 
 
         <!-- Component DataTable Server dengan error handling internal -->
         <DataTable
-          title="Daftar Pengguna Server)"
+          title="Daftar Pengguna Server"
           query-key="users-server"
           :fetcher="serverFetcher"
           :fields="userFields"
-          :filters="userFilters"
+          :filters="serverFilters"
           :extra-params="serverExtraParams"
           remember="users-server-demo"
           row-key="id"
           @params-change="serverParams"
         >
+          <template #filter(active)="{ value, setValue, disabled }">
+            <Select
+              :model-value="value == null ? '__all__' : String(value)"
+              :disabled="Boolean(disabled)"
+              @update:model-value="
+                (val) =>
+                  (setValue as (v: unknown) => void)(val === '__all__' ? undefined : val === 'true')
+              "
+            >
+              <SelectTrigger class="w-full">
+                <SelectValue placeholder="Pilih status (Custom Dropdown)..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="__all__">Semua Status</SelectItem>
+                  <SelectItem value="true">User Aktif</SelectItem>
+                  <SelectItem value="false">User Nonaktif</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </template>
           <template #cell(active)="{ value }">
             <Badge :variant="value ? 'default' : 'secondary'">
               {{ value ? 'Aktif' : 'Nonaktif' }}

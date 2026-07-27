@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from '@lucide/vue';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -145,7 +146,8 @@ const emit = defineEmits<{
 
 const instanceKey = `datatable-${getCurrentInstance()?.uid ?? Math.random()}`;
 const slots = defineSlots<{
-  [name: string]: (props: Record<string, unknown>) => unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [name: string]: (props: any) => any;
 }>();
 const mounted = ref(false);
 const page = ref(1);
@@ -447,12 +449,23 @@ function changeSort(field: DataTableField<T>, event: { shiftKey: boolean }): voi
   page.value = 1;
 }
 
+function isFilterDisabled(filterKey: string): boolean {
+  const isColumn = searchableFields.value.some((field) => field.key === filterKey);
+  if (!isColumn) return false;
+  return !draftSearchFields.value.includes(filterKey);
+}
+
 function applyFilters(): void {
+  const enabledFields = new Set(draftSearchFields.value);
   activeFilters.value = Object.fromEntries(
     Object.entries(draftFilters.value)
-      .filter(([, value]) => (Array.isArray(value) ? value.length : value !== '' && value != null))
+      .filter(([key, value]) => {
+        const isColumn = searchableFields.value.some((field) => field.key === key);
+        if (isColumn && !enabledFields.has(key)) return false;
+        return Array.isArray(value) ? value.length : value !== '' && value != null;
+      })
       .map(([key, value]) => {
-        const definition = props.filters.find((filter) => filter.key === key);
+        const definition = props.filters?.find((filter) => filter.key === key);
         return [key, definition?.serialize ? definition.serialize(value) : value];
       }),
   );
@@ -519,6 +532,10 @@ function toggleSearchField(key: string, selected: boolean): void {
   draftSearchFields.value = selected
     ? [...new Set([...draftSearchFields.value, key])]
     : draftSearchFields.value.filter((field) => field !== key);
+
+  if (!selected) {
+    delete draftFilters.value[key];
+  }
 }
 
 function updateFilterValue(filter: DataTableFilter, value: unknown): void {
@@ -1024,43 +1041,52 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
     </footer>
 
     <Sheet v-model:open="filterOpen">
-      <SheetContent class="p-2.5">
-        <SheetHeader>
+      <SheetContent class="flex flex-col gap-0 p-0 h-full max-h-screen">
+        <SheetHeader class="p-4 border-b shrink-0">
           <SheetTitle>Filter data</SheetTitle>
           <SheetDescription>Pilih kolom pencarian dan filter, lalu terapkan.</SheetDescription>
         </SheetHeader>
 
-        <div class="flex flex-col gap-6 overflow-y-auto px-4">
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-6 min-h-0">
           <fieldset class="flex flex-col gap-2">
-            <legend class="mb-2 font-medium">Filter Kolom</legend>
-            <label
-              v-for="field in searchableFields.filter((item) => item.filterColumn !== false)"
-              :key="field.key"
-              class="flex items-center gap-2 text-sm"
-            >
-              <Checkbox
-                :model-value="draftSearchFields.includes(field.key)"
-                @update:model-value="toggleSearchField(field.key, Boolean($event))"
-              />
-              {{ field.label }}
-            </label>
+            <legend class="text-sm font-medium">Filter Kolom</legend>
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              <Badge
+                v-for="field in searchableFields.filter((item) => item.filterColumn !== false)"
+                :key="field.key"
+                :variant="draftSearchFields.includes(field.key) ? 'default' : 'outline'"
+                class="cursor-pointer select-none transition-all px-2.5 py-1 text-xs font-normal"
+                @click="toggleSearchField(field.key, !draftSearchFields.includes(field.key))"
+              >
+                {{ field.label }}
+              </Badge>
+            </div>
           </fieldset>
 
-          <div v-for="filter in filters" :key="filter.key" class="flex flex-col gap-2">
-            <label class="text-sm font-medium" :for="`datatable-filter-${filter.key}`">{{
-              filter.label
-            }}</label>
+          <div
+            v-for="filter in filters"
+            :key="filter.key"
+            class="flex flex-col gap-2"
+            :class="{ 'opacity-50': isFilterDisabled(filter.key) }"
+          >
+            <div class="flex items-center justify-between">
+              <label class="text-sm font-medium" :for="`datatable-filter-${filter.key}`">
+                {{ filter.label }}
+              </label>
+            </div>
             <slot
               v-if="filter.type === 'custom'"
               :name="`filter(${filter.key})`"
               :value="draftFilters[filter.key]"
               :set-value="(value: unknown) => (draftFilters[filter.key] = value)"
               :filter="filter"
+              :disabled="isFilterDisabled(filter.key)"
             />
             <Select
               v-else-if="filter.type === 'select' || filter.type === 'multi-select'"
               :model-value="draftFilters[filter.key] as any"
               :multiple="filter.type === 'multi-select'"
+              :disabled="isFilterDisabled(filter.key)"
               @update:model-value="updateFilterValue(filter, $event)"
             >
               <SelectTrigger :id="`datatable-filter-${filter.key}`" class="w-full">
@@ -1084,6 +1110,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               :model-value="
                 draftFilters[filter.key] == null ? undefined : String(draftFilters[filter.key])
               "
+              :disabled="isFilterDisabled(filter.key)"
               @update:model-value="updateFilterValue(filter, $event)"
             >
               <SelectTrigger :id="`datatable-filter-${filter.key}`" class="w-full">
@@ -1101,6 +1128,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               <Input
                 :id="`datatable-filter-${filter.key}-start`"
                 type="date"
+                :disabled="isFilterDisabled(filter.key)"
                 :model-value="
                   String(
                     Array.isArray(draftFilters[filter.key])
@@ -1114,6 +1142,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               <Input
                 :id="`datatable-filter-${filter.key}-end`"
                 type="date"
+                :disabled="isFilterDisabled(filter.key)"
                 :model-value="
                   String(
                     Array.isArray(draftFilters[filter.key])
@@ -1129,19 +1158,21 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
               v-else-if="filter.type === 'date'"
               :id="`datatable-filter-${filter.key}`"
               type="date"
+              :disabled="isFilterDisabled(filter.key)"
               :model-value="String(draftFilters[filter.key] ?? '')"
               @update:model-value="draftFilters[filter.key] = $event"
             />
             <Input
               v-else
               :id="`datatable-filter-${filter.key}`"
+              :disabled="isFilterDisabled(filter.key)"
               :model-value="String(draftFilters[filter.key] ?? '')"
               @update:model-value="draftFilters[filter.key] = $event"
             />
           </div>
         </div>
 
-        <SheetFooter>
+        <SheetFooter class="p-4 border-t shrink-0 flex flex-col gap-2">
           <Button variant="outline" @click="resetFilters">Atur Ulang</Button>
           <Button @click="applyFilters">Terapkan</Button>
         </SheetFooter>
