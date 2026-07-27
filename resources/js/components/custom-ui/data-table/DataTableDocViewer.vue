@@ -218,6 +218,18 @@ onUnmounted(() => {
     observer = null;
   }
 });
+
+function selectAllText(event: MouseEvent) {
+  if (typeof window === 'undefined') return;
+  const target = event.currentTarget as HTMLElement;
+  const selection = window.getSelection();
+  if (selection) {
+    const range = document.createRange();
+    range.selectNodeContents(target);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
 </script>
 
 <template>
@@ -286,16 +298,21 @@ onUnmounted(() => {
               <!-- Code Blocks -->
               <div
                 v-else-if="node.type === 'code'"
-                class="relative group rounded-xl border border-border bg-muted/60 overflow-hidden my-4"
+                class="relative group rounded-xl border-0 bg-muted/60 overflow-hidden my-4"
               >
                 <div
-                  class="flex items-center justify-between px-4 py-1.5 bg-muted/80 border-b border-border text-xs font-mono text-muted-foreground"
+                  class="flex items-center justify-between px-4 py-3 bg-muted/80 border-b border-border/40 text-xs font-mono text-muted-foreground"
                 >
                   <span>{{ node.lang || 'code' }}</span>
-                  <CopyButton :text="node.code" class="h-6 px-2 text-[11px]" />
+                  <CopyButton
+                    :text="node.code"
+                    :show-label="false"
+                    class="h-6 w-6 p-0 text-[11px]"
+                  />
                 </div>
                 <pre
-                  class="p-4 font-mono text-xs leading-relaxed overflow-x-auto text-foreground select-text"
+                  class="p-4 font-mono text-xs leading-relaxed overflow-x-auto text-foreground select-text cursor-pointer"
+                  @click="selectAllText"
                 ><code>{{ node.code }}</code></pre>
               </div>
 
