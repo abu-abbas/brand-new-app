@@ -14,7 +14,7 @@ const props = defineProps<ScrollAreaRootProps & { class?: HTMLAttributes['class'
 
 <template>
   <ScrollAreaRoot v-bind="props" :class="cn('relative overflow-hidden', props.class)">
-    <ScrollAreaViewport class="h-full w-full rounded-[inherit]">
+    <ScrollAreaViewport class="h-full max-h-full w-full rounded-[inherit]">
       <slot />
     </ScrollAreaViewport>
     <ScrollBar />

@@ -230,7 +230,7 @@ onUnmounted(() => {
 
     <!-- Main Content Layout with Sticky Sidebar -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
-      <!-- Main Document Area (lg:col-span-8 or lg:col-span-9) -->
+      <!-- Main Document Area -->
       <main class="min-w-0 lg:col-span-8 xl:col-span-9">
         <Card class="border-border bg-card shadow-xs">
           <CardContent class="p-6 md:p-8 space-y-4">
@@ -342,14 +342,14 @@ onUnmounted(() => {
             </CardTitle>
           </CardHeader>
           <CardContent class="p-0 pb-3">
-            <ScrollArea class="max-h-[calc(100vh-12rem)] px-3">
+            <ScrollArea class="h-[calc(100vh-14rem)] px-3">
               <nav class="flex flex-col space-y-0.5 text-xs pr-2">
                 <button
                   v-for="item in parsedDoc.toc"
                   :key="item.id"
                   type="button"
                   :class="[
-                    'text-left w-full py-1.5 px-2.5 rounded-md transition-colors truncate flex items-center justify-between group',
+                    'text-left w-full py-1.5 px-2.5 rounded-md transition-colors truncate flex items-center justify-between group cursor-pointer',
                     item.level === 3 ? 'pl-5 text-[11px]' : 'font-medium',
                     activeHeadingId === item.id
                       ? 'bg-primary/10 text-primary font-semibold'
