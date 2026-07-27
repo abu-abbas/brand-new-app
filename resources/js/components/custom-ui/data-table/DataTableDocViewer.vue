@@ -179,12 +179,12 @@ function scrollToSection(id: string) {
   }
 }
 
-let observer: IntersectionObserver | null = null;
+let observer: { observe: (el: Element) => void; disconnect: () => void } | null = null;
 
 onMounted(() => {
-  if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+  if (typeof window === 'undefined' || !window.IntersectionObserver) return;
 
-  observer = new IntersectionObserver(
+  observer = new window.IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
