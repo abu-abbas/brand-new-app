@@ -1,7 +1,7 @@
 <?php
 
 return [
-    /*
+  /*
     |--------------------------------------------------------------------------
     | Additional Sensitive Keys
     |--------------------------------------------------------------------------
@@ -13,5 +13,5 @@ return [
     | Contoh: ['nomor_rekening', 'nik', 'no_ktp']
     |
     */
-    'additional_sensitive_keys' => [],
+  'additional_sensitive_keys' => [],
 ];

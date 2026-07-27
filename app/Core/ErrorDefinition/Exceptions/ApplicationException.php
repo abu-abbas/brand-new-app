@@ -17,20 +17,20 @@ use Throwable;
  */
 final class ApplicationException extends RuntimeException
 {
-    /**
-     * @param ResolvedErrorDefinition $definition Definition yang sudah di-resolve
-     * @param array<string, mixed> $context Runtime context untuk logging/debugging
-     * @param Throwable|null $previous Optional previous exception
-     */
-    public function __construct(
-        public readonly ResolvedErrorDefinition $definition,
-        public readonly array $context = [],
-        ?Throwable $previous = null,
-    ) {
-        parent::__construct(
-            message: $definition->message,
-            code: 0,
-            previous: $previous,
-        );
-    }
+  /**
+   * @param ResolvedErrorDefinition $definition Definition yang sudah di-resolve
+   * @param array<string, mixed> $context Runtime context untuk logging/debugging
+   * @param Throwable|null $previous Optional previous exception
+   */
+  public function __construct(
+    public readonly ResolvedErrorDefinition $definition,
+    public readonly array $context = [],
+    ?Throwable $previous = null,
+  ) {
+    parent::__construct(
+      message: $definition->message,
+      code: 0,
+      previous: $previous,
+    );
+  }
 }

@@ -9,10 +9,10 @@ use RuntimeException;
  */
 final class MissingErrorDefinitionException extends RuntimeException
 {
-    public static function forCase(string $enumClass, string $caseName): self
-    {
-        return new self(
-            "Case [{$caseName}] pada [{$enumClass}] tidak memiliki attribute #[ErrorDefinition]."
-        );
-    }
+  public static function forCase(string $enumClass, string $caseName): self
+  {
+    return new self(
+      "Case [{$caseName}] pada [{$enumClass}] tidak memiliki attribute #[ErrorDefinition]."
+    );
+  }
 }
