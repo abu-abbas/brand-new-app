@@ -1,7 +1,8 @@
 <script setup lang="ts">
+/* global setTimeout, clearTimeout */
 import { ref, type HTMLAttributes } from 'vue';
 import { Check, Copy } from '@lucide/vue';
-import { Button, type ButtonProps } from '@/components/ui/button';
+import { Button, type ButtonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const props = withDefaults(
@@ -10,8 +11,8 @@ const props = withDefaults(
     label?: string;
     copiedLabel?: string;
     duration?: number;
-    variant?: ButtonProps['variant'];
-    size?: ButtonProps['size'];
+    variant?: ButtonVariants['variant'];
+    size?: ButtonVariants['size'];
     showLabel?: boolean;
     class?: HTMLAttributes['class'];
   }>(),
@@ -31,7 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const isCopied = ref(false);
-let timer: ReturnType<typeof setTimeout> | null = null;
+let timer: ReturnType<typeof window.setTimeout> | null = null;
 
 async function handleCopy() {
   if (!props.text) return;
@@ -43,13 +44,15 @@ async function handleCopy() {
     isCopied.value = true;
     emit('copy', { text: props.text, success: true });
 
-    if (timer) clearTimeout(timer);
+    if (timer !== null && typeof window !== 'undefined') {
+      window.clearTimeout(timer);
+    }
     if (typeof window !== 'undefined') {
       timer = window.setTimeout(() => {
         isCopied.value = false;
       }, props.duration);
     }
-  } catch (error) {
+  } catch (_error) {
     emit('copy', { text: props.text, success: false });
   }
 }

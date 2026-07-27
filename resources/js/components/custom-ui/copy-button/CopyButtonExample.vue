@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { Copy, Sparkles, Code, Terminal, Key } from '@lucide/vue';
+import { Copy, Sparkles, Code, Terminal } from '@lucide/vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import CopyButton from './CopyButton.vue';
@@ -80,7 +80,7 @@ function onCopySuccess(payload: { text: string; success: boolean }) {
           <CopyButton
             :text="sampleCodeSnippet"
             label="Salin Kode"
-            copiedLabel="Kode Tersalin!"
+            copied-label="Kode Tersalin!"
             variant="secondary"
           />
         </div>

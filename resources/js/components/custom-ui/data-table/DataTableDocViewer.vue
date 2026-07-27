@@ -2,7 +2,6 @@
 /* global IntersectionObserver */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { BookOpen, List, CheckSquare, Square, ChevronRight } from '@lucide/vue';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MarkdownText } from '@/components/custom-ui/markdown-text';
