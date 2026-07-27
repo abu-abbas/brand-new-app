@@ -53,6 +53,16 @@
                         }
                     },
                     {
+                        "name": "search_fields[]",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    {
                         "name": "sort_by",
                         "in": "query",
                         "schema": {

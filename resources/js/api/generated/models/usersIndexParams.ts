@@ -19,6 +19,7 @@ per_page?: number | null;
  * @maxLength 100
  */
 search?: string | null;
+'search_fields[]'?: string[];
 sort_by?: 'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
 sort_direction?: 'asc' | 'desc' | null;
 active?: 'true' | 'false' | '1' | '0' | null;

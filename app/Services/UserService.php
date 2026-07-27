@@ -12,6 +12,7 @@ class UserService
    *     page?: int|string,
    *     per_page?: int|string,
    *     search?: string|null,
+   *     search_fields?: array<string>|null,
    *     sort_by?: string|null,
    *     sort_direction?: string|null,
    *     active?: string|null
@@ -21,16 +22,46 @@ class UserService
   {
     $query = User::query();
 
-    // Search multi-kolom
+    // Search multi-kolom berdasarkan search_fields yang dipilih
     if (!empty($params['search'])) {
       $search = trim($params['search']);
-      $query->where(function ($q) use ($search) {
-        $q->where('name', 'like', "%{$search}%")
-          ->orWhere('username', 'like', "%{$search}%")
-          ->orWhere('email', 'like', "%{$search}%")
-          ->orWhere('unit_name', 'like', "%{$search}%")
-          ->orWhere('role', 'like', "%{$search}%");
-      });
+      $searchFields = $params['search_fields'] ?? [];
+
+      $fieldMap = [
+        'name' => 'name',
+        'username' => 'username',
+        'email' => 'email',
+        'unit.name' => 'unit_name',
+        'unit_name' => 'unit_name',
+        'roles' => 'role',
+        'role' => 'role',
+      ];
+
+      if (!empty($searchFields) && is_array($searchFields)) {
+        $columnsToSearch = [];
+        foreach ($searchFields as $fieldKey) {
+          if (isset($fieldMap[$fieldKey])) {
+            $columnsToSearch[] = $fieldMap[$fieldKey];
+          }
+        }
+        $columnsToSearch = array_unique($columnsToSearch);
+      } else {
+        $columnsToSearch = ['name', 'username', 'email', 'unit_name', 'role'];
+      }
+
+      if (!empty($columnsToSearch)) {
+        $query->where(function ($q) use ($search, $columnsToSearch) {
+          $first = true;
+          foreach ($columnsToSearch as $column) {
+            if ($first) {
+              $q->where($column, 'like', "%{$search}%");
+              $first = false;
+            } else {
+              $q->orWhere($column, 'like', "%{$search}%");
+            }
+          }
+        });
+      }
     }
 
     // Filter status active
