@@ -1,11 +1,12 @@
 <script setup lang="ts">
 /* global IntersectionObserver */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { BookOpen, Check, Copy, List, CheckSquare, Square, ChevronRight } from '@lucide/vue';
+import { BookOpen, List, CheckSquare, Square, ChevronRight } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MarkdownText } from '@/components/custom-ui/markdown-text';
+import { CopyButton } from '@/components/custom-ui/copy-button';
 
 const props = defineProps<{
   content: string;
@@ -153,22 +154,7 @@ const parsedDoc = computed(() => {
   return { nodes, toc };
 });
 
-const copiedIndex = ref<number | null>(null);
 const activeHeadingId = ref<string>('');
-
-function copyCode(code: string, index: number) {
-  if (typeof window !== 'undefined' && window.navigator?.clipboard) {
-    void window.navigator.clipboard.writeText(code);
-  }
-  copiedIndex.value = index;
-  if (typeof window !== 'undefined') {
-    window.setTimeout(() => {
-      if (copiedIndex.value === index) {
-        copiedIndex.value = null;
-      }
-    }, 2000);
-  }
-}
 
 function scrollToSection(id: string) {
   if (typeof document !== 'undefined') {
@@ -271,16 +257,7 @@ onUnmounted(() => {
                   class="flex items-center justify-between px-4 py-1.5 bg-muted/80 border-b border-border text-xs font-mono text-muted-foreground"
                 >
                   <span>{{ node.lang || 'code' }}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="h-6 px-2 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
-                    @click="copyCode(node.code, index)"
-                  >
-                    <Check v-if="copiedIndex === index" class="size-3 text-emerald-500" />
-                    <Copy v-else class="size-3" />
-                    {{ copiedIndex === index ? 'Tersalin' : 'Salin' }}
-                  </Button>
+                  <CopyButton :text="node.code" class="h-6 px-2 text-[11px]" />
                 </div>
                 <pre
                   class="p-4 font-mono text-xs leading-relaxed overflow-x-auto text-foreground select-text"

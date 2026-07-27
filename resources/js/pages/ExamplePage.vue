@@ -10,6 +10,7 @@ import {
   Sparkles,
   FileText,
   SquareStack,
+  Copy,
 } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -48,6 +49,7 @@ const icons: Record<string, Component> = {
   'border-beam': Sparkles,
   'markdown-text': FileText,
   modal: SquareStack,
+  'copy-button': Copy,
 };
 
 const examples: CustomComponentExample[] = Object.entries(exampleFiles).map(([path, mod]) => {
