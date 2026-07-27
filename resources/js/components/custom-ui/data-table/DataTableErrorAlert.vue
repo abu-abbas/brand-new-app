@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { AlertCircle, Check, Copy, RefreshCw, MessageCircle } from '@lucide/vue';
-import { useClipboard } from '@vueuse/core';
+import { AlertCircle, RefreshCw, MessageCircle } from '@lucide/vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { CopyButton } from '@/components/custom-ui/copy-button';
 import type { DataTableError } from './data-table.types';
 
 defineProps<{
@@ -13,16 +13,6 @@ defineProps<{
 defineEmits<{
   retry: [];
 }>();
-
-const { copy: copyRequestId, copied: requestIdCopied } = useClipboard({
-  copiedDuring: 1500,
-  legacy: true,
-});
-
-const { copy: copySupportId, copied: supportIdCopied } = useClipboard({
-  copiedDuring: 1500,
-  legacy: true,
-});
 </script>
 
 <template>
@@ -97,14 +87,13 @@ const { copy: copySupportId, copied: supportIdCopied } = useClipboard({
           }"
         >
           <span class="truncate">Support ID: {{ error.supportId }}</span>
-          <button
-            type="button"
-            class="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-muted hover:text-foreground"
-            @click="copySupportId(error.supportId)"
-          >
-            <Check v-if="supportIdCopied" class="size-3 text-emerald-600" />
-            <Copy v-else class="size-3" />
-          </button>
+          <CopyButton
+            :text="error.supportId"
+            :show-label="false"
+            size="icon-xs"
+            variant="ghost"
+            class="shrink-0"
+          />
         </div>
 
         <div
@@ -115,14 +104,13 @@ const { copy: copySupportId, copied: supportIdCopied } = useClipboard({
           }"
         >
           <span class="truncate">Request ID: {{ error.requestId }}</span>
-          <button
-            type="button"
-            class="inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-muted hover:text-foreground"
-            @click="copyRequestId(error.requestId)"
-          >
-            <Check v-if="requestIdCopied" class="size-3" />
-            <Copy v-else class="size-3" />
-          </button>
+          <CopyButton
+            :text="error.requestId"
+            :show-label="false"
+            size="icon-xs"
+            variant="ghost"
+            class="shrink-0"
+          />
         </div>
       </AlertDescription>
     </Alert>
@@ -142,9 +130,9 @@ const { copy: copySupportId, copied: supportIdCopied } = useClipboard({
           </AlertTitle>
         </div>
         <Button
-          variant="secondary"
+          variant="outline"
           size="sm"
-          class="shrink-0 text-xs text-destructive"
+          class="shrink-0 gap-1.5 border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
           @click="$emit('retry')"
         >
           <RefreshCw class="size-3.5" />

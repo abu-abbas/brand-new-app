@@ -172,12 +172,11 @@ interface LaravelDataTableResponse<T> {
     to: number | null;
     total: number;
   };
-  message: string;
+  message?: string;
 }
 ```
 
-DataTable menghitung pagination dari `meta.current_page`, `meta.last_page`, `meta.per_page`, dan
-`meta.total`. URL pada `meta.links` tidak diikuti.
+Catatan: Pada kontrak Scramble / Orval generated client standar Laravel ResourceCollection, field `message` bersifat opsional (`message?: string`). DataTable menghitung pagination dari `meta.current_page`, `meta.last_page`, `meta.per_page`, dan `meta.total`. URL pada `meta.links` tidak diikuti.
 
 ### 4.5 Error
 
@@ -208,17 +207,33 @@ Validation error `422`:
 }
 ```
 
-Aturan:
+Payload Error Terkini (`DataTableError`):
+
+```ts
+interface DataTableError {
+  message: string;
+  code?: string;
+  retryable: boolean;
+  validationErrors?: Record<string, unknown>;
+  requestId?: string;
+  supportId?: string;
+  whatsappUrl?: string;
+}
+```
+
+Aturan & Fitur Error Handling:
 
 - branching memakai `code`, status, dan `retryable`, bukan teks `message`;
-- initial load gagal mempertahankan header/footer dan menampilkan error pada body;
-- `message` contract digunakan sebagai pesan publik; network/unknown error memakai pesan generik;
+- initial load gagal mempertahankan header/footer dan menampilkan error state terpusat via `DataTableErrorAlert.vue`;
+- `message` contract digunakan sebagai pesan publik; network/technical error di-normalize ke pesan generik ramah pengguna ("Terjadi kesalahan saat memuat data.");
 - `retryable: true` menampilkan tombol **Coba lagi**;
-- `422` menampilkan top-level message dan meneruskan structured `errors` melalui event;
+- `422` menampilkan top-level message dan meneruskan structured `errors` per-field lengkap dengan badge error code;
+- jika backend mengembalikan `support_id`, UI menyediakan **Copy Button** untuk menyalin Support ID;
+- jika backend mengembalikan `whatsapp_url`, UI menampilkan tombol langsung **Hubungi Call Center via WhatsApp**;
 - `401` mengikuti handler autentikasi global;
 - `403` dan application error lain menampilkan pesan publik sesuai contract;
 - ketika rows lama sudah ada, refetch gagal tidak mengosongkan tabel;
-- request ID dari response header dapat diteruskan dalam payload event error.
+- `requestId` diekstrak otomatis dari header response `X-Request-Id`.
 
 Retry TanStack Query:
 
@@ -237,8 +252,7 @@ Retry TanStack Query:
 - Menerima array object melalui `items`.
 - Search, filter, sort, dan pagination dijalankan di browser.
 - Dataset sekitar 11 ribu row masih memakai pagination biasa; virtual scrolling tidak diperlukan.
-- Jika `paginated=false`, seluruh hasil dirender dan caller bertanggung jawab tidak memasukkan dataset
-  yang terlalu besar.
+- Jika `paginated=false`, seluruh hasil dirender sekaligus ke DOM. Caller bertanggung jawab memastikan dataset yang dimasukkan tidak terlalu besar untuk mencegah UI lag/freeze.
 - Search berjalan setelah pengguna menekan `Enter`, bukan pada setiap ketikan.
 - Search case-insensitive dan memakai satu frasa utuh dengan strategi `contains`.
 - Nilai object/array ditelusuri secara rekursif, termasuk nested value.
@@ -411,6 +425,23 @@ Scope cell minimal:
 Jika slot tersedia, DataTable menambah kolom chevron. Expand detail memakai mode accordion: maksimal
 satu row terbuka.
 
+### 7.5 Filter
+
+Custom filter slot digunakan untuk merender komponen filter khusus di dalam Sheet filter drawer ketika definisi filter menggunakan `type: 'custom'`:
+
+```vue
+<template #filter(status)="{ value, setValue, filter, disabled }">
+  <CustomStatusPicker :model-value="value" :disabled="disabled" @update:model-value="setValue" />
+</template>
+```
+
+Scope slot filter:
+
+- `value`: nilai draft filter aktif untuk key terkait;
+- `setValue(newValue: unknown)`: fungsi helper untuk memperbarui nilai draft filter;
+- `filter`: objek definisi `DataTableFilter`;
+- `disabled`: boolean penanda apakah kontrol filter sedang dinonaktifkan.
+
 ## 8. Toolbar, search, dan filter
 
 ### 8.1 Search
@@ -445,7 +476,7 @@ interface DataTableFilter<TValue = unknown> {
 - Built-in date/date-range menghasilkan nilai tanggal lokal `YYYY-MM-DD`.
 - Struktur payload domain tidak dipaksakan DataTable; `serialize` atau API Facade menentukan bentuk
   akhirnya.
-- Filter khusus memakai slot `#filter(key)` dengan scope `{ value, setValue, filter }`.
+- Filter khusus memakai slot `#filter(key)` dengan scope `{ value, setValue, filter, disabled }`.
 - Drawer memakai draft state.
 - **Terapkan** mengaktifkan draft, reset page ke `1`, dan menjalankan query.
 - **Atur Ulang** menghapus draft dan filter aktif, reset page ke `1`, lalu langsung menjalankan query.
@@ -484,10 +515,13 @@ perPageOptions = [5, 10, 15, 25, 50, 100];
 - Untuk jumlah halaman kecil, pager menampilkan minimal tiga item bila tersedia; dengan previous/next
   menjadi lima elemen.
 - `showPagination` dan `showPerPage` hanya mengatur visibilitas kontrol.
-- `paginated=false` tidak mengirim `page`/`per_page`, tidak memotong data lokal, dan otomatis
-  menyembunyikan kedua kontrol.
+- `paginated=false` tidak mengirim `page`/`per_page`, tidak memotong data lokal, dan otomatis menyembunyikan kedua kontrol.
 - Tree tanpa pagination umumnya memakai `paginated=false`.
 - Jika tree lokal tetap paginated, pagination menghitung root node saja.
+
+> [!WARNING]
+> **Perhatian Penggunaan `paginated=false`**
+> Ketika `paginated=false`, seluruh dataset dirender sekaligus ke DOM. Pada dataset berukuran sangat besar (misal > 1.000–5.000 baris), hal ini dapat memblokir _main thread_ browser saat membuat node HTML sehingga UI terasa **lag / freezing**. Selalu gunakan pagination default (`paginated=true`) untuk data berukuran besar atau dinamis.
 
 ## 11. Selection
 
@@ -718,8 +752,8 @@ interface DataTableProps<T> {
 
 ```ts
 loading(isLoading: boolean)
-loaded({ rows, meta, message })
-error({ error, code, retryable, validationErrors, requestId })
+loaded({ rows, meta, message }) // message bersifat opsional (undefined jika dari Orval ResourceCollection)
+error({ error, code, retryable, validationErrors, requestId, supportId, whatsappUrl })
 params-change({ page, perPage, search, searchFields, sort, filters, extraParams })
 
 edit(row)
@@ -790,7 +824,15 @@ Tidak boleh disederhanakan:
 - [x] recursive grouped header;
 - [x] `spanMethod`.
 
-## 22. Demo dan acceptance
+## 22. Ekosistem Komponen dan Acceptance
+
+DataTable didukung oleh sub-komponen terpisah:
+
+- `DataTable.vue` — main component container & TanStack Query controller.
+- `DataTableColumn.vue` — renderer kolom dan cell.
+- `DataTableErrorAlert.vue` — error renderer terintegrasi dengan Error Definition Framework, copy Support/Request ID, dan Call Center WhatsApp link.
+- `DataTableDocViewer.vue` — viewer dokumentasi internal.
+- `DataTableExample.vue` — contoh/demo penggunaan interaktif.
 
 Demo menggunakan data pengguna seperti referensi karena mencakup:
 
@@ -800,12 +842,12 @@ Demo menggunakan data pengguna seperti referensi karena mencakup:
 - [x] action;
 - [x] selection;
 - [x] local pagination;
-- [x] server-like Laravel response.
+- [x] server-like Laravel response / Orval generated client (`data`, `meta`, `links`).
 
 Sediakan dua demo:
 
 1. [x] mode lokal dari fixture array;
-2. [x] mode server dari mock API Facade/fetcher yang mengembalikan `data`, `meta`, dan `message`.
+2. [x] mode server dari mock API Facade/fetcher yang mengembalikan `data` dan `meta`.
 
 Minimum automated checks:
 

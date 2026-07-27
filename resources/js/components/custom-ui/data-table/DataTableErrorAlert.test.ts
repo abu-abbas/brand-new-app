@@ -6,8 +6,12 @@ import DataTableErrorAlert from './DataTableErrorAlert.vue';
 describe('DataTableErrorAlert Component', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
-    // jsdom tidak mengimplementasikan Permissions API, jadi useClipboard() selalu
-    // jatuh ke jalur legacy (document.execCommand) di lingkungan test ini.
+    const writeTextMock = vi.fn().mockResolvedValue(undefined);
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: writeTextMock,
+      },
+    });
     document.execCommand = vi.fn().mockReturnValue(true);
   });
 
@@ -51,25 +55,29 @@ describe('DataTableErrorAlert Component', () => {
 
     await retryButton?.trigger('click');
 
-    expect(wrapper.emitted('retry')).toBeTruthy();
+    expect(wrapper.emitted('retry')).toHaveLength(1);
   });
 
-  it('renders each validation error field with its message and code', () => {
+  it('renders validation errors correctly', () => {
     const wrapper = mount(DataTableErrorAlert, {
       props: {
         error: {
-          message: 'Validasi data gagal.',
+          message: 'Validasi gagal.',
           retryable: false,
           validationErrors: {
-            per_page: [{ code: 'UM-VAL-005', message: 'Jumlah per halaman maksimal 100.' }],
+            username: [{ message: 'Username sudah digunakan.', code: 'UM-VAL-001' }],
+            per_page: ['Jumlah per halaman maksimal 100.'],
           },
         },
       },
     });
 
+    expect(wrapper.text()).toContain('username');
+    expect(wrapper.text()).toContain('Username sudah digunakan.');
+    expect(wrapper.text()).toContain('UM-VAL-001');
+
     expect(wrapper.text()).toContain('per_page');
     expect(wrapper.text()).toContain('Jumlah per halaman maksimal 100.');
-    expect(wrapper.text()).toContain('UM-VAL-005');
   });
 
   it('copies the request ID to the clipboard when the copy button is clicked', async () => {
@@ -94,7 +102,9 @@ describe('DataTableErrorAlert Component', () => {
     copyButton?.click();
     await nextTick();
 
-    expect(document.execCommand).toHaveBeenCalledWith('copy');
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      '0443b4df-31a6-444a-a30e-dfa306c222f2',
+    );
 
     wrapper.unmount();
   });
@@ -121,7 +131,7 @@ describe('DataTableErrorAlert Component', () => {
     copyButton?.click();
     await nextTick();
 
-    expect(document.execCommand).toHaveBeenCalledWith('copy');
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('4499979717396997446');
 
     wrapper.unmount();
   });

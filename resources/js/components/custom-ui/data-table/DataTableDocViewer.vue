@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /* global IntersectionObserver */
 import { computed, onMounted, onUnmounted, ref } from 'vue';
-import { BookOpen, List, CheckSquare, Square, ChevronRight } from '@lucide/vue';
+import { BookOpen, List, CheckSquare, Square, ChevronRight, Hash } from '@lucide/vue';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MarkdownText } from '@/components/custom-ui/markdown-text';
@@ -27,6 +27,7 @@ interface HeadingNode {
 interface ListItem {
   text: string;
   checked?: boolean;
+  number?: number;
 }
 
 interface ListNode {
@@ -77,6 +78,7 @@ const parsedDoc = computed(() => {
 
     // Code block start/end
     if (line.trim().startsWith('```')) {
+      flushList();
       if (inCodeBlock) {
         // Close code block
         nodes.push({
@@ -88,7 +90,6 @@ const parsedDoc = computed(() => {
         codeBuffer = [];
         codeLang = '';
       } else {
-        flushList();
         inCodeBlock = true;
         codeLang = line.trim().slice(3).trim();
       }
@@ -100,24 +101,15 @@ const parsedDoc = computed(() => {
       continue;
     }
 
-    // List item
-    const listMatch = line.match(/^(\s*)-\s+(.*)$/);
-    if (listMatch) {
-      const content = listMatch[2].trim();
-      if (content.startsWith('[x] ') || content.startsWith('[X] ')) {
-        currentListItems.push({ text: content.slice(4), checked: true });
-      } else if (content.startsWith('[ ] ')) {
-        currentListItems.push({ text: content.slice(4), checked: false });
-      } else {
-        currentListItems.push({ text: content });
-      }
-      continue;
-    } else {
+    // Empty line (reset list context)
+    if (!line.trim()) {
       flushList();
+      continue;
     }
 
     // Headings
     if (line.startsWith('#')) {
+      flushList();
       const headingMatch = line.match(/^(#{1,4})\s+(.*)$/);
       if (headingMatch) {
         const level = headingMatch[1].length as 1 | 2 | 3 | 4;
@@ -135,23 +127,53 @@ const parsedDoc = computed(() => {
 
     // Blockquote
     if (line.startsWith('>')) {
-      nodes.push({ type: 'quote', text: line.replace(/^>\s?/, '').trim() });
+      flushList();
+      const quoteText = line.replace(/^>\s?/, '').trim();
+      const lastNode = nodes[nodes.length - 1];
+      if (lastNode && lastNode.type === 'quote') {
+        lastNode.text += '\n' + quoteText;
+      } else {
+        nodes.push({ type: 'quote', text: quoteText });
+      }
       continue;
     }
 
-    // Empty line
-    if (!line.trim()) {
+    // List item (bullet list `-`/`*` atau numbered list `1.`/`1)`)
+    const listMatch = line.match(/^(\s*)(?:([-*])|(\d+)[.)])\s+(.*)$/);
+    if (listMatch) {
+      const num = listMatch[3] ? parseInt(listMatch[3], 10) : undefined;
+      const content = listMatch[4].trim();
+      if (content.startsWith('[x] ') || content.startsWith('[X] ')) {
+        currentListItems.push({ text: content.slice(4), checked: true });
+      } else if (content.startsWith('[ ] ')) {
+        currentListItems.push({ text: content.slice(4), checked: false });
+      } else {
+        currentListItems.push({ text: content, number: num });
+      }
       continue;
     }
 
-    // Paragraph
-    nodes.push({ type: 'paragraph', text: line.trim() });
+    // Continuation of an active list item
+    if (currentListItems.length > 0) {
+      currentListItems[currentListItems.length - 1].text += ' ' + line.trim();
+      continue;
+    }
+
+    // Paragraph (append to previous paragraph if non-empty, or push new paragraph)
+    const lastNode = nodes[nodes.length - 1];
+    if (lastNode && lastNode.type === 'paragraph') {
+      lastNode.text += ' ' + line.trim();
+    } else {
+      nodes.push({ type: 'paragraph', text: line.trim() });
+    }
   }
 
   flushList();
 
   return { nodes, toc };
 });
+
+const tocIdSet = computed(() => new Set(parsedDoc.value.toc.map((item) => item.id)));
 
 const activeHeadingId = ref<string>('');
 
@@ -218,32 +240,46 @@ onUnmounted(() => {
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start">
       <!-- Main Document Area -->
       <main class="min-w-0 lg:col-span-8 xl:col-span-9">
-        <Card class="border-border bg-card shadow-xs">
+        <Card class="border-border bg-card shadow-xs pt-0">
           <CardContent class="p-6 md:p-8 space-y-4">
             <template v-for="(node, index) in parsedDoc.nodes" :key="index">
               <!-- Headings -->
               <div v-if="node.type === 'heading'" :id="node.id" class="scroll-mt-20">
                 <h1
                   v-if="node.level === 1"
-                  class="text-2xl font-bold tracking-tight text-foreground pb-2 border-b border-border my-4"
+                  class="text-2xl font-bold tracking-tight text-foreground pb-2 border-b border-border flex items-center gap-2.5"
                 >
-                  <MarkdownText :content="node.text" />
+                  <Hash v-if="tocIdSet.has(node.id)" class="size-6 text-primary shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <MarkdownText :content="node.text" />
+                  </div>
                 </h1>
                 <h2
                   v-else-if="node.level === 2"
                   class="text-xl font-semibold tracking-tight text-foreground mt-8 mb-3 pt-4 border-t border-border/60 flex items-center gap-2"
                 >
-                  <span class="size-2 rounded-full bg-primary inline-block"></span>
-                  <MarkdownText :content="node.text" />
+                  <Hash v-if="tocIdSet.has(node.id)" class="size-5 text-primary shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <MarkdownText :content="node.text" />
+                  </div>
                 </h2>
                 <h3
                   v-else-if="node.level === 3"
-                  class="text-base font-semibold text-foreground mt-6 mb-2"
+                  class="text-base font-semibold text-foreground mt-6 mb-2 flex items-center gap-2"
                 >
-                  <MarkdownText :content="node.text" />
+                  <Hash v-if="tocIdSet.has(node.id)" class="size-4 text-primary shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <MarkdownText :content="node.text" />
+                  </div>
                 </h3>
-                <h4 v-else class="text-sm font-semibold text-foreground/90 mt-4 mb-1">
-                  <MarkdownText :content="node.text" />
+                <h4
+                  v-else
+                  class="text-sm font-semibold text-foreground/90 mt-4 mb-1 flex items-center gap-2"
+                >
+                  <Hash v-if="tocIdSet.has(node.id)" class="size-3.5 text-primary shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <MarkdownText :content="node.text" />
+                  </div>
                 </h4>
               </div>
 
@@ -271,14 +307,17 @@ onUnmounted(() => {
                   class="text-sm text-foreground/90 flex items-start gap-2"
                 >
                   <template v-if="item.checked !== undefined">
-                    <CheckSquare
-                      v-if="item.checked"
-                      class="size-4 text-emerald-500 shrink-0 mt-0.5"
-                    />
+                    <CheckSquare v-if="item.checked" class="size-4 text-primary shrink-0 mt-0.5" />
                     <Square v-else class="size-4 text-muted-foreground/60 shrink-0 mt-0.5" />
                   </template>
+                  <span
+                    v-else-if="item.number !== undefined"
+                    class="font-mono text-xs text-muted-foreground shrink-0 mt-0.5 min-w-4 text-right"
+                  >
+                    {{ item.number }}.
+                  </span>
                   <span v-else class="size-1.5 rounded-full bg-primary/70 shrink-0 mt-2"></span>
-                  <div class="flex-1">
+                  <div class="flex-1 min-w-0">
                     <MarkdownText :content="item.text" />
                   </div>
                 </li>
@@ -287,9 +326,14 @@ onUnmounted(() => {
               <!-- Blockquote -->
               <div
                 v-else-if="node.type === 'quote'"
-                class="border-l-4 border-primary/50 bg-primary/5 px-4 py-2 rounded-r-md italic text-sm text-foreground/90 my-3"
+                class="border-l-4 px-4 py-3 rounded-r-md text-sm my-3 whitespace-pre-line"
+                :class="
+                  node.text.includes('[!WARNING]')
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 font-medium'
+                    : 'border-primary/50 bg-primary/5 italic text-foreground/90'
+                "
               >
-                <MarkdownText :content="node.text" />
+                <MarkdownText :content="node.text.replace(/\[!WARNING\]\s*/gi, '')" />
               </div>
 
               <!-- Paragraph -->
@@ -310,7 +354,7 @@ onUnmounted(() => {
         class="sticky top-6 hidden lg:block lg:col-span-4 xl:col-span-3 space-y-3"
       >
         <Card class="border-border bg-card shadow-xs">
-          <CardHeader class="pb-3 pt-4 px-4">
+          <CardHeader class="px-4 py-0">
             <CardTitle
               class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
             >

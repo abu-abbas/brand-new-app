@@ -38,7 +38,7 @@ export interface DataTableMeta {
 export interface LaravelDataTableResponse<T> {
   data: T[];
   meta?: DataTableMeta;
-  message: string;
+  message?: string;
 }
 
 export type DataTableFetcher<T> = (context: {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, type HTMLAttributes } from 'vue';
+import type { HTMLAttributes } from 'vue';
 import { Check, Copy } from '@lucide/vue';
+import { useClipboard } from '@vueuse/core';
 import { Button, type ButtonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -30,27 +31,16 @@ const emit = defineEmits<{
   (e: 'copy', payload: { text: string; success: boolean }): void;
 }>();
 
-const isCopied = ref(false);
-let timer: ReturnType<typeof window.setTimeout> | number | null = null;
+const { copy, copied: isCopied } = useClipboard({
+  copiedDuring: props.duration,
+  legacy: true,
+});
 
 async function handleCopy() {
   if (!props.text) return;
-
   try {
-    if (typeof window !== 'undefined' && window.navigator?.clipboard) {
-      await window.navigator.clipboard.writeText(props.text);
-    }
-    isCopied.value = true;
+    await copy(props.text);
     emit('copy', { text: props.text, success: true });
-
-    if (timer !== null && typeof window !== 'undefined') {
-      window.clearTimeout(timer as number);
-    }
-    if (typeof window !== 'undefined') {
-      timer = window.setTimeout(() => {
-        isCopied.value = false;
-      }, props.duration);
-    }
   } catch {
     emit('copy', { text: props.text, success: false });
   }
@@ -64,9 +54,18 @@ async function handleCopy() {
     :class="
       cn(
         'gap-1.5 font-medium transition-all text-xs',
-        variant === 'ghost' && 'text-muted-foreground hover:text-foreground',
-        isCopied && variant === 'ghost' && 'text-emerald-500 hover:text-emerald-600',
-        isCopied && variant !== 'ghost' && 'bg-emerald-600 text-white hover:bg-emerald-700',
+        // State default untuk varian ghost
+        variant === 'ghost' && !isCopied && 'text-muted-foreground hover:text-foreground',
+        // State copied untuk varian ghost / outline / link
+        isCopied &&
+          (variant === 'ghost' || variant === 'outline' || variant === 'link') &&
+          'text-primary font-semibold border-primary/40 bg-primary/10 hover:bg-primary/15',
+        // State copied untuk varian solid (default, secondary, destructive)
+        isCopied &&
+          variant !== 'ghost' &&
+          variant !== 'outline' &&
+          variant !== 'link' &&
+          'bg-primary text-primary-foreground font-semibold hover:bg-primary/90',
         props.class,
       )
     "
@@ -74,7 +73,16 @@ async function handleCopy() {
   >
     <Check
       v-if="isCopied"
-      :class="cn('size-3.5 shrink-0', variant === 'ghost' && 'text-emerald-500')"
+      :class="
+        cn(
+          'size-3.5 shrink-0',
+          (variant === 'ghost' || variant === 'outline' || variant === 'link') && 'text-primary',
+          variant !== 'ghost' &&
+            variant !== 'outline' &&
+            variant !== 'link' &&
+            'text-primary-foreground',
+        )
+      "
     />
     <Copy v-else class="size-3.5 shrink-0" />
     <span v-if="showLabel">
