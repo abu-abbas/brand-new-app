@@ -298,6 +298,13 @@ const currentIconComponent = computed(() => {
   return getIconComponent(props.modelValue);
 });
 
+const formattedModelValue = computed(() => {
+  if (!props.modelValue) return '';
+  return props.modelValue.replace(/(^\w|-\w)/g, (clear) =>
+    clear.replace('-', '').toUpperCase(),
+  );
+});
+
 const textSizeClass = computed(() => {
   if (props.textSize) return props.textSize;
   switch (props.size) {
@@ -360,7 +367,7 @@ function prevPage() {
             v-if="props.modelValue"
             :class="cn('truncate text-foreground block min-w-0 flex-1 text-left', textSizeClass)"
           >
-            {{ props.modelValue }}
+            {{ formattedModelValue }}
           </span>
           <span
             v-else

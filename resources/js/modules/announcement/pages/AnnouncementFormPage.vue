@@ -17,15 +17,15 @@ const formData = reactive<AnnouncementFormData>({
   code: '#T-2026',
   title: 'Panduan Akses & Sesi Sistem Portal',
   category: 'TEKNIS',
-  icon: 'cog',
+  icon: 'Cog',
   summary:
     'Penting untuk mengikuti standar operasional penggunaan portal guna menjaga keamanan data personal Anda.',
   content:
     'Maintenance mingguan dijadwalkan setiap Sabtu pukul 22:00 WIB. Selama periode ini, sinkronisasi data mungkin tertunda.',
   highlights: [
-    { icon: 'download', text: 'Browser Chrome/Firefox versi terbaru wajib digunakan.' },
-    { icon: 'shield-alert', text: 'Gunakan koneksi privat, hindari Wi-Fi publik saat login.' },
-    { icon: 'clock', text: 'Sesi otomatis berakhir setelah 30 menit tidak aktif.' },
+    { icon: 'Download', text: 'Browser Chrome/Firefox versi terbaru wajib digunakan.' },
+    { icon: 'ShieldAlert', text: 'Gunakan koneksi privat, hindari Wi-Fi publik saat login.' },
+    { icon: 'Clock', text: 'Sesi otomatis berakhir setelah 30 menit tidak aktif.' },
   ],
   author_dept: 'BIRO KEPEGAWAIAN',
   author_tags: ['AD', 'HRD'],
