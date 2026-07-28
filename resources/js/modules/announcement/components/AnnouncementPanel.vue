@@ -141,15 +141,15 @@ onUnmounted(() => {
     ref="scrollContainer"
     class="h-full flex flex-col min-h-0 bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
   >
-    <!-- Max-Width Centered Container (Vertical & Horizontal Auto Centering when screen is large) -->
-    <div class="w-full max-w-3xl mx-auto flex flex-col min-h-full justify-center">
+    <!-- Max-Width Centered Container (Flows naturally from top without clipping) -->
+    <div class="w-full max-w-3xl mx-auto flex flex-col min-h-full">
       <!-- Stable Shrinking Sticky Header -->
       <div
         class="sticky top-0 z-20 shrink-0 bg-[#f4f4f6] dark:bg-[#09090b] transition-all duration-300 px-4 sm:px-6"
         :class="
           isScrolled
             ? 'py-3 shadow-[0_16px_24px_-4px_#f4f4f6] dark:shadow-[0_16px_24px_-4px_#09090b]'
-            : 'py-6 sm:py-7'
+            : 'py-5 sm:py-6'
         "
       >
         <div class="flex items-center justify-between">
@@ -257,7 +257,7 @@ onUnmounted(() => {
               class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3 sm:p-3.5 border border-border/60 flex flex-row sm:flex-col items-center sm:items-start gap-2.5 sm:gap-0 justify-start sm:justify-between"
             >
               <component
-                :is="getIconComponent(h.icon)"
+                :is="getHighlightIcon(h.icon)"
                 class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0 sm:mb-2"
               />
               <p class="text-xs text-foreground font-medium leading-snug">
