@@ -154,7 +154,9 @@
   --primary: oklch(0.79 0.15 75.83);
   --primary-foreground: oklch(0.2 0.04 75.83);
 }
-.theme-amber.dark {
+.theme-amber.dark,
+.theme-amber .dark,
+.dark .theme-amber {
   --primary: oklch(0.79 0.15 75.83);
   --primary-foreground: oklch(0.2 0.04 75.83);
 }
@@ -164,7 +166,9 @@
   --primary: oklch(0.5 0.134 242.75);
   --primary-foreground: oklch(0.98 0.01 242.75);
 }
-.theme-blue.dark {
+.theme-blue.dark,
+.theme-blue .dark,
+.dark .theme-blue {
   --primary: oklch(0.443 0.11 240.79);
   --primary-foreground: oklch(0.98 0.01 240.79);
 }
@@ -174,7 +178,9 @@
   --primary: oklch(0.66 0.14 205.1);
   --primary-foreground: oklch(0.98 0.01 205.1);
 }
-.theme-cyan.dark {
+.theme-cyan.dark,
+.theme-cyan .dark,
+.dark .theme-cyan {
   --primary: oklch(0.66 0.14 205.1);
   --primary-foreground: oklch(0.98 0.01 205.1);
 }
@@ -184,7 +190,9 @@
   --primary: oklch(0.627 0.194 149.21);
   --primary-foreground: oklch(0.98 0.01 149.21);
 }
-.theme-emerald.dark {
+.theme-emerald.dark,
+.theme-emerald .dark,
+.dark .theme-emerald {
   --primary: oklch(0.627 0.194 149.21);
   --primary-foreground: oklch(0.98 0.01 149.21);
 }
@@ -194,7 +202,9 @@
   --primary: oklch(0.62 0.22 315.6);
   --primary-foreground: oklch(0.98 0.01 315.6);
 }
-.theme-fuchsia.dark {
+.theme-fuchsia.dark,
+.theme-fuchsia .dark,
+.dark .theme-fuchsia {
   --primary: oklch(0.62 0.22 315.6);
   --primary-foreground: oklch(0.98 0.01 315.6);
 }
@@ -204,7 +214,9 @@
   --primary: oklch(0.64 0.18 134.1);
   --primary-foreground: oklch(0.98 0.01 134.1);
 }
-.theme-green.dark {
+.theme-green.dark,
+.theme-green .dark,
+.dark .theme-green {
   --primary: oklch(0.64 0.18 134.1);
   --primary-foreground: oklch(0.98 0.01 134.1);
 }
@@ -214,7 +226,9 @@
   --primary: oklch(0.51 0.18 260.4);
   --primary-foreground: oklch(0.98 0.01 260.4);
 }
-.theme-indigo.dark {
+.theme-indigo.dark,
+.theme-indigo .dark,
+.dark .theme-indigo {
   --primary: oklch(0.51 0.18 260.4);
   --primary-foreground: oklch(0.98 0.01 260.4);
 }
@@ -224,7 +238,9 @@
   --primary: oklch(0.79 0.18 115.2);
   --primary-foreground: oklch(0.2 0.04 115.2);
 }
-.theme-lime.dark {
+.theme-lime.dark,
+.theme-lime .dark,
+.dark .theme-lime {
   --primary: oklch(0.79 0.18 115.2);
   --primary-foreground: oklch(0.2 0.04 115.2);
 }
@@ -234,7 +250,9 @@
   --primary: oklch(0.145 0 0);
   --primary-foreground: oklch(0.985 0 0);
 }
-.theme-neutral.dark {
+.theme-neutral.dark,
+.theme-neutral .dark,
+.dark .theme-neutral {
   --primary: oklch(0.985 0 0);
   --primary-foreground: oklch(0.145 0 0);
 }
@@ -244,7 +262,9 @@
   --primary: oklch(0.65 0.19 45.2);
   --primary-foreground: oklch(0.98 0.01 45.2);
 }
-.theme-orange.dark {
+.theme-orange.dark,
+.theme-orange .dark,
+.dark .theme-orange {
   --primary: oklch(0.65 0.19 45.2);
   --primary-foreground: oklch(0.98 0.01 45.2);
 }
@@ -254,7 +274,9 @@
   --primary: oklch(0.63 0.2 340.5);
   --primary-foreground: oklch(0.98 0.01 340.5);
 }
-.theme-pink.dark {
+.theme-pink.dark,
+.theme-pink .dark,
+.dark .theme-pink {
   --primary: oklch(0.63 0.2 340.5);
   --primary-foreground: oklch(0.98 0.01 340.5);
 }
@@ -264,7 +286,9 @@
   --primary: oklch(0.58 0.19 281.3);
   --primary-foreground: oklch(0.98 0.01 281.3);
 }
-.theme-purple.dark {
+.theme-purple.dark,
+.theme-purple .dark,
+.dark .theme-purple {
   --primary: oklch(0.58 0.19 281.3);
   --primary-foreground: oklch(0.98 0.01 281.3);
 }
@@ -274,7 +298,9 @@
   --primary: oklch(0.577 0.245 27.325);
   --primary-foreground: oklch(0.98 0.01 27.325);
 }
-.theme-red.dark {
+.theme-red.dark,
+.theme-red .dark,
+.dark .theme-red {
   --primary: oklch(0.577 0.245 27.325);
   --primary-foreground: oklch(0.98 0.01 27.325);
 }
@@ -284,7 +310,9 @@
   --primary: oklch(0.643 0.207 356.9);
   --primary-foreground: oklch(0.98 0.01 356.9);
 }
-.theme-rose.dark {
+.theme-rose.dark,
+.theme-rose .dark,
+.dark .theme-rose {
   --primary: oklch(0.643 0.207 356.9);
   --primary-foreground: oklch(0.98 0.01 356.9);
 }
@@ -294,7 +322,9 @@
   --primary: oklch(0.61 0.13 175.4);
   --primary-foreground: oklch(0.98 0.01 175.4);
 }
-.theme-teal.dark {
+.theme-teal.dark,
+.theme-teal .dark,
+.dark .theme-teal {
   --primary: oklch(0.61 0.13 175.4);
   --primary-foreground: oklch(0.98 0.01 175.4);
 }
@@ -304,7 +334,9 @@
   --primary: oklch(0.52 0.19 270.3);
   --primary-foreground: oklch(0.98 0.01 270.3);
 }
-.theme-violet.dark {
+.theme-violet.dark,
+.theme-violet .dark,
+.dark .theme-violet {
   --primary: oklch(0.52 0.19 270.3);
   --primary-foreground: oklch(0.98 0.01 270.3);
 }
@@ -314,7 +346,9 @@
   --primary: oklch(0.85 0.17 90.2);
   --primary-foreground: oklch(0.2 0.04 90.2);
 }
-.theme-yellow.dark {
+.theme-yellow.dark,
+.theme-yellow .dark,
+.dark .theme-yellow {
   --primary: oklch(0.85 0.17 90.2);
   --primary-foreground: oklch(0.2 0.04 90.2);
 }
