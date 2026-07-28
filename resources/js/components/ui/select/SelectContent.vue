@@ -13,7 +13,7 @@ defineOptions({
 const props = withDefaults(
   defineProps<SelectContentProps & { class?: HTMLAttributes['class'] }>(),
   {
-    position: 'popper',
+    position: 'item-aligned',
     align: 'center',
     sideOffset: 4,
   },
