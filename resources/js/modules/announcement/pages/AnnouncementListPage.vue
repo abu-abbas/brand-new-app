@@ -1,15 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import {
-  Plus,
-  Search,
-  Edit3,
-  Trash2,
-  CheckCircle,
-  XCircle,
-  Megaphone,
-} from '@lucide/vue';
+import { Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Megaphone } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -131,7 +123,7 @@ function toggleStatus(id: number) {
     <div class="space-y-6">
       <!-- Full Soft Primary Tint Integrated Card -->
       <Card
-        class="border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-xs rounded-2xl overflow-hidden"
+        class="py-0 border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-xs rounded-2xl overflow-hidden"
       >
         <CardContent class="p-4 md:p-6 space-y-4">
           <!-- Top Section: Header Title + Action Button (Full Block on Mobile) -->
