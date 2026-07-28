@@ -13,7 +13,6 @@ import {
   Mail,
   Megaphone,
   CheckCircle2,
-  XCircle,
   FileText,
   Info,
 } from '@lucide/vue';
@@ -145,40 +144,40 @@ function toggleHighlightExpand(idx: number) {
             <component :is="mainIconComponent" class="h-6 w-6" />
           </div>
           <div class="space-y-1">
-            <div>
+            <div class="flex items-center gap-2">
               <span
                 class="border text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-md inline-block"
                 :class="categoryStyles.badge"
               >
                 {{ data.category || 'KATEGORI' }}
               </span>
+              <button
+                v-if="showStatusBadge"
+                type="button"
+                class="inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all cursor-pointer select-none"
+                :class="
+                  data.is_active
+                    ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25'
+                    : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+                "
+                title="Klik untuk mengubah status tayang / draft"
+                @click.stop="emit('toggleStatus')"
+              >
+                <span
+                  class="h-1.5 w-1.5 rounded-full"
+                  :class="data.is_active ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground'"
+                ></span>
+                <span>{{ data.is_active ? 'Tayang' : 'Draft' }}</span>
+              </button>
             </div>
             <h3 class="text-base font-bold text-foreground leading-tight">
               {{ data.title || 'Judul Pengumuman...' }}
             </h3>
           </div>
         </div>
-        <div class="flex items-center gap-2 pt-0.5">
-          <button
-            v-if="showStatusBadge"
-            type="button"
-            class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer select-none shrink-0"
-            :class="
-              data.is_active
-                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25'
-                : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
-            "
-            title="Klik untuk mengubah status tayang / draft"
-            @click.stop="emit('toggleStatus')"
-          >
-            <CheckCircle2 v-if="data.is_active" class="h-3 w-3 text-emerald-500" />
-            <XCircle v-else class="h-3 w-3 text-muted-foreground" />
-            <span>{{ data.is_active ? 'Tayang' : 'Draft' }}</span>
-          </button>
-          <span class="text-xs font-mono font-medium text-muted-foreground">
-            {{ data.code || '#CODE' }}
-          </span>
-        </div>
+        <span class="text-xs font-mono font-medium text-muted-foreground pt-0.5">
+          {{ data.code || '#CODE' }}
+        </span>
       </div>
 
       <!-- Quote Summary -->
