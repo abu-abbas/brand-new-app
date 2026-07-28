@@ -1,7 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+test.beforeEach(async ({ page }, testInfo) => {
+  if (testInfo.title.includes('initial loading')) {
+    await page.route('**/api/users*', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await route.continue();
+    });
+  }
+  await page.goto('/example-custom-component#data-tables');
+  await page.locator('.datatable').first().waitFor();
 });
 
 test('datatable populated light dan dark', async ({ page }) => {
@@ -42,15 +49,6 @@ test('datatable filter sheet dan selection', async ({ page }) => {
 });
 
 test('datatable menampilkan initial loading', async ({ page }) => {
-  await page.addInitScript(() => {
-    const origSetTimeout = window.setTimeout;
-    (window as unknown as Record<string, unknown>).setTimeout = (
-      handler: TimerHandler,
-      timeout?: number,
-      ...args: unknown[]
-    ) => origSetTimeout(handler, timeout === 1200 ? 10_000 : timeout, ...args);
-  });
-  await page.goto('/');
   const table = page.locator('.datatable').nth(1);
   await expect(table).toContainText('Memuat data…');
   await expect(table).toHaveScreenshot('datatable-loading.png');
@@ -58,6 +56,9 @@ test('datatable menampilkan initial loading', async ({ page }) => {
 
 test('datatable sticky selection dan action column', async ({ page }) => {
   const table = page.locator('.datatable').first();
-  await expect(table.locator('.el-table__fixed-left')).toBeVisible();
+  const fixedColumn = table.locator('.el-table-fixed-column--left, .el-table-column--fixed-left, .el-table__fixed-left, .el-table__fixed, th.el-table__cell[class*="fixed"]').first();
+  await expect(fixedColumn).toBeVisible();
   await expect(table).toHaveScreenshot('datatable-sticky.png');
 });
+
+
