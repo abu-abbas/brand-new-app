@@ -40,17 +40,18 @@ const isAnnouncementModalOpen = ref(false);
           <DialogDescription>Pengumuman terkini dan panduan akses portal</DialogDescription>
         </DialogHeader>
 
-        <div class="relative max-h-[85vh] flex flex-col bg-[#f4f4f6] dark:bg-[#09090b]">
+        <div class="relative h-[85vh] flex flex-col bg-[#f4f4f6] dark:bg-[#09090b]">
           <!-- Close Button Overlay -->
           <button
             type="button"
-            class="absolute top-4 right-4 z-50 h-8 w-8 rounded-full bg-background/90 shadow border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background transition-colors cursor-pointer"
+            class="absolute top-3 right-3 z-50 h-8 w-8 rounded-full bg-background/90 shadow border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background transition-colors cursor-pointer"
             @click="isAnnouncementModalOpen = false"
           >
             <X class="h-4 w-4" />
           </button>
 
-          <AnnouncementPanel class="h-full pt-4" />
+          <!-- Pure AnnouncementPanel without pt-4 wrapper leak -->
+          <AnnouncementPanel class="h-full" />
         </div>
       </DialogContent>
     </Dialog>

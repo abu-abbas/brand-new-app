@@ -80,6 +80,10 @@ function getIconComponent(iconName: string) {
   return iconMap[iconName] || Info;
 }
 
+function getHighlightIcon(iconName: string) {
+  return iconMap[iconName] || Info;
+}
+
 function getCategoryBadgeClass(category: string) {
   switch (category) {
     case 'TEKNIS':
@@ -108,7 +112,7 @@ function getCategoryIconBgClass(category: string) {
   }
 }
 
-// Fixed Hysteresis Scroll Threshold
+// Stable Hysteresis Scroll Threshold
 const isScrolled = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
 
@@ -141,15 +145,15 @@ onUnmounted(() => {
     ref="scrollContainer"
     class="h-full bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
   >
-    <!-- Max-Width Centered Container (Normal Flow without Flex stretch clipping) -->
+    <!-- Max-Width Centered Container -->
     <div class="w-full max-w-3xl mx-auto">
-      <!-- Stable Shrinking Sticky Header -->
+      <!-- Shrinking Sticky Header (Extends solid background flush to top-0) -->
       <div
         class="sticky top-0 z-20 bg-[#f4f4f6] dark:bg-[#09090b] transition-all duration-300 px-4 sm:px-6"
         :class="
           isScrolled
-            ? 'py-3 shadow-[0_16px_24px_-4px_#f4f4f6] dark:shadow-[0_16px_24px_-4px_#09090b]'
-            : 'py-5 sm:py-6'
+            ? 'pt-3 pb-3 shadow-[0_16px_24px_-4px_#f4f4f6] dark:shadow-[0_16px_24px_-4px_#09090b]'
+            : 'pt-5 pb-4 sm:pt-6 sm:pb-5'
         "
       >
         <div class="flex items-center justify-between">
@@ -177,7 +181,7 @@ onUnmounted(() => {
           </div>
 
           <!-- Right Action Buttons -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 pr-8 sm:pr-0">
             <button
               type="button"
               class="rounded-full border border-border/80 bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground flex items-center justify-center shadow-xs transition-all duration-300 cursor-pointer"
@@ -198,8 +202,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Content Container (Starts naturally below sticky header) -->
-      <div class="px-4 sm:px-6 pt-1 pb-8 space-y-5">
+      <!-- Content Container -->
+      <div class="px-4 sm:px-6 pt-3 pb-8 space-y-5">
         <div
           v-for="item in announcements"
           :key="item.id"
