@@ -39,7 +39,7 @@ const customIcon = ref('Bookmark');
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="flex flex-wrap items-center gap-4">
-            <IconPicker v-model="selectedIcon" placeholder="Pilih Icon..." />
+            <IconPicker v-model="selectedIcon" placeholder="Pilih Icon..." class="w-64" />
 
             <div
               class="flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/60 px-3 py-2 rounded-lg border border-border min-w-0 max-w-full overflow-hidden"
@@ -67,6 +67,7 @@ const customIcon = ref('Bookmark');
               title="Pilih Icon Modul Utama"
               description="Icon ini akan ditampilkan pada navigasi menu utama aplikasi."
               placeholder="Pilih Icon Modul..."
+              class="w-64"
             />
 
             <div

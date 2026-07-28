@@ -322,7 +322,7 @@ function prevPage() {
 </script>
 
 <template>
-  <div :class="cn('inline-block', props.class)">
+  <div :class="cn('w-full', props.class)">
     <!-- Trigger Button -->
     <div class="inline-flex w-full items-center gap-1.5">
       <Button
