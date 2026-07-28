@@ -19,3 +19,23 @@ export function renderMarkdown(text: string): string {
     .replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>');
 }
+
+/**
+ * Mengonversi string tanggal menjadi format human readable (d MMM yyyy, contoh: 28 Jul 2026).
+ */
+export function formatHumanDate(dateStr?: string): string {
+  if (!dateStr) return 'Hari ini';
+
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+}

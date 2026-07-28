@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, type Component } from 'vue';
+import { formatHumanDate } from '@/lib/utils';
 import {
   Cog,
   Bell,
@@ -294,7 +295,7 @@ onUnmounted(() => {
                 OLEH: {{ item.author_dept }}
               </span>
             </div>
-            <span class="italic">Update: {{ item.published_at }}</span>
+            <span class="italic">Update: {{ formatHumanDate(item.published_at) }}</span>
           </div>
         </div>
       </div>

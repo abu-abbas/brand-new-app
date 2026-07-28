@@ -205,7 +205,7 @@ function handleSubmit() {
         <!-- Ringkasan / Quote Textarea -->
         <div class="space-y-1.5">
           <label class="text-xs font-semibold text-foreground">
-            Kutipan Ringkasan (Optional - Tampil Bergaris Oranye)
+            Kutipan Ringkasan (Optional)
           </label>
           <Textarea
             v-model="localForm.summary"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type Component } from 'vue';
+import { formatHumanDate } from '@/lib/utils';
 import {
   Cog,
   Bell,
@@ -217,7 +218,7 @@ function toggleHighlightExpand(idx: number) {
             OLEH: {{ data.author_dept || 'UNIT KERJA' }}
           </span>
         </div>
-        <span class="italic">Update: {{ data.published_at || 'Hari ini' }}</span>
+        <span class="italic">Update: {{ formatHumanDate(data.published_at) }}</span>
       </div>
     </div>
   </div>
