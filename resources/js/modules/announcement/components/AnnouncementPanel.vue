@@ -84,28 +84,38 @@ function getHighlightIcon(iconName: string) {
   return iconMap[iconName] || Info;
 }
 
-function getCategoryBadgeClass(category: string) {
+function getCategoryStyle(category: string) {
   switch (category) {
     case 'TEKNIS':
+      return {
+        badge: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+        iconBg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      };
     case 'FITUR BARU':
+      return {
+        badge: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
+        iconBg: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
+      };
     case 'PENTING':
-      return 'bg-primary/15 text-primary border-primary/20';
+      return {
+        badge: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
+        iconBg: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
+      };
     case 'INFORMASI':
     default:
-      return 'bg-muted text-muted-foreground border-border';
+      return {
+        badge: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+        iconBg: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+      };
   }
 }
 
+function getCategoryBadgeClass(category: string) {
+  return getCategoryStyle(category).badge;
+}
+
 function getCategoryIconBgClass(category: string) {
-  switch (category) {
-    case 'TEKNIS':
-    case 'FITUR BARU':
-    case 'PENTING':
-      return 'bg-primary/15 text-primary border-primary/20';
-    case 'INFORMASI':
-    default:
-      return 'bg-muted text-muted-foreground border-border';
-  }
+  return getCategoryStyle(category).iconBg;
 }
 
 // Stable Hysteresis Scroll Threshold

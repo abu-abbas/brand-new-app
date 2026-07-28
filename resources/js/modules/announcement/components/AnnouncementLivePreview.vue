@@ -71,17 +71,25 @@ function getHighlightIcon(iconName: string) {
 const categoryStyles = computed(() => {
   switch (props.data.category) {
     case 'TEKNIS':
+      return {
+        badge: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+        iconBg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      };
     case 'FITUR BARU':
+      return {
+        badge: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
+        iconBg: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/20',
+      };
     case 'PENTING':
       return {
-        badge: 'bg-primary/15 text-primary border-primary/20',
-        iconBg: 'bg-primary/15 text-primary border-primary/20',
+        badge: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
+        iconBg: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
       };
     case 'INFORMASI':
     default:
       return {
-        badge: 'bg-muted text-muted-foreground border-border',
-        iconBg: 'bg-muted text-muted-foreground border-border',
+        badge: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+        iconBg: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
       };
   }
 });
@@ -175,7 +183,10 @@ function toggleHighlightExpand(idx: number) {
           title="Klik untuk expand / collapse teks selengkapnya"
           @click="toggleHighlightExpand(idx)"
         >
-          <component :is="getHighlightIcon(item.icon)" class="h-4 w-4 text-primary shrink-0" />
+          <component
+            :is="getHighlightIcon(item.icon)"
+            class="h-4 w-4 text-primary shrink-0"
+          />
           <p
             class="text-xs text-foreground font-medium leading-snug wrap-break-word transition-all"
             :class="expandedHighlights[idx] ? 'line-clamp-none' : 'line-clamp-3'"
