@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Plus, Trash2, Sparkles, Tag, Layers, AlignLeft, ShieldCheck } from '@lucide/vue';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  TagsInput,
+  TagsInputInput,
+  TagsInputItem,
+  TagsInputItemDelete,
+  TagsInputItemText,
+} from '@/components/ui/tags-input';
 import IconPicker from '@/components/custom-ui/icon-picker/IconPicker.vue';
 import { DatePicker } from '@/components/custom-ui/date-picker';
 import type { AnnouncementFormData } from './AnnouncementLivePreview.vue';
@@ -30,16 +37,6 @@ const localForm = computed({
   get: () => props.formData,
   set: (val) => emit('update:formData', val),
 });
-
-const tagInput = ref(props.formData.author_tags ? props.formData.author_tags.join(', ') : '');
-
-function updateTags() {
-  const tags = tagInput.value
-    .split(',')
-    .map((t) => t.trim().toUpperCase())
-    .filter((t) => t.length > 0);
-  localForm.value.author_tags = tags;
-}
 
 function addHighlightItem() {
   if (!localForm.value.highlights) {
@@ -155,16 +152,14 @@ function handleSubmit() {
 
         <!-- Tag Avatar Inisial -->
         <div class="space-y-1.5">
-          <label class="text-xs font-semibold text-foreground">
-            Inisial Avatar Tag (Pisahkan dengan Koma)
-          </label>
-          <Input
-            v-model="tagInput"
-            placeholder="Contoh: AD, HRD"
-            class="h-9 text-sm w-full"
-            maxlength="30"
-            @input="updateTags"
-          />
+          <label class="text-xs font-semibold text-foreground">Inisial Avatar Tag</label>
+          <TagsInput v-model="localForm.author_tags" class="w-full min-h-9">
+            <TagsInputItem v-for="item in localForm.author_tags" :key="item" :value="item">
+              <TagsInputItemText />
+              <TagsInputItemDelete />
+            </TagsInputItem>
+            <TagsInputInput placeholder="Ketik inisial lalu tekan Enter..." />
+          </TagsInput>
         </div>
       </div>
 
