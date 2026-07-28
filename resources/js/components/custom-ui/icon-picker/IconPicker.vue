@@ -300,9 +300,7 @@ const currentIconComponent = computed(() => {
 
 const formattedModelValue = computed(() => {
   if (!props.modelValue) return '';
-  return props.modelValue.replace(/(^\w|-\w)/g, (clear) =>
-    clear.replace('-', '').toUpperCase(),
-  );
+  return props.modelValue.replace(/(^\w|-\w)/g, (clear) => clear.replace('-', '').toUpperCase());
 });
 
 const textSizeClass = computed(() => {
