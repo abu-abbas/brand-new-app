@@ -200,9 +200,9 @@ function toggleStatus(id: number) {
           <!-- Pure Announcement Card View -->
           <AnnouncementLivePreview :data="item" :show-live-badge="false" />
 
-          <!-- Floating Clean Admin Action Links -->
+          <!-- Floating Clean Admin Action Links (Centered & Shown on Hover) -->
           <div
-            class="absolute bottom-3 right-3 z-20 flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-background/90 dark:bg-card/90 backdrop-blur-md border border-border/80 shadow-md text-xs transition-all duration-300"
+            class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border/80 shadow-md text-xs opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto translate-y-1 group-hover:translate-y-0 transition-all duration-200"
           >
             <!-- Toggle Status Tayang Link -->
             <button
