@@ -1,21 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, type Component } from 'vue';
+import * as LucideIcons from '@lucide/vue';
+import { Cog, Info } from '@lucide/vue';
 import { formatHumanDate } from '@/lib/utils';
-import {
-  Cog,
-  Bell,
-  Sparkles,
-  AlertTriangle,
-  Download,
-  ShieldAlert,
-  Clock,
-  BookOpen,
-  Mail,
-  Megaphone,
-  CheckCircle2,
-  FileText,
-  Info,
-} from '@lucide/vue';
 
 export interface HighlightItem {
   icon: string;
@@ -52,27 +39,21 @@ const emit = defineEmits<{
   (e: 'toggleStatus'): void;
 }>();
 
-// Map Icon string ke Lucide Component
-const iconMap: Record<string, Component> = {
-  cog: Cog,
-  bell: Bell,
-  sparkles: Sparkles,
-  'alert-triangle': AlertTriangle,
-  download: Download,
-  'shield-alert': ShieldAlert,
-  clock: Clock,
-  'book-open': BookOpen,
-  mail: Mail,
-  megaphone: Megaphone,
-  'check-circle': CheckCircle2,
-  'file-text': FileText,
-  info: Info,
-};
+// Helper dynamic icon resolver untuk mendukung nama icon PascalCase maupun kebab-case
+function getLucideIcon(iconName: string, fallback: Component) {
+  if (!iconName) return fallback;
 
-const mainIconComponent = computed(() => iconMap[props.data.icon] || Cog);
+  const pascalName = iconName
+    .replace(/(^\w|-\w)/g, (clear) => clear.replace('-', '').toUpperCase());
+
+  const icons = LucideIcons as Record<string, Component>;
+  return icons[pascalName] || icons[iconName] || fallback;
+}
+
+const mainIconComponent = computed(() => getLucideIcon(props.data.icon, Cog));
 
 function getHighlightIcon(iconName: string) {
-  return iconMap[iconName] || Info;
+  return getLucideIcon(iconName, Info);
 }
 
 const categoryStyles = computed(() => {

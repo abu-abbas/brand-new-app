@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import IconPicker from '@/components/custom-ui/icon-picker/IconPicker.vue';
 import type { AnnouncementFormData } from './AnnouncementLivePreview.vue';
 
 const props = defineProps<{
@@ -28,28 +29,6 @@ const localForm = computed({
   get: () => props.formData,
   set: (val) => emit('update:formData', val),
 });
-
-const availableIcons = [
-  { label: 'Gear / Teknis', value: 'cog' },
-  { label: 'Bell / Informasi', value: 'bell' },
-  { label: 'Sparkles / Fitur Baru', value: 'sparkles' },
-  { label: 'Alert / Penting', value: 'alert-triangle' },
-  { label: 'Download', value: 'download' },
-  { label: 'Shield Alert', value: 'shield-alert' },
-  { label: 'Clock / Waktu', value: 'clock' },
-  { label: 'Book / Buku Panduan', value: 'book-open' },
-  { label: 'Mail / Support', value: 'mail' },
-  { label: 'Megaphone / Berita', value: 'megaphone' },
-];
-
-const availableHighlightIcons = [
-  { label: 'Download', value: 'download' },
-  { label: 'Shield / Keamanan', value: 'shield-alert' },
-  { label: 'Clock / Waktu', value: 'clock' },
-  { label: 'Check Circle', value: 'check-circle' },
-  { label: 'File Text', value: 'file-text' },
-  { label: 'Info', value: 'info' },
-];
 
 const tagInput = ref(props.formData.author_tags ? props.formData.author_tags.join(', ') : '');
 
@@ -151,19 +130,14 @@ function handleSubmit() {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <!-- Main Icon Select (shadcn-vue text-sm matching Input) -->
+          <!-- Main Icon Select dengan IconPicker -->
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-foreground">Icon Header</label>
-            <Select v-model="localForm.icon">
-              <SelectTrigger class="w-full h-9 text-sm px-3">
-                <SelectValue placeholder="Pilih Icon Header" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="ic in availableIcons" :key="ic.value" :value="ic.value">
-                  {{ ic.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <IconPicker
+              v-model="localForm.icon"
+              placeholder="Pilih Icon Header..."
+              title="Pilih Icon Header Pengumuman"
+            />
           </div>
 
           <!-- Unit Penerbit -->
@@ -262,21 +236,13 @@ function handleSubmit() {
             :key="idx"
             class="flex items-center gap-2 p-2.5 bg-muted/30 border border-border rounded-lg"
           >
-            <div class="w-40 shrink-0">
-              <Select v-model="item.icon">
-                <SelectTrigger class="w-full h-8">
-                  <SelectValue placeholder="Icon" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="hIc in availableHighlightIcons"
-                    :key="hIc.value"
-                    :value="hIc.value"
-                  >
-                    {{ hIc.label }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+            <div class="w-44 shrink-0">
+              <IconPicker
+                v-model="item.icon"
+                placeholder="Pilih Icon..."
+                title="Pilih Icon Poin Informasi"
+                size="sm"
+              />
             </div>
             <Input
               v-model="item.text"
