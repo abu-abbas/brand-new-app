@@ -98,7 +98,7 @@ function toggleHighlightExpand(idx: number) {
     <!-- Live Badge Bar (Only shown if showLiveBadge is true) -->
     <div v-if="showLiveBadge" class="flex items-center justify-between px-1">
       <div class="flex items-center gap-2">
-        <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
         <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Live Realtime Preview
         </span>

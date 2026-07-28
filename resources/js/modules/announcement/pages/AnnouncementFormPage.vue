@@ -65,8 +65,8 @@ function handleSubmit() {
           class="h-8 gap-1.5 text-xs font-medium"
           @click="isPreviewDark = !isPreviewDark"
         >
-          <Sun v-if="isPreviewDark" class="h-3.5 w-3.5 text-amber-500" />
-          <Moon v-else class="h-3.5 w-3.5 text-slate-700" />
+          <Moon v-if="isPreviewDark" class="h-3.5 w-3.5 text-blue-400" />
+          <Sun v-else class="h-3.5 w-3.5 text-amber-500" />
           <span>Simulasi Mode: {{ isPreviewDark ? 'Dark' : 'Light' }}</span>
         </Button>
       </div>

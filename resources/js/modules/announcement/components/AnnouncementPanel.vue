@@ -159,7 +159,7 @@ onUnmounted(() => {
               class="flex items-center gap-2 transition-all duration-300 overflow-hidden"
               :class="isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-6 opacity-100 mb-1.5'"
             >
-              <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+              <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span class="text-[11px] font-extrabold uppercase tracking-widest text-primary">
                 UPDATE TERKINI
               </span>
