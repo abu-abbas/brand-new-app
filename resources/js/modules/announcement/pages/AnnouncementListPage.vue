@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Megaphone } from '@lucide/vue';
+import { Plus, Search, Edit3, Trash2, Megaphone } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

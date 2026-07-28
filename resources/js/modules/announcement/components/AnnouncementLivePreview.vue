@@ -209,10 +209,7 @@ function toggleHighlightExpand(idx: number) {
           title="Klik untuk expand / collapse teks selengkapnya"
           @click="toggleHighlightExpand(idx)"
         >
-          <component
-            :is="getHighlightIcon(item.icon)"
-            class="h-4 w-4 text-primary shrink-0"
-          />
+          <component :is="getHighlightIcon(item.icon)" class="h-4 w-4 text-primary shrink-0" />
           <p
             class="text-xs text-foreground font-medium leading-snug wrap-break-word transition-all"
             :class="expandedHighlights[idx] ? 'line-clamp-none' : 'line-clamp-3'"
