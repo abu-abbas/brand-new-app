@@ -38,14 +38,14 @@ const customIcon = ref('Bookmark');
           <CardDescription> Pilih icon apapun dari 800+ koleksi Lucide Icons. </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-4">
             <IconPicker v-model="selectedIcon" placeholder="Pilih Icon..." />
 
             <div
-              class="flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/60 px-3 py-2 rounded-lg border border-border"
+              class="flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/60 px-3 py-2 rounded-lg border border-border min-w-0 max-w-full overflow-hidden"
             >
-              <span>Value:</span>
-              <code class="text-primary font-bold">{{ selectedIcon || '(kosong)' }}</code>
+              <span class="shrink-0">Value:</span>
+              <code class="text-primary font-bold truncate">{{ selectedIcon || '(kosong)' }}</code>
             </div>
           </div>
         </CardContent>

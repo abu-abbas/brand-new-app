@@ -316,16 +316,16 @@ function prevPage() {
 <template>
   <div class="inline-block">
     <!-- Trigger Button -->
-    <div class="flex items-center gap-1.5">
+    <div class="inline-flex max-w-full items-center gap-1.5">
       <Button
         :variant="variant"
         :size="size"
         :disabled="disabled"
         type="button"
-        class="justify-between gap-2.5 min-w-44 px-3 font-normal"
+        class="justify-between gap-2 min-w-44 max-w-64 px-3 font-normal overflow-hidden"
         @click="isOpen = true"
       >
-        <div class="flex items-center gap-2.5 truncate">
+        <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
           <div
             v-if="props.modelValue && currentIconComponent"
             class="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
@@ -334,10 +334,10 @@ function prevPage() {
           </div>
           <HelpCircle v-else class="size-4 text-muted-foreground/60 shrink-0" />
 
-          <span v-if="props.modelValue" class="truncate font-medium text-foreground text-xs">
+          <span v-if="props.modelValue" class="truncate font-medium text-foreground text-xs block min-w-0 flex-1 text-left">
             {{ props.modelValue }}
           </span>
-          <span v-else class="text-muted-foreground text-xs">
+          <span v-else class="text-muted-foreground text-xs truncate block min-w-0 flex-1 text-left">
             {{ placeholder }}
           </span>
         </div>
