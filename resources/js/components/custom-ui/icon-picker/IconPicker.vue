@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { HTMLAttributes } from 'vue';
 import { ref, computed, watch } from 'vue';
 import * as LucideIcons from '@lucide/vue';
 import {
@@ -16,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Modal } from '@/components/custom-ui/modal';
+import { cn } from '@/lib/utils';
 
 interface Props {
   modelValue?: string;
@@ -26,6 +28,7 @@ interface Props {
   clearable?: boolean;
   variant?: 'outline' | 'default' | 'secondary' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
+  class?: HTMLAttributes['class'];
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -37,6 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
   clearable: true,
   variant: 'outline',
   size: 'default',
+  class: undefined,
 });
 
 const emit = defineEmits<{
@@ -318,7 +322,7 @@ function prevPage() {
 </script>
 
 <template>
-  <div class="inline-block w-full">
+  <div :class="cn('inline-block', props.class)">
     <!-- Trigger Button -->
     <div class="inline-flex w-full items-center gap-1.5">
       <Button
