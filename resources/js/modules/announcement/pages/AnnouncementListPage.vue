@@ -198,7 +198,12 @@ function toggleStatus(id: number) {
           class="break-inside-avoid relative group rounded-2xl overflow-hidden transition-all duration-300"
         >
           <!-- Pure Announcement Card View -->
-          <AnnouncementLivePreview :data="item" :show-live-badge="false" />
+          <AnnouncementLivePreview
+            :data="item"
+            :show-live-badge="false"
+            :show-status-badge="true"
+            @toggle-status="toggleStatus(item.id)"
+          />
 
           <!-- Dark/Light Backdrop Overlay (Shown on Hover) -->
           <div
@@ -210,34 +215,16 @@ function toggleStatus(id: number) {
             class="absolute inset-0 z-20 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 scale-95 group-hover:scale-100"
           >
             <div
-              class="flex items-center gap-3 px-4 py-2 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border shadow-xl text-xs font-semibold"
+              class="flex items-center gap-3 px-5 py-2.5 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border shadow-xl text-xs font-semibold"
             >
-              <!-- Toggle Status Tayang Link -->
-              <button
-                type="button"
-                class="inline-flex items-center gap-1.5 transition-colors cursor-pointer hover:underline"
-                :class="
-                  item.is_active
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-muted-foreground hover:text-foreground'
-                "
-                @click="toggleStatus(item.id)"
-              >
-                <CheckCircle v-if="item.is_active" class="h-3.5 w-3.5 text-emerald-500" />
-                <XCircle v-else class="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{{ item.is_active ? 'Tayang' : 'Draft' }}</span>
-              </button>
-
-              <span class="text-border/80 select-none">|</span>
-
               <!-- Edit Link -->
               <button
                 type="button"
-                class="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
+                class="inline-flex items-center gap-1.5 text-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
                 title="Edit Pengumuman"
                 @click="editItem(item.id)"
               >
-                <Edit3 class="h-3.5 w-3.5" />
+                <Edit3 class="h-4 w-4" />
                 <span>Edit</span>
               </button>
 
@@ -250,7 +237,7 @@ function toggleStatus(id: number) {
                 title="Hapus Pengumuman"
                 @click="deleteItem(item.id)"
               >
-                <Trash2 class="h-3.5 w-3.5" />
+                <Trash2 class="h-4 w-4" />
                 <span>Hapus</span>
               </button>
             </div>

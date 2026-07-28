@@ -13,6 +13,7 @@ import {
   Mail,
   Megaphone,
   CheckCircle2,
+  XCircle,
   FileText,
   Info,
 } from '@lucide/vue';
@@ -40,11 +41,17 @@ const props = withDefaults(
   defineProps<{
     data: AnnouncementFormData;
     showLiveBadge?: boolean;
+    showStatusBadge?: boolean;
   }>(),
   {
     showLiveBadge: true,
+    showStatusBadge: false,
   },
 );
+
+const emit = defineEmits<{
+  (e: 'toggleStatus'): void;
+}>();
 
 // Map Icon string ke Lucide Component
 const iconMap: Record<string, Component> = {
@@ -151,9 +158,27 @@ function toggleHighlightExpand(idx: number) {
             </h3>
           </div>
         </div>
-        <span class="text-xs font-mono font-medium text-muted-foreground pt-0.5">
-          {{ data.code || '#CODE' }}
-        </span>
+        <div class="flex items-center gap-2 pt-0.5">
+          <button
+            v-if="showStatusBadge"
+            type="button"
+            class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all cursor-pointer select-none shrink-0"
+            :class="
+              data.is_active
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/25'
+                : 'bg-muted text-muted-foreground border-border hover:bg-muted/80'
+            "
+            title="Klik untuk mengubah status tayang / draft"
+            @click.stop="emit('toggleStatus')"
+          >
+            <CheckCircle2 v-if="data.is_active" class="h-3 w-3 text-emerald-500" />
+            <XCircle v-else class="h-3 w-3 text-muted-foreground" />
+            <span>{{ data.is_active ? 'Tayang' : 'Draft' }}</span>
+          </button>
+          <span class="text-xs font-mono font-medium text-muted-foreground">
+            {{ data.code || '#CODE' }}
+          </span>
+        </div>
       </div>
 
       <!-- Quote Summary -->
