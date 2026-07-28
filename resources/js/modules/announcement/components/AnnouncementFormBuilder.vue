@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import IconPicker from '@/components/custom-ui/icon-picker/IconPicker.vue';
+import { DatePicker } from '@/components/custom-ui/date-picker';
 import type { AnnouncementFormData } from './AnnouncementLivePreview.vue';
 
 const props = defineProps<{
@@ -278,7 +279,12 @@ function handleSubmit() {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
           <div class="space-y-1.5">
             <label class="text-xs font-semibold text-foreground">Tanggal Publikasi</label>
-            <Input v-model="localForm.published_at" type="date" class="h-9 text-sm w-full" />
+            <DatePicker
+              v-model="localForm.published_at"
+              placeholder="Pilih tanggal publikasi..."
+              clearable
+              presets
+            />
           </div>
 
           <div class="flex items-center gap-3 pt-5">
