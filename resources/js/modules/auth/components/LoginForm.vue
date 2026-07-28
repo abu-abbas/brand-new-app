@@ -49,7 +49,7 @@ const refreshCaptcha = () => {
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
           <div
-            class="h-7.5 w-7.5 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-sm"
+            class="h-7.5 w-7.5 rounded-lg bg-primary text-primary-foreground flex items-center justify-center shadow-sm"
           >
             <Shield class="h-4 w-4 fill-current stroke-none" />
           </div>
@@ -59,7 +59,7 @@ const refreshCaptcha = () => {
         <!-- Mobile Only Announcement Button -->
         <button
           type="button"
-          class="lg:hidden h-7.5 px-3 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wide shadow-md flex items-center gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer border border-primary-foreground/10"
+          class="lg:hidden h-7.5 px-3 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wide shadow-md flex items-center gap-1.5 transition-all duration-200 active:scale-95 cursor-pointer border border-primary-foreground/10"
           @click="$emit('open-announcement')"
         >
           <div class="relative flex items-center justify-center">
@@ -100,7 +100,7 @@ const refreshCaptcha = () => {
               type="text"
               placeholder="ID Pegawai / Username"
               required
-              class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl text-xs"
+              class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs"
             />
           </div>
         </div>
@@ -117,7 +117,7 @@ const refreshCaptcha = () => {
               :type="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
               required
-              class="pl-8.5 pr-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl text-xs"
+              class="pl-8.5 pr-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs"
             />
             <button
               type="button"
@@ -142,13 +142,13 @@ const refreshCaptcha = () => {
                 type="text"
                 placeholder="CAPTCHA"
                 required
-                class="h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl text-xs uppercase"
+                class="h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs uppercase"
               />
             </div>
             <button
               type="button"
               title="Klik untuk acak captcha"
-              class="col-span-2 h-9 bg-muted/70 dark:bg-muted/40 border border-input rounded-xl flex items-center justify-center font-mono font-bold italic tracking-widest text-foreground text-xs hover:bg-muted transition-colors select-none cursor-pointer"
+              class="col-span-2 h-9 bg-muted/70 dark:bg-muted/40 border border-input rounded-md flex items-center justify-center font-mono font-bold italic tracking-widest text-foreground text-xs hover:bg-muted transition-colors select-none cursor-pointer"
               @click="refreshCaptcha"
             >
               {{ captchaCode }}
@@ -156,21 +156,20 @@ const refreshCaptcha = () => {
           </div>
         </div>
 
-        <!-- spacing -->
-        <div class="mt-2.5 my-8.5" />
+        <div class="my-2.5 lg:my-7.5" />
 
         <!-- Submit Button -->
         <Button
           type="submit"
           :disabled="isLoading"
-          class="w-full h-9.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wider uppercase rounded-xl shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mt-1 cursor-pointer"
+          class="w-full h-9.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wider uppercase shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 mt-2 cursor-pointer"
         >
           <span>Masuk Ke Sistem</span>
           <ArrowRight class="h-3.5 w-3.5" />
         </Button>
 
         <!-- Divider: Atau masuk dengan -->
-        <div class="relative flex items-center justify-center my-1.5">
+        <div class="relative flex items-center justify-center my-2.5">
           <div class="border-t border-border w-full"></div>
           <span
             class="bg-background px-2 text-[9px] text-muted-foreground uppercase tracking-wider font-semibold shrink-0"
@@ -183,7 +182,7 @@ const refreshCaptcha = () => {
         <!-- Google SSO Login Button -->
         <button
           type="button"
-          class="w-full h-9 bg-card hover:bg-muted/60 border border-border text-foreground font-medium text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.99] cursor-pointer"
+          class="w-full h-9 bg-card hover:bg-muted/60 border border-border text-foreground font-medium text-xs rounded-md shadow-xs flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.99] cursor-pointer"
           @click="handleGoogleLogin"
         >
           <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24">
@@ -206,17 +205,6 @@ const refreshCaptcha = () => {
           </svg>
           <span>Google Account</span>
         </button>
-
-        <!-- Help Link -->
-        <div class="text-center pt-0.5">
-          <button
-            type="button"
-            class="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors font-medium cursor-pointer"
-          >
-            <HelpCircle class="h-3 w-3" />
-            <span>Masalah saat login?</span>
-          </button>
-        </div>
       </form>
     </div>
 
@@ -225,7 +213,13 @@ const refreshCaptcha = () => {
       class="pt-2 border-t border-border flex items-center justify-between text-[9px] font-semibold tracking-wider text-muted-foreground uppercase max-w-92.5 w-full mx-auto shrink-0 mt-1.5"
     >
       <span>VERSION 2.4.0</span>
-      <span>SEKRETARIAT JENDERAL</span>
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer normal-case leading-none"
+      >
+        <HelpCircle class="h-3 w-3 shrink-0" />
+        <span class="inline-block pt-px">Masalah saat login?</span>
+      </button>
     </div>
   </div>
 </template>
