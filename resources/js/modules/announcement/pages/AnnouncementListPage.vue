@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Search, Edit3, Trash2, CheckCircle, XCircle, Megaphone } from '@lucide/vue';
+import {
+  Plus,
+  Search,
+  Edit3,
+  Trash2,
+  CheckCircle,
+  XCircle,
+  Megaphone,
+} from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -123,11 +131,11 @@ function toggleStatus(id: number) {
     <div class="space-y-6">
       <!-- Full Soft Primary Tint Integrated Card -->
       <Card
-        class="border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-xs rounded-2xl overflow-hidden py-0"
+        class="border-primary/20 bg-primary/5 dark:bg-primary/10 shadow-xs rounded-2xl overflow-hidden"
       >
-        <CardContent class="p-4 py-0 md:p-6 space-y-4">
-          <!-- Top Section: Header Title + Action Button -->
-          <div class="flex flex-wrap items-center justify-between gap-4">
+        <CardContent class="p-4 md:p-6 space-y-4">
+          <!-- Top Section: Header Title + Action Button (Full Block on Mobile) -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-start gap-3">
               <div
                 class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs mt-0.5"
@@ -142,8 +150,9 @@ function toggleStatus(id: number) {
               </div>
             </div>
 
+            <!-- Full Width Block Button on Mobile, Auto Width on Desktop -->
             <Button
-              class="gap-2 font-semibold text-xs tracking-wide uppercase h-10 px-5"
+              class="w-full sm:w-auto justify-center gap-2 font-semibold text-xs tracking-wide uppercase h-10 px-5 shrink-0"
               @click="createNew"
             >
               <Plus class="size-4" />
