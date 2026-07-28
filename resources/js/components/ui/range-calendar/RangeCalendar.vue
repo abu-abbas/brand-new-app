@@ -12,7 +12,6 @@ import {
   RangeCalendarGridRow,
   RangeCalendarHeadCell,
   RangeCalendarHeader,
-  RangeCalendarHeading,
   RangeCalendarNext,
   RangeCalendarPrev,
   RangeCalendarRoot,
@@ -28,6 +27,7 @@ const props = withDefaults(
   >(),
   {
     locale: 'id-ID',
+    numberOfMonths: 2,
     class: undefined,
   },
 );
@@ -36,30 +36,45 @@ const emits = defineEmits<RangeCalendarRootEmits>();
 
 const delegatedProps = reactiveOmit(props, 'class');
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+
+function formatMonthHeader(dateVal: any): string {
+  if (!dateVal) return '';
+  const year = dateVal.year;
+  const month = dateVal.month;
+  if (!year || !month) return '';
+  const d = new Date(year, month - 1, 1);
+  return new Intl.DateTimeFormat(props.locale || 'id-ID', {
+    month: 'long',
+    year: 'numeric',
+  }).format(d);
+}
 </script>
 
 <template>
   <RangeCalendarRoot v-slot="{ grid, weekDays }" v-bind="forwarded" :class="cn('p-3', props.class)">
-    <RangeCalendarHeader class="relative flex items-center justify-between pt-1">
+    <RangeCalendarHeader class="relative flex items-center justify-between pt-1 pb-2">
       <RangeCalendarPrev
-        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30"
+        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30 z-10"
       >
         <ChevronLeft class="size-4" />
       </RangeCalendarPrev>
-      <RangeCalendarHeading class="text-sm font-medium" />
+
       <RangeCalendarNext
-        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30"
+        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30 z-10"
       >
         <ChevronRight class="size-4" />
       </RangeCalendarNext>
     </RangeCalendarHeader>
 
-    <div class="mt-4 flex flex-col gap-y-4 sm:flex-row sm:gap-x-4 sm:gap-y-0">
+    <div class="flex flex-col sm:flex-row gap-y-4 sm:gap-x-6 sm:gap-y-0">
       <RangeCalendarGrid
         v-for="month in grid"
         :key="month.value.toString()"
         class="w-full border-collapse space-y-1"
       >
+        <div class="flex items-center justify-center text-sm font-semibold h-7 mb-1">
+          {{ formatMonthHeader(month.value) }}
+        </div>
         <RangeCalendarGridHead>
           <RangeCalendarGridRow class="flex">
             <RangeCalendarHeadCell

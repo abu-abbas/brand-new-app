@@ -36,6 +36,7 @@ const props = withDefaults(
     clearable?: boolean;
     allowManualInput?: boolean;
     displayFormat?: string | Intl.DateTimeFormatOptions | ((isoStr: string) => string);
+    numberOfMonths?: number;
     disabled?: boolean;
     size?: 'sm' | 'default' | 'lg';
     class?: HTMLAttributes['class'];
@@ -51,11 +52,17 @@ const props = withDefaults(
     clearable: false,
     allowManualInput: false,
     displayFormat: undefined,
+    numberOfMonths: undefined,
     disabled: false,
     size: 'default',
     class: undefined,
   },
 );
+
+const effectiveNumberOfMonths = computed(() => {
+  if (props.numberOfMonths !== undefined) return props.numberOfMonths;
+  return props.mode === 'range' ? 2 : 1;
+});
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | DateRangeValue | [string, string] | null): void;
@@ -534,6 +541,7 @@ function handleManualInputBlur() {
               v-else-if="props.mode === 'range'"
               v-model="rangeValue"
               :locale="props.locale"
+              :number-of-months="effectiveNumberOfMonths"
               :min-value="minCalendarDate"
               :max-value="maxCalendarDate"
             />
