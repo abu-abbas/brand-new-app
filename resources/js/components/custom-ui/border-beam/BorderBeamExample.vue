@@ -22,7 +22,7 @@ const isAnimating = ref(true);
     <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
       <div>
         <h2 class="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
-          <Sparkles class="size-6 text-amber-500" />
+          <Sparkles class="size-6 text-primary" />
           Border Beam Component
         </h2>
         <p class="text-muted-foreground">
