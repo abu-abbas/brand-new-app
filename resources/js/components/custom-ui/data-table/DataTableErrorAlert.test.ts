@@ -1,18 +1,27 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { nextTick, ref } from 'vue';
 import DataTableErrorAlert from './DataTableErrorAlert.vue';
+
+const copyMock = vi.fn().mockResolvedValue(undefined);
+const isCopied = ref(false);
+
+vi.mock('@vueuse/core', async () => {
+  const actual = await vi.importActual<typeof import('@vueuse/core')>('@vueuse/core');
+  return {
+    ...actual,
+    useClipboard: () => ({
+      copy: copyMock,
+      copied: isCopied,
+    }),
+  };
+});
 
 describe('DataTableErrorAlert Component', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
-    const writeTextMock = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, {
-      clipboard: {
-        writeText: writeTextMock,
-      },
-    });
-    document.execCommand = vi.fn().mockReturnValue(true);
+    copyMock.mockClear();
+    isCopied.value = false;
   });
 
   it('renders the error message and code badge', () => {
@@ -102,9 +111,7 @@ describe('DataTableErrorAlert Component', () => {
     copyButton?.click();
     await nextTick();
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      '0443b4df-31a6-444a-a30e-dfa306c222f2',
-    );
+    expect(copyMock).toHaveBeenCalledWith('0443b4df-31a6-444a-a30e-dfa306c222f2');
 
     wrapper.unmount();
   });
@@ -131,7 +138,7 @@ describe('DataTableErrorAlert Component', () => {
     copyButton?.click();
     await nextTick();
 
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('4499979717396997446');
+    expect(copyMock).toHaveBeenCalledWith('4499979717396997446');
 
     wrapper.unmount();
   });
