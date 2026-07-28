@@ -28,6 +28,7 @@ interface Props {
   clearable?: boolean;
   variant?: 'outline' | 'default' | 'secondary' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
+  textSize?: string;
   class?: HTMLAttributes['class'];
 }
 
@@ -40,6 +41,7 @@ const props = withDefaults(defineProps<Props>(), {
   clearable: true,
   variant: 'outline',
   size: 'default',
+  textSize: undefined,
   class: undefined,
 });
 
@@ -296,6 +298,19 @@ const currentIconComponent = computed(() => {
   return getIconComponent(props.modelValue);
 });
 
+const textSizeClass = computed(() => {
+  if (props.textSize) return props.textSize;
+  switch (props.size) {
+    case 'sm':
+      return 'text-xs';
+    case 'lg':
+      return 'text-base';
+    case 'default':
+    default:
+      return 'text-sm';
+  }
+});
+
 function selectIcon(iconName: string) {
   emit('update:modelValue', iconName);
   emit('change', iconName);
@@ -343,13 +358,15 @@ function prevPage() {
 
           <span
             v-if="props.modelValue"
-            class="truncate text-foreground text-xs block min-w-0 flex-1 text-left"
+            :class="cn('truncate text-foreground block min-w-0 flex-1 text-left', textSizeClass)"
           >
             {{ props.modelValue }}
           </span>
           <span
             v-else
-            class="text-muted-foreground text-xs truncate block min-w-0 flex-1 text-left"
+            :class="
+              cn('truncate text-muted-foreground block min-w-0 flex-1 text-left', textSizeClass)
+            "
           >
             {{ placeholder }}
           </span>
