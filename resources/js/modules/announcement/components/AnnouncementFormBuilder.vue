@@ -231,24 +231,29 @@ function handleSubmit() {
 
       <!-- Section 3: Sub Cards Highlights (Dynamic 1-3 List) -->
       <div class="space-y-3 border-t border-border pt-4">
-        <div class="flex items-center justify-between">
-          <div
-            class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
-          >
-            <Tag class="h-3.5 w-3.5" />
-            <span>3. Kartu Poin Informasi (Maks. 3 Poin, 75 Karakter/Poin)</span>
+        <div class="space-y-1">
+          <div class="flex items-center justify-between">
+            <div
+              class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
+            >
+              <Tag class="h-3.5 w-3.5" />
+              <span>3. Kartu Poin Informasi</span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              class="h-7 text-[11px] gap-1"
+              :disabled="localForm.highlights && localForm.highlights.length >= 3"
+              @click="addHighlightItem"
+            >
+              <Plus class="h-3 w-3" />
+              <span>Tambah Poin</span>
+            </Button>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            class="h-7 text-[11px] gap-1"
-            :disabled="localForm.highlights && localForm.highlights.length >= 3"
-            @click="addHighlightItem"
-          >
-            <Plus class="h-3 w-3" />
-            <span>Tambah Poin</span>
-          </Button>
+          <p class="text-[11px] text-muted-foreground">
+            Maksimal 3 poin informasi. Tiap poin dibatasi maksimal 75 karakter.
+          </p>
         </div>
 
         <div v-if="localForm.highlights && localForm.highlights.length > 0" class="space-y-2.5">
