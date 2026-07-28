@@ -1,21 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '@/pages/HomePage.vue';
-import ExampleCustomComponentPage from '@/pages/ExamplePage.vue';
+import { authRoutes } from '@/modules/auth/routes';
+import { homeRoutes } from '@/modules/home/routes';
+import { exampleRoutes } from '@/modules/example/routes';
+import { announcementRoutes } from '@/modules/announcement/routes';
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomePage,
-    },
-    {
-      path: '/example-custom-component',
-      name: 'example-custom-component',
-      component: ExampleCustomComponentPage,
-    },
-  ],
+  routes: [...authRoutes, ...homeRoutes, ...exampleRoutes, ...announcementRoutes],
 });
 
 export default router;
