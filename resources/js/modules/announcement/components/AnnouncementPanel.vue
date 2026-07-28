@@ -87,11 +87,9 @@ function getHighlightIcon(iconName: string) {
 function getCategoryBadgeClass(category: string) {
   switch (category) {
     case 'TEKNIS':
-      return 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/20';
     case 'FITUR BARU':
-      return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20';
     case 'PENTING':
-      return 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20';
+      return 'bg-primary/15 text-primary border-primary/20';
     case 'INFORMASI':
     default:
       return 'bg-muted text-muted-foreground border-border';
@@ -101,11 +99,9 @@ function getCategoryBadgeClass(category: string) {
 function getCategoryIconBgClass(category: string) {
   switch (category) {
     case 'TEKNIS':
-      return 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/20';
     case 'FITUR BARU':
-      return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20';
     case 'PENTING':
-      return 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20';
+      return 'bg-primary/15 text-primary border-primary/20';
     case 'INFORMASI':
     default:
       return 'bg-muted text-muted-foreground border-border';
@@ -163,9 +159,9 @@ onUnmounted(() => {
               class="flex items-center gap-2 transition-all duration-300 overflow-hidden"
               :class="isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-6 opacity-100 mb-1.5'"
             >
-              <span class="h-2 w-2 rounded-full bg-orange-500 animate-pulse"></span>
+              <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
               <span
-                class="text-[11px] font-extrabold uppercase tracking-widest text-orange-600 dark:text-orange-400"
+                class="text-[11px] font-extrabold uppercase tracking-widest text-primary"
               >
                 UPDATE TERKINI
               </span>
@@ -240,7 +236,7 @@ onUnmounted(() => {
           <!-- Quote Summary (Leading Snug) -->
           <div
             v-if="item.summary"
-            class="pl-3 border-l-2 border-orange-500 dark:border-orange-400 py-0.5 text-xs text-muted-foreground italic leading-snug"
+            class="pl-3 border-l-2 border-primary py-0.5 text-xs text-muted-foreground italic leading-snug"
           >
             {{ item.summary }}
           </div>
@@ -262,7 +258,7 @@ onUnmounted(() => {
             >
               <component
                 :is="getHighlightIcon(h.icon)"
-                class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0 sm:mb-2"
+                class="h-4 w-4 text-primary shrink-0 sm:mb-2"
               />
               <p class="text-xs text-foreground font-medium leading-snug">
                 {{ h.text }}
@@ -279,7 +275,7 @@ onUnmounted(() => {
                 <span
                   v-for="(tag, tIdx) in item.author_tags"
                   :key="tIdx"
-                  class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 dark:bg-orange-500 text-[9px] font-bold text-white ring-2 ring-card"
+                  class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-card"
                 >
                   {{ tag }}
                 </span>

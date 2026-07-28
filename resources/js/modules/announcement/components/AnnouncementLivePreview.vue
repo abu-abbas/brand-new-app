@@ -71,19 +71,11 @@ function getHighlightIcon(iconName: string) {
 const categoryStyles = computed(() => {
   switch (props.data.category) {
     case 'TEKNIS':
-      return {
-        badge: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/20',
-        iconBg: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/20',
-      };
     case 'FITUR BARU':
-      return {
-        badge: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
-        iconBg: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
-      };
     case 'PENTING':
       return {
-        badge: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
-        iconBg: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/20',
+        badge: 'bg-primary/15 text-primary border-primary/20',
+        iconBg: 'bg-primary/15 text-primary border-primary/20',
       };
     case 'INFORMASI':
     default:
@@ -106,7 +98,7 @@ function toggleHighlightExpand(idx: number) {
     <!-- Live Badge Bar (Only shown if showLiveBadge is true) -->
     <div v-if="showLiveBadge" class="flex items-center justify-between px-1">
       <div class="flex items-center gap-2">
-        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
         <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           Live Realtime Preview
         </span>
@@ -158,7 +150,7 @@ function toggleHighlightExpand(idx: number) {
       <!-- Quote Summary -->
       <div
         v-if="data.summary"
-        class="pl-3 border-l-2 border-orange-500 dark:border-orange-400 py-0.5 text-xs text-muted-foreground italic leading-snug"
+        class="pl-3 border-l-2 border-primary py-0.5 text-xs text-muted-foreground italic leading-snug"
       >
         {{ data.summary }}
       </div>
@@ -185,7 +177,7 @@ function toggleHighlightExpand(idx: number) {
         >
           <component
             :is="getHighlightIcon(item.icon)"
-            class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0"
+            class="h-4 w-4 text-primary shrink-0"
           />
           <p
             class="text-xs text-foreground font-medium leading-snug wrap-break-word transition-all"
@@ -208,7 +200,7 @@ function toggleHighlightExpand(idx: number) {
             <span
               v-for="(tag, tIdx) in data.author_tags"
               :key="tIdx"
-              class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-600 dark:bg-orange-500 text-[9px] font-bold text-white ring-2 ring-card"
+              class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground ring-2 ring-card"
             >
               {{ tag }}
             </span>
