@@ -469,7 +469,7 @@ function handleManualInputBlur() {
           <!-- Presets Sidebar -->
           <div
             v-if="computedPresets.length > 0"
-            class="border-b sm:border-b-0 sm:border-r border-border p-2 flex sm:flex-col gap-1 overflow-x-auto min-w-36"
+            class="border-b sm:border-b-0 sm:border-r bg-muted/20 border-border p-2 flex sm:flex-col gap-1 overflow-x-auto min-w-36"
           >
             <span class="text-xs font-semibold text-muted-foreground px-2 py-1 hidden sm:block">
               Preset {{ props.mode === 'month' ? 'Bulan' : 'Tanggal' }}
@@ -479,7 +479,7 @@ function handleManualInputBlur() {
               :key="preset.label"
               variant="ghost"
               size="sm"
-              class="justify-start text-xs font-normal h-8"
+              class="justify-start text-2sm font-normal h-8"
               @click="applyPreset(preset)"
             >
               {{ preset.label }}
@@ -517,9 +517,10 @@ function handleManualInputBlur() {
                   v-for="m in monthsList"
                   :key="m.monthNumber"
                   type="button"
-                  :variant="isMonthSelected(m.monthNumber) ? 'default' : 'secondary'"
+                  :variant="isMonthSelected(m.monthNumber) ? (props.disabled ? 'secondary' : 'default') : 'secondary'"
+                  :disabled="props.disabled"
                   size="sm"
-                  class="h-12 text-xs"
+                  class="h-12 text-sm"
                   @click="selectMonth(m.monthNumber)"
                 >
                   {{ m.labelShort }}
@@ -532,6 +533,7 @@ function handleManualInputBlur() {
               v-else-if="props.mode === 'single'"
               v-model="singleValue"
               :locale="props.locale"
+              :disabled="props.disabled"
               :min-value="minCalendarDate"
               :max-value="maxCalendarDate"
             />
@@ -541,6 +543,7 @@ function handleManualInputBlur() {
               v-else-if="props.mode === 'range'"
               v-model="rangeValue"
               :locale="props.locale"
+              :disabled="props.disabled"
               :number-of-months="effectiveNumberOfMonths"
               :min-value="minCalendarDate"
               :max-value="maxCalendarDate"

@@ -86,7 +86,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
               <CalendarCellTrigger
                 :day="weekDate"
                 :month="month.value"
-                class="hover:bg-accent hover:text-accent-foreground data-selected:bg-primary data-selected:text-primary-foreground data-selected:hover:bg-primary data-selected:hover:text-primary-foreground data-selected:focus:bg-primary data-selected:focus:text-primary-foreground data-disabled:text-muted-foreground/40 data-today:bg-accent data-today:text-accent-foreground relative flex size-9 items-center justify-center rounded-md p-0 text-center text-sm font-normal data-disabled:pointer-events-none data-unavailable:line-through data-unavailable:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                class="hover:bg-accent hover:text-accent-foreground data-selected:bg-primary data-selected:text-primary-foreground data-selected:hover:bg-primary data-selected:hover:text-primary-foreground data-selected:focus:bg-primary data-selected:focus:text-primary-foreground data-disabled:text-muted-foreground/40 data-disabled:data-selected:bg-muted/80 data-disabled:data-selected:text-muted-foreground/70 data-disabled:data-selected:opacity-60 data-today:bg-accent data-today:text-accent-foreground relative flex size-9 items-center justify-center rounded-md p-0 text-center text-sm font-normal data-disabled:pointer-events-none data-unavailable:line-through data-unavailable:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </CalendarCell>
           </CalendarGridRow>
