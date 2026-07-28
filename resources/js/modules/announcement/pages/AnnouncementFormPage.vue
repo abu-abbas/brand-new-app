@@ -49,9 +49,9 @@ function handleSubmit() {
     <!-- Top Action Bar (shrink-0 = tidak meregang) -->
     <div class="flex items-center justify-between shrink-0">
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
-        class="gap-1.5 text-xs font-semibold"
+        class="gap-1.5 text-xs font-medium"
         @click="router.back()"
       >
         <ArrowLeft class="h-4 w-4" />

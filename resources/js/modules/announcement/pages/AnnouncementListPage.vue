@@ -200,18 +200,18 @@ function toggleStatus(id: number) {
           <!-- Pure Announcement Card View -->
           <AnnouncementLivePreview :data="item" :show-live-badge="false" />
 
-          <!-- Floating Glassmorphic Admin Action Bar -->
+          <!-- Floating Clean Admin Action Links -->
           <div
-            class="absolute bottom-3 right-3 z-20 flex items-center gap-2 p-1.5 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border shadow-lg transition-all duration-300 group-hover:scale-[1.02]"
+            class="absolute bottom-3 right-3 z-20 flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-background/90 dark:bg-card/90 backdrop-blur-md border border-border/80 shadow-md text-xs transition-all duration-300"
           >
-            <!-- Toggle Status Tayang Button -->
+            <!-- Toggle Status Tayang Link -->
             <button
               type="button"
-              class="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full cursor-pointer transition-all active:scale-95"
+              class="inline-flex items-center gap-1 font-semibold transition-colors cursor-pointer hover:underline"
               :class="
                 item.is_active
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25'
-                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-muted-foreground hover:text-foreground'
               "
               @click="toggleStatus(item.id)"
             >
@@ -220,12 +220,12 @@ function toggleStatus(id: number) {
               <span>{{ item.is_active ? 'Tayang' : 'Draft' }}</span>
             </button>
 
-            <div class="h-4 w-px bg-border"></div>
+            <span class="text-border/80 select-none">|</span>
 
-            <!-- Edit Button -->
+            <!-- Edit Link -->
             <button
               type="button"
-              class="h-7 px-3 rounded-full bg-muted/60 hover:bg-primary hover:text-primary-foreground text-foreground text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              class="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
               title="Edit Pengumuman"
               @click="editItem(item.id)"
             >
@@ -233,10 +233,12 @@ function toggleStatus(id: number) {
               <span>Edit</span>
             </button>
 
-            <!-- Delete Button -->
+            <span class="text-border/80 select-none">|</span>
+
+            <!-- Delete Link -->
             <button
               type="button"
-              class="h-7 px-3 rounded-full bg-muted/60 hover:bg-red-500 hover:text-white text-muted-foreground text-[11px] font-semibold flex items-center gap-1.5 transition-all cursor-pointer"
+              class="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-destructive transition-colors cursor-pointer hover:underline"
               title="Hapus Pengumuman"
               @click="deleteItem(item.id)"
             >
