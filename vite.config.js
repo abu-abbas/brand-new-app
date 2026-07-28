@@ -21,6 +21,37 @@ export default defineConfig({
     tailwindcss(),
     vue(),
   ],
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('element-plus')) {
+              return 'vendor-element-plus';
+            }
+            if (id.includes('@lucide/vue')) {
+              return 'vendor-lucide';
+            }
+            if (id.includes('reka-ui')) {
+              return 'vendor-reka';
+            }
+            if (id.includes('@tanstack/vue-query')) {
+              return 'vendor-tanstack-query';
+            }
+            if (
+              id.includes('vue') ||
+              id.includes('vue-router') ||
+              id.includes('pinia') ||
+              id.includes('axios')
+            ) {
+              return 'vendor-core';
+            }
+          }
+        },
+      },
+    },
+  },
   server: {
     watch: {
       ignored: ['**/storage/framework/views/**'],

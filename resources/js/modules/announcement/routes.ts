@@ -1,21 +1,19 @@
 import type { RouteRecordRaw } from 'vue-router';
-import AnnouncementListPage from './pages/AnnouncementListPage.vue';
-import AnnouncementFormPage from './pages/AnnouncementFormPage.vue';
 
 export const announcementRoutes: RouteRecordRaw[] = [
   {
     path: '/announcements',
     name: 'announcement-list',
-    component: AnnouncementListPage,
+    component: () => import('./pages/AnnouncementListPage.vue'),
   },
   {
     path: '/announcements/create',
     name: 'announcement-create',
-    component: AnnouncementFormPage,
+    component: () => import('./pages/AnnouncementFormPage.vue'),
   },
   {
     path: '/announcements/:id/edit',
     name: 'announcement-edit',
-    component: AnnouncementFormPage,
+    component: () => import('./pages/AnnouncementFormPage.vue'),
   },
 ];
