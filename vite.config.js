@@ -53,8 +53,22 @@ export default defineConfig({
     },
   },
   server: {
+    hmr: {
+      overlay: false,
+      reloadForStaticChanges: false,
+    },
     watch: {
-      ignored: ['**/storage/framework/views/**'],
+      ignored: [
+        '**/app/**',
+        '**/lang/**',
+        '**/tests/**',
+        '**/storage/**',
+        '**/database/**',
+        '**/bootstrap/**',
+
+        // Kecuali routes yang tetap di-watch
+        '!**/routes/**',
+      ],
     },
   },
 });
