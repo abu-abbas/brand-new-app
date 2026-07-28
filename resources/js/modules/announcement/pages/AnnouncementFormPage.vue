@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { ArrowLeft, Moon, Sun, CheckCircle2 } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import AnnouncementFormBuilder from '../components/AnnouncementFormBuilder.vue';
 import AnnouncementLivePreview, {
   type AnnouncementFormData,
@@ -81,25 +82,29 @@ function handleSubmit() {
         <span>Pengumuman berhasil disimpan ke database! Mengalihkan ke daftar master...</span>
       </div>
 
-      <!-- Main Split View Layout (Form Builder Left, Live Preview Right) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- Left Column: Form Builder (7 cols) -->
-        <div class="lg:col-span-7">
-          <AnnouncementFormBuilder v-model:form-data="formData" @submit="handleSubmit" />
-        </div>
-
-        <!-- Right Column: Live Preview Sticky Panel (5 cols) -->
-        <div class="lg:col-span-5 sticky top-6">
-          <div
-            class="p-5 rounded-3xl border border-border shadow-xs transition-colors duration-300"
-            :class="
-              isPreviewDark ? 'dark bg-[#09090b] text-slate-50' : 'bg-[#f4f4f6] text-slate-900'
-            "
-          >
-            <AnnouncementLivePreview :data="formData" />
+      <!-- Main Split View Layout dengan Resizable Component bawaan shadcn-vue -->
+      <ResizablePanelGroup direction="horizontal" class="min-h-150 w-full items-start">
+        <!-- Left Panel: Form Master / Form Builder -->
+        <ResizablePanel :default-size="58" :min-size="30" :max-size="75">
+          <div class="h-full pr-3 md:pr-4 overflow-y-auto">
+            <div class="p-0.5">
+              <AnnouncementFormBuilder v-model:form-data="formData" @submit="handleSubmit" />
+            </div>
           </div>
-        </div>
-      </div>
+        </ResizablePanel>
+
+        <!-- Resizable Handle bawaan shadcn-vue -->
+        <ResizableHandle with-handle class="hover:bg-primary/20 transition-colors" />
+
+        <!-- Right Panel: Live Realtime Preview -->
+        <ResizablePanel :default-size="42" :min-size="25" :max-size="70">
+          <div class="h-full pl-3 md:pl-4 top-6">
+            <div :class="isPreviewDark ? 'dark' : 'light'">
+              <AnnouncementLivePreview :data="formData" />
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   </AdminLayout>
 </template>

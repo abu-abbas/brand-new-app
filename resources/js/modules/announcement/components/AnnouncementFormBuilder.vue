@@ -86,7 +86,7 @@ function handleSubmit() {
 
 <template>
   <Card class="border-border bg-card shadow-xs">
-    <CardHeader class="pb-4">
+    <CardHeader>
       <div class="flex items-center gap-2">
         <div class="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
           <Sparkles class="h-4 w-4" />
