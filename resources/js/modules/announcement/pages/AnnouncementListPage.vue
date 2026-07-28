@@ -195,56 +195,65 @@ function toggleStatus(id: number) {
         <div
           v-for="item in filteredAnnouncements"
           :key="item.id"
-          class="break-inside-avoid relative group transition-all duration-300"
+          class="break-inside-avoid relative group rounded-2xl overflow-hidden transition-all duration-300"
         >
           <!-- Pure Announcement Card View -->
           <AnnouncementLivePreview :data="item" :show-live-badge="false" />
 
-          <!-- Floating Clean Admin Action Links (Centered & Shown on Hover) -->
+          <!-- Dark/Light Backdrop Overlay (Shown on Hover) -->
           <div
-            class="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border/80 shadow-md text-xs opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto translate-y-1 group-hover:translate-y-0 transition-all duration-200"
+            class="absolute inset-0 z-10 rounded-2xl bg-black/40 dark:bg-black/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
+          ></div>
+
+          <!-- Centered Admin Action Links (Shown on Hover) -->
+          <div
+            class="absolute inset-0 z-20 flex items-center justify-center p-4 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-200 scale-95 group-hover:scale-100"
           >
-            <!-- Toggle Status Tayang Link -->
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 font-semibold transition-colors cursor-pointer hover:underline"
-              :class="
-                item.is_active
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-muted-foreground hover:text-foreground'
-              "
-              @click="toggleStatus(item.id)"
+            <div
+              class="flex items-center gap-3 px-4 py-2 rounded-full bg-background/95 dark:bg-card/95 backdrop-blur-md border border-border shadow-xl text-xs font-semibold"
             >
-              <CheckCircle v-if="item.is_active" class="h-3.5 w-3.5 text-emerald-500" />
-              <XCircle v-else class="h-3.5 w-3.5 text-muted-foreground" />
-              <span>{{ item.is_active ? 'Tayang' : 'Draft' }}</span>
-            </button>
+              <!-- Toggle Status Tayang Link -->
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 transition-colors cursor-pointer hover:underline"
+                :class="
+                  item.is_active
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-muted-foreground hover:text-foreground'
+                "
+                @click="toggleStatus(item.id)"
+              >
+                <CheckCircle v-if="item.is_active" class="h-3.5 w-3.5 text-emerald-500" />
+                <XCircle v-else class="h-3.5 w-3.5 text-muted-foreground" />
+                <span>{{ item.is_active ? 'Tayang' : 'Draft' }}</span>
+              </button>
 
-            <span class="text-border/80 select-none">|</span>
+              <span class="text-border/80 select-none">|</span>
 
-            <!-- Edit Link -->
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
-              title="Edit Pengumuman"
-              @click="editItem(item.id)"
-            >
-              <Edit3 class="h-3.5 w-3.5" />
-              <span>Edit</span>
-            </button>
+              <!-- Edit Link -->
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer hover:underline"
+                title="Edit Pengumuman"
+                @click="editItem(item.id)"
+              >
+                <Edit3 class="h-3.5 w-3.5" />
+                <span>Edit</span>
+              </button>
 
-            <span class="text-border/80 select-none">|</span>
+              <span class="text-border/80 select-none">|</span>
 
-            <!-- Delete Link -->
-            <button
-              type="button"
-              class="inline-flex items-center gap-1 font-semibold text-muted-foreground hover:text-destructive transition-colors cursor-pointer hover:underline"
-              title="Hapus Pengumuman"
-              @click="deleteItem(item.id)"
-            >
-              <Trash2 class="h-3.5 w-3.5" />
-              <span>Hapus</span>
-            </button>
+              <!-- Delete Link -->
+              <button
+                type="button"
+                class="inline-flex items-center gap-1.5 text-muted-foreground hover:text-destructive transition-colors cursor-pointer hover:underline"
+                title="Hapus Pengumuman"
+                @click="deleteItem(item.id)"
+              >
+                <Trash2 class="h-3.5 w-3.5" />
+                <span>Hapus</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
