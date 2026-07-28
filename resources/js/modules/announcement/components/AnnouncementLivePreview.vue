@@ -117,9 +117,9 @@ const categoryStyles = computed(() => {
       </span>
     </div>
 
-    <!-- Announcement Card (Pure Card with leading-snug line height) -->
+    <!-- Announcement Card -->
     <div
-      class="bg-card text-card-foreground rounded-2xl p-6 shadow-sm border border-border space-y-4 transition-all duration-300"
+      class="bg-card text-card-foreground rounded-2xl p-5 sm:p-6 shadow-sm border border-border space-y-4 transition-all duration-300"
     >
       <!-- Card Header -->
       <div class="flex items-start justify-between">
@@ -149,7 +149,7 @@ const categoryStyles = computed(() => {
         </span>
       </div>
 
-      <!-- Quote Summary (Leading Snug Line Height) -->
+      <!-- Quote Summary -->
       <div
         v-if="data.summary"
         class="pl-3 border-l-2 border-orange-500 dark:border-orange-400 py-0.5 text-xs text-muted-foreground italic leading-snug"
@@ -157,7 +157,7 @@ const categoryStyles = computed(() => {
         {{ data.summary }}
       </div>
 
-      <!-- Content Text (Leading Snug Line Height) -->
+      <!-- Content Text -->
       <div
         v-if="data.content"
         class="text-xs text-muted-foreground leading-snug whitespace-pre-line"
@@ -165,19 +165,19 @@ const categoryStyles = computed(() => {
         {{ data.content }}
       </div>
 
-      <!-- Highlights Grid (If 1-3 items exist) -->
+      <!-- Smart Responsive Highlights Grid (Adaptive Inline Row on Narrow Media, 3-Col Grid on Wide Media) -->
       <div
         v-if="data.highlights && data.highlights.length > 0"
-        class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1"
+        class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1"
       >
         <div
           v-for="(item, idx) in data.highlights"
           :key="idx"
-          class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3.5 border border-border/60 flex flex-col justify-between"
+          class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3 sm:p-3.5 border border-border/60 flex flex-row sm:flex-col items-center sm:items-start gap-2.5 sm:gap-0 justify-start sm:justify-between"
         >
           <component
             :is="getHighlightIcon(item.icon)"
-            class="h-4 w-4 text-orange-500 dark:text-orange-400 mb-2"
+            class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0 sm:mb-2"
           />
           <p class="text-xs text-foreground font-medium leading-snug">
             {{ item.text || 'Teks poin info...' }}

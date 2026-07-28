@@ -108,7 +108,7 @@ function getCategoryIconBgClass(category: string) {
   }
 }
 
-// Fixed Hysteresis Scroll Threshold to eliminate flickering completely
+// Fixed Hysteresis Scroll Threshold
 const isScrolled = ref(false);
 const scrollContainer = ref<HTMLElement | null>(null);
 
@@ -116,7 +116,6 @@ function handleScroll() {
   if (!scrollContainer.value) return;
   const scrollTop = scrollContainer.value.scrollTop;
 
-  // Hysteresis: Trigger ON at > 35px, Trigger OFF at < 5px
   if (!isScrolled.value && scrollTop > 35) {
     isScrolled.value = true;
   } else if (isScrolled.value && scrollTop < 5) {
@@ -155,7 +154,7 @@ onUnmounted(() => {
       >
         <div class="flex items-center justify-between">
           <div>
-            <!-- Update Terkini Badge (Collapses smoothly) -->
+            <!-- Update Terkini Badge -->
             <div
               class="flex items-center gap-2 transition-all duration-300 overflow-hidden"
               :class="isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-6 opacity-100 mb-1.5'"
@@ -199,12 +198,12 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Stable Content Container (No my-auto layout shift) -->
+      <!-- Stable Content Container -->
       <div class="flex-1 px-4 sm:px-6 pt-2 pb-8 space-y-5">
         <div
           v-for="item in announcements"
           :key="item.id"
-          class="bg-card text-card-foreground rounded-2xl p-6 shadow-sm border border-border space-y-4"
+          class="bg-card text-card-foreground rounded-2xl p-5 sm:p-6 shadow-sm border border-border space-y-4"
         >
           <!-- Card Header -->
           <div class="flex items-start justify-between">
@@ -247,19 +246,19 @@ onUnmounted(() => {
             {{ item.content }}
           </div>
 
-          <!-- Highlights Grid (Leading Snug) -->
+          <!-- Highlights Grid (Adaptive Inline Row on Narrow Media) -->
           <div
             v-if="item.highlights && item.highlights.length > 0"
-            class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1"
+            class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1"
           >
             <div
               v-for="(h, hIdx) in item.highlights"
               :key="hIdx"
-              class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3.5 border border-border/60 flex flex-col justify-between"
+              class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3 sm:p-3.5 border border-border/60 flex flex-row sm:flex-col items-center sm:items-start gap-2.5 sm:gap-0 justify-start sm:justify-between"
             >
               <component
                 :is="getIconComponent(h.icon)"
-                class="h-4 w-4 text-orange-500 dark:text-orange-400 mb-2"
+                class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0 sm:mb-2"
               />
               <p class="text-xs text-foreground font-medium leading-snug">
                 {{ h.text }}
