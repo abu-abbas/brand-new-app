@@ -105,7 +105,7 @@ const categoryStyles = computed(() => {
           Live Realtime Preview
         </span>
       </div>
-      <span
+      <!-- <span
         class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full"
         :class="
           data.is_active
@@ -114,7 +114,7 @@ const categoryStyles = computed(() => {
         "
       >
         {{ data.is_active ? 'Status: Aktif' : 'Status: Draft' }}
-      </span>
+      </span> -->
     </div>
 
     <!-- Announcement Card -->

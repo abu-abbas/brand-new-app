@@ -253,7 +253,7 @@ function handleSubmit() {
           >
             <div class="w-40 shrink-0">
               <Select v-model="item.icon">
-                <SelectTrigger class="w-full h-8 text-xs">
+                <SelectTrigger class="w-full h-8">
                   <SelectValue placeholder="Icon" />
                 </SelectTrigger>
                 <SelectContent>
