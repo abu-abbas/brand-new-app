@@ -18,14 +18,14 @@ const isAnnouncementModalOpen = ref(false);
   <div
     class="h-screen w-screen flex flex-col lg:flex-row bg-muted/20 font-sans text-foreground overflow-hidden"
   >
-    <!-- Left Panel: Slim Login Form Panel (Full Height, Fixed, overflow-hidden) -->
+    <!-- Left Panel: Slim Login Form Panel (Full Height, Vertically Centered Content) -->
     <section
-      class="w-full lg:w-[38%] xl:w-[34%] 2xl:w-[30%] h-full shrink-0 flex flex-col bg-background z-0 overflow-hidden border-r border-border/40"
+      class="w-full lg:w-[38%] xl:w-[34%] 2xl:w-[30%] h-full shrink-0 flex flex-col bg-background z-0 overflow-hidden border-r border-border/40 justify-center"
     >
       <LoginForm class="h-full" @open-announcement="isAnnouncementModalOpen = true" />
     </section>
 
-    <!-- Right Panel: Announcement Panel (Full Height Scrollable area, desktop only) -->
+    <!-- Right Panel: Announcement Panel (Full Height, Vertically & Horizontally Centered Content) -->
     <section class="hidden lg:block flex-1 h-full bg-[#f4f4f6] dark:bg-[#09090b] overflow-hidden">
       <AnnouncementPanel class="h-full" />
     </section>

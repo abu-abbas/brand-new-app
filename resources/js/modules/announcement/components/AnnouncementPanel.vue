@@ -141,8 +141,8 @@ onUnmounted(() => {
     ref="scrollContainer"
     class="h-full flex flex-col min-h-0 bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
   >
-    <!-- Max-Width Centered Container -->
-    <div class="w-full max-w-3xl mx-auto flex flex-col min-h-full">
+    <!-- Max-Width Centered Container (Vertical & Horizontal Auto Centering when screen is large) -->
+    <div class="w-full max-w-3xl mx-auto flex flex-col min-h-full justify-center">
       <!-- Stable Shrinking Sticky Header -->
       <div
         class="sticky top-0 z-20 shrink-0 bg-[#f4f4f6] dark:bg-[#09090b] transition-all duration-300 px-4 sm:px-6"
@@ -199,7 +199,7 @@ onUnmounted(() => {
       </div>
 
       <!-- Stable Content Container -->
-      <div class="flex-1 px-4 sm:px-6 pt-2 pb-8 space-y-5">
+      <div class="px-4 sm:px-6 pt-2 pb-8 space-y-5">
         <div
           v-for="item in announcements"
           :key="item.id"
