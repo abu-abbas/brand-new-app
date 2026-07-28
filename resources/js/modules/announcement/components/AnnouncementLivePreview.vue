@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import {
   Cog,
   Bell,
@@ -93,6 +93,12 @@ const categoryStyles = computed(() => {
       };
   }
 });
+
+const expandedHighlights = ref<Record<number, boolean>>({});
+
+function toggleHighlightExpand(idx: number) {
+  expandedHighlights.value[idx] = !expandedHighlights.value[idx];
+}
 </script>
 
 <template>
@@ -173,13 +179,18 @@ const categoryStyles = computed(() => {
         <div
           v-for="(item, idx) in data.highlights"
           :key="idx"
-          class="bg-muted/50 dark:bg-muted/30 rounded-xl p-3 sm:p-3.5 border border-border/60 flex flex-row sm:flex-col items-center sm:items-start gap-2.5 sm:gap-0 justify-start sm:justify-between"
+          class="bg-muted/50 dark:bg-muted/30 hover:bg-muted/80 rounded-xl p-3 sm:p-3.5 border border-border/60 flex flex-row sm:flex-col items-center sm:items-start gap-2.5 sm:gap-2 justify-start cursor-pointer transition-all select-none"
+          title="Klik untuk expand / collapse teks selengkapnya"
+          @click="toggleHighlightExpand(idx)"
         >
           <component
             :is="getHighlightIcon(item.icon)"
-            class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0 sm:mb-2"
+            class="h-4 w-4 text-orange-500 dark:text-orange-400 shrink-0"
           />
-          <p class="text-xs text-foreground font-medium leading-snug">
+          <p
+            class="text-xs text-foreground font-medium leading-snug wrap-break-word transition-all"
+            :class="expandedHighlights[idx] ? 'line-clamp-none' : 'line-clamp-3'"
+          >
             {{ item.text || 'Teks poin info...' }}
           </p>
         </div>

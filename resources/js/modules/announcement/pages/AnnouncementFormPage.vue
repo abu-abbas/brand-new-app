@@ -46,65 +46,61 @@ function handleSubmit() {
 
 <template>
   <AdminLayout parent-title="Master Data" title="Form Pengumuman">
-    <div class="space-y-4">
-      <!-- Top Action Bar -->
-      <div class="flex items-center justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          class="gap-1.5 text-xs font-semibold"
-          @click="router.back()"
-        >
-          <ArrowLeft class="h-4 w-4" />
-          <span>Kembali ke Daftar Master</span>
-        </Button>
-
-        <div class="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            class="h-8 gap-1.5 text-xs font-medium"
-            @click="isPreviewDark = !isPreviewDark"
-          >
-            <Sun v-if="isPreviewDark" class="h-3.5 w-3.5 text-amber-500" />
-            <Moon v-else class="h-3.5 w-3.5 text-slate-700" />
-            <span>Simulasi Mode: {{ isPreviewDark ? 'Dark' : 'Light' }}</span>
-          </Button>
-        </div>
-      </div>
-
-      <!-- Success Notification Toast mockup -->
-      <div
-        v-if="isSaved"
-        class="bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 rounded-2xl flex items-center gap-2 text-xs font-semibold animate-bounce"
+    <!-- Top Action Bar (shrink-0 = tidak meregang) -->
+    <div class="flex items-center justify-between shrink-0">
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-1.5 text-xs font-semibold"
+        @click="router.back()"
       >
-        <CheckCircle2 class="h-4 w-4 text-emerald-600" />
-        <span>Pengumuman berhasil disimpan ke database! Mengalihkan ke daftar master...</span>
+        <ArrowLeft class="h-4 w-4" />
+        <span>Kembali ke Daftar Master</span>
+      </Button>
+
+      <div class="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          class="h-8 gap-1.5 text-xs font-medium"
+          @click="isPreviewDark = !isPreviewDark"
+        >
+          <Sun v-if="isPreviewDark" class="h-3.5 w-3.5 text-amber-500" />
+          <Moon v-else class="h-3.5 w-3.5 text-slate-700" />
+          <span>Simulasi Mode: {{ isPreviewDark ? 'Dark' : 'Light' }}</span>
+        </Button>
       </div>
-
-      <!-- Main Split View Layout dengan Resizable Component bawaan shadcn-vue -->
-      <ResizablePanelGroup direction="horizontal" class="min-h-150 w-full items-start">
-        <!-- Left Panel: Form Master / Form Builder -->
-        <ResizablePanel :default-size="58" :min-size="30" :max-size="75">
-          <div class="h-full pr-3 md:pr-4 overflow-y-auto">
-            <div class="p-0.5">
-              <AnnouncementFormBuilder v-model:form-data="formData" @submit="handleSubmit" />
-            </div>
-          </div>
-        </ResizablePanel>
-
-        <!-- Resizable Handle bawaan shadcn-vue -->
-        <ResizableHandle with-handle class="hover:bg-primary/20 transition-colors" />
-
-        <!-- Right Panel: Live Realtime Preview -->
-        <ResizablePanel :default-size="42" :min-size="25" :max-size="70">
-          <div class="h-full pl-3 md:pl-4 top-6">
-            <div :class="isPreviewDark ? 'dark' : 'light'">
-              <AnnouncementLivePreview :data="formData" />
-            </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
     </div>
+
+    <!-- Success Notification Toast mockup -->
+    <div
+      v-if="isSaved"
+      class="shrink-0 bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 px-4 py-3 rounded-2xl flex items-center gap-2 text-xs font-semibold animate-bounce"
+    >
+      <CheckCircle2 class="h-4 w-4 text-emerald-600" />
+      <span>Pengumuman berhasil disimpan ke database! Mengalihkan ke daftar master...</span>
+    </div>
+
+    <!-- Main Split View Layout: flex-1 min-h-0 agar mengisi sisa tinggi yang tersedia -->
+    <ResizablePanelGroup direction="horizontal" class="flex-1 min-h-0 w-full">
+      <!-- Left Panel: Form Builder — ScrollArea shadcn-vue untuk scrollbar konsisten lintas browser -->
+      <ResizablePanel :default-size="58" :min-size="30" :max-size="75">
+        <div class="p-0.5 pr-3 md:pr-4">
+          <AnnouncementFormBuilder v-model:form-data="formData" @submit="handleSubmit" />
+        </div>
+      </ResizablePanel>
+
+      <!-- Resizable Handle bawaan shadcn-vue -->
+      <ResizableHandle with-handle class="hover:bg-primary/20 transition-colors" />
+
+      <!-- Right Panel: Live Preview — TIDAK scroll, selalu terlihat -->
+      <ResizablePanel :default-size="42" :min-size="25" :max-size="70">
+        <div class="pl-3 md:pl-4">
+          <div :class="isPreviewDark ? 'dark' : 'light'">
+            <AnnouncementLivePreview :data="formData" />
+          </div>
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   </AdminLayout>
 </template>

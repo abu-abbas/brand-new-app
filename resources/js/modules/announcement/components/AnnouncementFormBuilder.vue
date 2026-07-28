@@ -118,6 +118,7 @@ function handleSubmit() {
               v-model="localForm.code"
               placeholder="Contoh: #T-2023"
               class="h-9 font-mono text-sm w-full"
+              maxlength="20"
             />
           </div>
 
@@ -145,6 +146,7 @@ function handleSubmit() {
             v-model="localForm.title"
             placeholder="Masukkan judul pengumuman..."
             class="h-9 text-sm w-full"
+            maxlength="100"
           />
         </div>
 
@@ -171,6 +173,7 @@ function handleSubmit() {
               v-model="localForm.author_dept"
               placeholder="Contoh: BIRO KEPEGAWAIAN"
               class="h-9 text-sm w-full"
+              maxlength="50"
             />
           </div>
         </div>
@@ -184,6 +187,7 @@ function handleSubmit() {
             v-model="tagInput"
             placeholder="Contoh: AD, HRD"
             class="h-9 text-sm w-full"
+            maxlength="30"
             @input="updateTags"
           />
         </div>
@@ -206,8 +210,9 @@ function handleSubmit() {
           <Textarea
             v-model="localForm.summary"
             rows="2"
-            placeholder="Kutipan singkat penekanan info..."
+            placeholder="Kutipan singkat penekanan info (maks. 180 karakter)..."
             class="w-full text-sm bg-background border-input focus-visible:ring-1 focus-visible:ring-primary min-h-15"
+            maxlength="180"
           />
         </div>
 
@@ -217,8 +222,9 @@ function handleSubmit() {
           <Textarea
             v-model="localForm.content"
             rows="3"
-            placeholder="Tuliskan detail pengumuman di sini..."
+            placeholder="Tuliskan detail pengumuman di sini (maks. 500 karakter)..."
             class="w-full text-sm bg-background border-input focus-visible:ring-1 focus-visible:ring-primary min-h-20"
+            maxlength="500"
           />
         </div>
       </div>
@@ -230,7 +236,7 @@ function handleSubmit() {
             class="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5"
           >
             <Tag class="h-3.5 w-3.5" />
-            <span>3. Kartu Poin Informasi (Maks. 3 Poin)</span>
+            <span>3. Kartu Poin Informasi (Maks. 3 Poin, 75 Karakter/Poin)</span>
           </div>
           <Button
             type="button"
@@ -269,8 +275,9 @@ function handleSubmit() {
             </div>
             <Input
               v-model="item.text"
-              placeholder="Isi singkat poin informasi..."
+              placeholder="Isi singkat poin (maks. 75 karakter)..."
               class="h-8 text-xs flex-1"
+              maxlength="75"
             />
             <Button
               type="button"
