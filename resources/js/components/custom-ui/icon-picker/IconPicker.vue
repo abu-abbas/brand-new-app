@@ -326,18 +326,23 @@ function prevPage() {
         @click="isOpen = true"
       >
         <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-          <div
+          <component
+            :is="currentIconComponent"
             v-if="props.modelValue && currentIconComponent"
-            class="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary"
-          >
-            <component :is="currentIconComponent" class="size-4 text-primary shrink-0" />
-          </div>
+            class="size-4 text-primary shrink-0"
+          />
           <HelpCircle v-else class="size-4 text-muted-foreground/60 shrink-0" />
 
-          <span v-if="props.modelValue" class="truncate font-medium text-foreground text-xs block min-w-0 flex-1 text-left">
+          <span
+            v-if="props.modelValue"
+            class="truncate text-foreground text-xs block min-w-0 flex-1 text-left"
+          >
             {{ props.modelValue }}
           </span>
-          <span v-else class="text-muted-foreground text-xs truncate block min-w-0 flex-1 text-left">
+          <span
+            v-else
+            class="text-muted-foreground text-xs truncate block min-w-0 flex-1 text-left"
+          >
             {{ placeholder }}
           </span>
         </div>
@@ -352,7 +357,7 @@ function prevPage() {
           >
             <X class="size-3.5" />
           </button>
-          <SlidersHorizontal class="size-3.5 text-muted-foreground/70" />
+          <SlidersHorizontal v-else class="size-3.5 text-muted-foreground/70" />
         </div>
       </Button>
     </div>
