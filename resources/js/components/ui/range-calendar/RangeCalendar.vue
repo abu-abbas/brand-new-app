@@ -11,7 +11,6 @@ import {
   RangeCalendarGridHead,
   RangeCalendarGridRow,
   RangeCalendarHeadCell,
-  RangeCalendarHeader,
   RangeCalendarNext,
   RangeCalendarPrev,
   RangeCalendarRoot,
@@ -52,29 +51,42 @@ function formatMonthHeader(dateVal: any): string {
 
 <template>
   <RangeCalendarRoot v-slot="{ grid, weekDays }" v-bind="forwarded" :class="cn('p-3', props.class)">
-    <RangeCalendarHeader class="relative flex items-center justify-between pt-1 pb-2">
-      <RangeCalendarPrev
-        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30 z-10"
-      >
-        <ChevronLeft class="size-4" />
-      </RangeCalendarPrev>
-
-      <RangeCalendarNext
-        class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30 z-10"
-      >
-        <ChevronRight class="size-4" />
-      </RangeCalendarNext>
-    </RangeCalendarHeader>
-
     <div class="flex flex-col sm:flex-row gap-y-4 sm:gap-x-6 sm:gap-y-0">
       <RangeCalendarGrid
-        v-for="month in grid"
+        v-for="(month, index) in grid"
         :key="month.value.toString()"
         class="w-full border-collapse space-y-1"
       >
-        <div class="flex items-center justify-center text-sm font-semibold h-7 mb-1">
-          {{ formatMonthHeader(month.value) }}
+        <!-- Top Row: Month Header with Navigation Buttons -->
+        <div class="flex items-center justify-between h-8 mb-2">
+          <template v-if="index === 0">
+            <RangeCalendarPrev
+              class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronLeft class="size-4" />
+            </RangeCalendarPrev>
+          </template>
+          <template v-else>
+            <div class="size-7" />
+          </template>
+
+          <span class="text-sm font-semibold">
+            {{ formatMonthHeader(month.value) }}
+          </span>
+
+          <template v-if="index === grid.length - 1">
+            <RangeCalendarNext
+              class="border-input hover:bg-accent hover:text-accent-foreground flex size-7 items-center justify-center rounded-md border bg-transparent p-0 opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-30"
+            >
+              <ChevronRight class="size-4" />
+            </RangeCalendarNext>
+          </template>
+          <template v-else>
+            <div class="size-7" />
+          </template>
         </div>
+
+        <!-- Days of Week (M S S R K J S) -->
         <RangeCalendarGridHead>
           <RangeCalendarGridRow class="flex">
             <RangeCalendarHeadCell
@@ -86,10 +98,12 @@ function formatMonthHeader(dateVal: any): string {
             </RangeCalendarHeadCell>
           </RangeCalendarGridRow>
         </RangeCalendarGridHead>
+
+        <!-- Calendar Dates Grid -->
         <RangeCalendarGridBody>
           <RangeCalendarGridRow
-            v-for="(weekDates, index) in month.rows"
-            :key="`weekDate-${index}`"
+            v-for="(weekDates, weekIdx) in month.rows"
+            :key="`weekDate-${weekIdx}`"
             class="mt-2 flex w-full"
           >
             <RangeCalendarCell
