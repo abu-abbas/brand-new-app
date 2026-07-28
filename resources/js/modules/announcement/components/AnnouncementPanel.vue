@@ -139,13 +139,13 @@ onUnmounted(() => {
 <template>
   <div
     ref="scrollContainer"
-    class="h-full flex flex-col min-h-0 bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
+    class="h-full bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
   >
-    <!-- Max-Width Centered Container (Flows naturally from top without clipping) -->
-    <div class="w-full max-w-3xl mx-auto flex flex-col min-h-full">
+    <!-- Max-Width Centered Container (Normal Flow without Flex stretch clipping) -->
+    <div class="w-full max-w-3xl mx-auto">
       <!-- Stable Shrinking Sticky Header -->
       <div
-        class="sticky top-0 z-20 shrink-0 bg-[#f4f4f6] dark:bg-[#09090b] transition-all duration-300 px-4 sm:px-6"
+        class="sticky top-0 z-20 bg-[#f4f4f6] dark:bg-[#09090b] transition-all duration-300 px-4 sm:px-6"
         :class="
           isScrolled
             ? 'py-3 shadow-[0_16px_24px_-4px_#f4f4f6] dark:shadow-[0_16px_24px_-4px_#09090b]'
@@ -198,8 +198,8 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Stable Content Container -->
-      <div class="px-4 sm:px-6 pt-2 pb-8 space-y-5">
+      <!-- Content Container (Starts naturally below sticky header) -->
+      <div class="px-4 sm:px-6 pt-1 pb-8 space-y-5">
         <div
           v-for="item in announcements"
           :key="item.id"
