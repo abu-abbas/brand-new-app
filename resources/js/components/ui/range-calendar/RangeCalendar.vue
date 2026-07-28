@@ -52,12 +52,8 @@ function formatMonthHeader(dateVal: any): string {
 <template>
   <RangeCalendarRoot v-slot="{ grid, weekDays }" v-bind="forwarded" :class="cn('p-3', props.class)">
     <div class="flex flex-col sm:flex-row gap-y-4 sm:gap-x-6 sm:gap-y-0">
-      <RangeCalendarGrid
-        v-for="(month, index) in grid"
-        :key="month.value.toString()"
-        class="w-full border-collapse space-y-1"
-      >
-        <!-- Top Row: Month Header with Navigation Buttons -->
+      <div v-for="(month, index) in grid" :key="month.value.toString()" class="w-full space-y-1">
+        <!-- Top Row: Month Header with Navigation Buttons (outside table) -->
         <div class="flex items-center justify-between h-8 mb-2">
           <template v-if="index === 0">
             <RangeCalendarPrev
@@ -86,41 +82,44 @@ function formatMonthHeader(dateVal: any): string {
           </template>
         </div>
 
-        <!-- Days of Week (M S S R K J S) -->
-        <RangeCalendarGridHead>
-          <RangeCalendarGridRow class="flex">
-            <RangeCalendarHeadCell
-              v-for="day in weekDays"
-              :key="day"
-              class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal"
-            >
-              {{ day }}
-            </RangeCalendarHeadCell>
-          </RangeCalendarGridRow>
-        </RangeCalendarGridHead>
+        <!-- Table Grid for Days and Dates -->
+        <RangeCalendarGrid class="w-full border-collapse space-y-1">
+          <!-- Days of Week (M S S R K J S) -->
+          <RangeCalendarGridHead>
+            <RangeCalendarGridRow class="flex">
+              <RangeCalendarHeadCell
+                v-for="day in weekDays"
+                :key="day"
+                class="text-muted-foreground w-9 rounded-md text-[0.8rem] font-normal"
+              >
+                {{ day }}
+              </RangeCalendarHeadCell>
+            </RangeCalendarGridRow>
+          </RangeCalendarGridHead>
 
-        <!-- Calendar Dates Grid -->
-        <RangeCalendarGridBody>
-          <RangeCalendarGridRow
-            v-for="(weekDates, weekIdx) in month.rows"
-            :key="`weekDate-${weekIdx}`"
-            class="mt-2 flex w-full"
-          >
-            <RangeCalendarCell
-              v-for="weekDate in weekDates"
-              :key="weekDate.toString()"
-              :date="weekDate"
-              class="relative size-9 p-0 text-center text-sm focus-within:relative focus-within:z-20 has-data-selected:bg-accent [&:has([data-selected][data-selection-end])]:rounded-r-md [&:has([data-selected][data-selection-start])]:rounded-l-md [&:has([data-selected][data-outside-view])]:bg-accent/50"
+          <!-- Calendar Dates Grid -->
+          <RangeCalendarGridBody>
+            <RangeCalendarGridRow
+              v-for="(weekDates, weekIdx) in month.rows"
+              :key="`weekDate-${weekIdx}`"
+              class="mt-2 flex w-full"
             >
-              <RangeCalendarCellTrigger
-                :day="weekDate"
-                :month="month.value"
-                class="hover:bg-accent hover:text-accent-foreground data-selection-start:bg-primary data-selection-start:text-primary-foreground data-selection-end:bg-primary data-selection-end:text-primary-foreground data-selected:bg-accent data-selected:text-accent-foreground data-highlighted:bg-accent/50 data-disabled:text-muted-foreground/40 data-today:bg-accent data-today:text-accent-foreground relative flex size-9 items-center justify-center rounded-md p-0 text-center text-sm font-normal data-disabled:pointer-events-none data-unavailable:line-through data-unavailable:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </RangeCalendarCell>
-          </RangeCalendarGridRow>
-        </RangeCalendarGridBody>
-      </RangeCalendarGrid>
+              <RangeCalendarCell
+                v-for="weekDate in weekDates"
+                :key="weekDate.toString()"
+                :date="weekDate"
+                class="relative size-9 p-0 text-center text-sm focus-within:relative focus-within:z-20 has-data-selected:bg-accent [&:has([data-selected][data-selection-end])]:rounded-r-md [&:has([data-selected][data-selection-start])]:rounded-l-md [&:has([data-selected][data-outside-view])]:bg-accent/50"
+              >
+                <RangeCalendarCellTrigger
+                  :day="weekDate"
+                  :month="month.value"
+                  class="hover:bg-accent hover:text-accent-foreground data-selection-start:bg-primary data-selection-start:text-primary-foreground data-selection-end:bg-primary data-selection-end:text-primary-foreground data-selected:bg-accent data-selected:text-accent-foreground data-highlighted:bg-accent/50 data-disabled:text-muted-foreground/40 data-today:bg-accent data-today:text-accent-foreground relative flex size-9 items-center justify-center rounded-md p-0 text-center text-sm font-normal data-disabled:pointer-events-none data-unavailable:line-through data-unavailable:opacity-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </RangeCalendarCell>
+            </RangeCalendarGridRow>
+          </RangeCalendarGridBody>
+        </RangeCalendarGrid>
+      </div>
     </div>
   </RangeCalendarRoot>
 </template>
