@@ -6,6 +6,17 @@
         <title>Demo shadcn-vue & Laravel</title>
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
+        <script>
+            window.__APP_CONFIG__ = {{ Illuminate\Support\Js::from([
+                'name' => config('app.name'),
+                'env' => config('app.env'),
+                'url' => config('app.url'),
+                'timezone' => config('app.timezone'),
+                'locale' => config('app.locale'),
+                'current_date' => now()->format('Y-m-d'),
+                'current_fulldate' => now()->toIso8601String(),
+            ]) }};
+        </script>
         {{ Vite::fonts() }}
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
     </head>

@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { Activity, ArrowRight, DollarSign, Package, Sparkles, Users } from '@lucide/vue';
+import {
+  Activity,
+  ArrowRight,
+  Calendar,
+  Clock,
+  DollarSign,
+  Globe,
+  Package,
+  Server,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import TrafficChannelsChart from '@/components/TrafficChannelsChart.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useServerClock } from '@/composables/useServerClock';
+import { useAppBootstrapStore } from '@/stores/app-bootstrap';
 
 const router = useRouter();
+const appBootstrap = useAppBootstrapStore();
+const { formattedTime } = useServerClock();
 
 const stats = [
   {
@@ -26,7 +42,105 @@ function goToExamples() {
 </script>
 
 <template>
-  <AdminLayout parent-title="Building Your Application" title="Data Fetching">
+  <AdminLayout parent-title="Building Your Application" title="Dashboard">
+    <!-- Backend Shared App Config Card -->
+    <Card class="border-primary/20 bg-card shadow-sm">
+      <CardHeader class="pb-3">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div
+              class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"
+            >
+              <Server class="size-5" />
+            </div>
+            <div>
+              <CardTitle class="text-lg font-bold">Backend App Configuration</CardTitle>
+              <CardDescription>
+                Value yang di-share langsung dari Laravel backend via Window Global Script & Pinia
+                store
+              </CardDescription>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <!-- 6 Grid Items Seimbang (3x2 di medium, 6x1 di large screen) -->
+        <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+          <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+            <Server class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted-foreground">App Name</p>
+              <p class="truncate text-sm font-semibold text-foreground">
+                {{ appBootstrap.config.name }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+            <ShieldCheck class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted-foreground">Environment</p>
+              <p class="truncate text-sm font-semibold text-foreground capitalize">
+                {{ appBootstrap.config.env }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+            <Globe class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted-foreground">App URL</p>
+              <p class="truncate text-sm font-semibold text-foreground">
+                {{ appBootstrap.config.url }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+            <Clock class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted-foreground">Timezone</p>
+              <p class="truncate text-sm font-semibold text-foreground">
+                {{ appBootstrap.config.timezone }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
+            <Globe class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-muted-foreground">Locale</p>
+              <p class="truncate text-sm font-semibold text-foreground uppercase">
+                {{ appBootstrap.config.locale }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 p-3 shadow-2xs"
+          >
+            <Calendar class="size-4 text-primary shrink-0" />
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-primary">Server Date & Time</p>
+              <div class="flex items-center gap-1.5 mt-0.5">
+                <span class="relative flex size-2 shrink-0">
+                  <span
+                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"
+                  ></span>
+                  <span class="relative inline-flex size-2 rounded-full bg-primary"></span>
+                </span>
+                <p class="truncate text-xs font-bold text-foreground font-mono">
+                  {{ appBootstrap.config.current_date }}
+                  <span class="text-primary">{{ formattedTime }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+
     <!-- Top Action Banner to Custom Components Page -->
     <div
       class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-2xs md:p-6"

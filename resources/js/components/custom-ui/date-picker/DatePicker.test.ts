@@ -1,17 +1,41 @@
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { createPinia, setActivePinia, type Pinia } from 'pinia';
+import { useAppBootstrapStore } from '@/stores/app-bootstrap';
 import DatePicker from './DatePicker.vue';
 
 describe('DatePicker', () => {
+  let pinia: Pinia;
+
   beforeEach(() => {
+    pinia = createPinia();
+    setActivePinia(pinia);
     document.body.innerHTML = '';
   });
 
-  it('mounts properly with default placeholder', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        placeholder: 'Pilih Tanggal Transaksi',
+  const mountDatePicker = (props: Record<string, unknown> = {}) => {
+    return mount(DatePicker, {
+      props,
+      global: {
+        plugins: [pinia],
       },
+    });
+  };
+
+  it('uses appBootstrap.config.current_date as reference for presets', () => {
+    const store = useAppBootstrapStore();
+    store.config.current_date = '2026-07-28';
+
+    const wrapper = mountDatePicker({
+      presets: true,
+    });
+
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it('mounts properly with default placeholder', () => {
+    const wrapper = mountDatePicker({
+      placeholder: 'Pilih Tanggal Transaksi',
     });
 
     expect(wrapper.exists()).toBe(true);
@@ -19,11 +43,9 @@ describe('DatePicker', () => {
   });
 
   it('formats single date value in Indonesian locale default', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        modelValue: '2026-07-28',
-        locale: 'id-ID',
-      },
+    const wrapper = mountDatePicker({
+      modelValue: '2026-07-28',
+      locale: 'id-ID',
     });
 
     expect(wrapper.text()).toMatch(/28/);
@@ -31,12 +53,10 @@ describe('DatePicker', () => {
   });
 
   it('supports month mode (mode="month") with YYYY-MM modelValue', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        mode: 'month',
-        modelValue: '2026-07',
-        locale: 'id-ID',
-      },
+    const wrapper = mountDatePicker({
+      mode: 'month',
+      modelValue: '2026-07',
+      locale: 'id-ID',
     });
 
     // 2026 dan Juli
@@ -45,34 +65,28 @@ describe('DatePicker', () => {
   });
 
   it('formats date using custom displayFormat string (DD/MM/YYYY)', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        modelValue: '2026-07-28',
-        displayFormat: 'DD/MM/YYYY',
-      },
+    const wrapper = mountDatePicker({
+      modelValue: '2026-07-28',
+      displayFormat: 'DD/MM/YYYY',
     });
 
     expect(wrapper.text()).toContain('28/07/2026');
   });
 
   it('formats date using custom displayFormat function', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        modelValue: '2026-07-28',
-        displayFormat: (iso) => `Tanggal: ${iso}`,
-      },
+    const wrapper = mountDatePicker({
+      modelValue: '2026-07-28',
+      displayFormat: (iso: string) => `Tanggal: ${iso}`,
     });
 
     expect(wrapper.text()).toContain('Tanggal: 2026-07-28');
   });
 
   it('formats date range value in Indonesian locale', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        mode: 'range',
-        modelValue: { start: '2026-07-01', end: '2026-07-28' },
-        locale: 'id-ID',
-      },
+    const wrapper = mountDatePicker({
+      mode: 'range',
+      modelValue: { start: '2026-07-01', end: '2026-07-28' },
+      locale: 'id-ID',
     });
 
     expect(wrapper.text()).toMatch(/2026/);
@@ -80,11 +94,9 @@ describe('DatePicker', () => {
   });
 
   it('supports clear button when clearable is true and value is present', async () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        modelValue: '2026-07-28',
-        clearable: true,
-      },
+    const wrapper = mountDatePicker({
+      modelValue: '2026-07-28',
+      clearable: true,
     });
 
     const clearBtn = wrapper.find('[data-slot="clear-button"]');
@@ -98,11 +110,9 @@ describe('DatePicker', () => {
   });
 
   it('supports disabled state', () => {
-    const wrapper = mount(DatePicker, {
-      props: {
-        disabled: true,
-        placeholder: 'Pilih Tanggal',
-      },
+    const wrapper = mountDatePicker({
+      disabled: true,
+      placeholder: 'Pilih Tanggal',
     });
 
     const triggerBtn = wrapper.find('button');

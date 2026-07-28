@@ -9,6 +9,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { RangeCalendar } from '@/components/ui/range-calendar';
 import { cn } from '@/lib/utils';
+import { useAppBootstrapStore } from '@/stores/app-bootstrap';
+import { getActivePinia } from 'pinia';
 
 export interface DateRangeValue {
   start?: string | null;
@@ -45,7 +47,7 @@ const props = withDefaults(
     modelValue: null,
     mode: 'single',
     placeholder: undefined,
-    locale: 'id-ID',
+    locale: undefined,
     minDate: undefined,
     maxDate: undefined,
     presets: false,
@@ -58,6 +60,22 @@ const props = withDefaults(
     class: undefined,
   },
 );
+
+let appBootstrap: ReturnType<typeof useAppBootstrapStore> | null = null;
+try {
+  if (getActivePinia()) {
+    appBootstrap = useAppBootstrapStore();
+  }
+} catch {
+  appBootstrap = null;
+}
+
+const effectiveLocale = computed(() => {
+  const loc = props.locale || appBootstrap?.config?.locale || 'id-ID';
+  if (loc === 'id' || loc === 'id_ID') return 'id-ID';
+  if (loc === 'en' || loc === 'en_US') return 'en-US';
+  return loc.replace('_', '-');
+});
 
 const effectiveNumberOfMonths = computed(() => {
   if (props.numberOfMonths !== undefined) return props.numberOfMonths;
@@ -72,7 +90,20 @@ const emit = defineEmits<{
 
 const isOpen = ref(false);
 const manualInputValue = ref('');
-const currentViewYear = ref(new Date().getFullYear());
+
+const currentDateStr = computed(
+  () => appBootstrap?.config?.current_date || new Date().toISOString().split('T')[0],
+);
+
+const currentDateObj = computed(() => {
+  try {
+    return parseDate(currentDateStr.value.trim().split('T')[0]);
+  } catch {
+    return today(getLocalTimeZone());
+  }
+});
+
+const currentViewYear = ref(currentDateObj.value.year);
 
 // Sync currentViewYear from modelValue if available
 watch(
@@ -95,8 +126,8 @@ const monthsList = computed(() => {
     return {
       monthIndex: i,
       monthNumber: String(i + 1).padStart(2, '0'),
-      labelShort: new Intl.DateTimeFormat(props.locale, { month: 'short' }).format(d),
-      labelLong: new Intl.DateTimeFormat(props.locale, { month: 'long' }).format(d),
+      labelShort: new Intl.DateTimeFormat(effectiveLocale.value, { month: 'short' }).format(d),
+      labelLong: new Intl.DateTimeFormat(effectiveLocale.value, { month: 'long' }).format(d),
     };
   });
 });
@@ -139,7 +170,7 @@ function formatDisplayDate(isoStr?: string | null): string {
   }
 
   if (typeof props.displayFormat === 'object' && props.displayFormat !== null) {
-    return new Intl.DateTimeFormat(props.locale, props.displayFormat).format(dateObj);
+    return new Intl.DateTimeFormat(effectiveLocale.value, props.displayFormat).format(dateObj);
   }
 
   if (typeof props.displayFormat === 'string') {
@@ -148,8 +179,12 @@ function formatDisplayDate(isoStr?: string | null): string {
     const day2Digit = String(dateObj.getDate()).padStart(2, '0');
     const monthNumeric = String(dateObj.getMonth() + 1);
     const month2Digit = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const monthShort = new Intl.DateTimeFormat(props.locale, { month: 'short' }).format(dateObj);
-    const monthLong = new Intl.DateTimeFormat(props.locale, { month: 'long' }).format(dateObj);
+    const monthShort = new Intl.DateTimeFormat(effectiveLocale.value, { month: 'short' }).format(
+      dateObj,
+    );
+    const monthLong = new Intl.DateTimeFormat(effectiveLocale.value, { month: 'long' }).format(
+      dateObj,
+    );
     const year4Digit = String(dateObj.getFullYear());
 
     if (fmt === 'DD/MM/YYYY') return `${day2Digit}/${month2Digit}/${year4Digit}`;
@@ -168,13 +203,13 @@ function formatDisplayDate(isoStr?: string | null): string {
   }
 
   if (props.mode === 'month') {
-    return new Intl.DateTimeFormat(props.locale, {
+    return new Intl.DateTimeFormat(effectiveLocale.value, {
       month: 'long',
       year: 'numeric',
     }).format(dateObj);
   }
 
-  return new Intl.DateTimeFormat(props.locale, {
+  return new Intl.DateTimeFormat(effectiveLocale.value, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -321,7 +356,7 @@ const computedPresets = computed<DatePreset[]>(() => {
     return props.presets;
   }
 
-  const now = today(getLocalTimeZone());
+  const now = currentDateObj.value;
 
   if (props.mode === 'month') {
     const curYear = now.year;
@@ -517,7 +552,13 @@ function handleManualInputBlur() {
                   v-for="m in monthsList"
                   :key="m.monthNumber"
                   type="button"
-                  :variant="isMonthSelected(m.monthNumber) ? (props.disabled ? 'secondary' : 'default') : 'secondary'"
+                  :variant="
+                    isMonthSelected(m.monthNumber)
+                      ? props.disabled
+                        ? 'secondary'
+                        : 'default'
+                      : 'secondary'
+                  "
                   :disabled="props.disabled"
                   size="sm"
                   class="h-12 text-sm"
@@ -532,7 +573,7 @@ function handleManualInputBlur() {
             <Calendar
               v-else-if="props.mode === 'single'"
               v-model="singleValue"
-              :locale="props.locale"
+              :locale="effectiveLocale"
               :disabled="props.disabled"
               :min-value="minCalendarDate"
               :max-value="maxCalendarDate"
@@ -542,7 +583,7 @@ function handleManualInputBlur() {
             <RangeCalendar
               v-else-if="props.mode === 'range'"
               v-model="rangeValue"
-              :locale="props.locale"
+              :locale="effectiveLocale"
               :disabled="props.disabled"
               :number-of-months="effectiveNumberOfMonths"
               :min-value="minCalendarDate"
