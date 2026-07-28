@@ -277,10 +277,14 @@ watch([searchQuery, activeCategory], () => {
   currentPage.value = 1;
 });
 
-// Get icon component safely
+// Get icon component safely (dukung format PascalCase maupun kebab-case/lowercase)
 function getIconComponent(iconName: string) {
   if (!iconName) return null;
-  const icon = (LucideIcons as Record<string, unknown>)[iconName];
+  const pascalName = iconName.replace(/(^\w|-\w)/g, (clear) =>
+    clear.replace('-', '').toUpperCase(),
+  );
+  const icons = LucideIcons as Record<string, unknown>;
+  const icon = icons[pascalName] || icons[iconName];
   return icon || null;
 }
 
@@ -314,15 +318,15 @@ function prevPage() {
 </script>
 
 <template>
-  <div class="inline-block">
+  <div class="inline-block w-full">
     <!-- Trigger Button -->
-    <div class="inline-flex max-w-full items-center gap-1.5">
+    <div class="inline-flex w-full items-center gap-1.5">
       <Button
         :variant="variant"
         :size="size"
         :disabled="disabled"
         type="button"
-        class="justify-between gap-2 min-w-44 max-w-64 px-3 font-normal overflow-hidden"
+        class="w-full justify-between gap-2 px-3 font-normal overflow-hidden"
         @click="isOpen = true"
       >
         <div class="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
