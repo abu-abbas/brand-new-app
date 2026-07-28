@@ -10,7 +10,7 @@ const customIcon = ref('Bookmark');
 </script>
 
 <template>
-  <div class="space-y-8 p-6">
+  <div class="space-y-8 p-6 py-0">
     <!-- Header Section -->
     <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
       <div>

@@ -43,10 +43,11 @@ const emit = defineEmits<{
 function getLucideIcon(iconName: string, fallback: Component) {
   if (!iconName) return fallback;
 
-  const pascalName = iconName
-    .replace(/(^\w|-\w)/g, (clear) => clear.replace('-', '').toUpperCase());
+  const pascalName = iconName.replace(/(^\w|-\w)/g, (clear) =>
+    clear.replace('-', '').toUpperCase(),
+  );
 
-  const icons = LucideIcons as Record<string, Component>;
+  const icons = LucideIcons as unknown as Record<string, Component>;
   return icons[pascalName] || icons[iconName] || fallback;
 }
 
