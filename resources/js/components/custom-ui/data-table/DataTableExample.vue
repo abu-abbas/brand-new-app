@@ -109,7 +109,7 @@ const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
   }
 
   if (params.simulate_error === 'network') {
-    // Error jaringan murni (tanpa response) — normalizeError() menandainya
+    // Error jaringan murni (tanpa response) — normalizeAppError() menandainya
     // retryable secara default, jadi DataTableErrorAlert menampilkan tombol "Coba lagi".
     throw new Error('Network Error');
   }

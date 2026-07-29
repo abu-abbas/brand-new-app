@@ -1,3 +1,5 @@
+import type { AppError } from '@/lib/axios';
+
 export type SortDirection = 'asc' | 'desc';
 export type TableAlign = 'left' | 'center' | 'right';
 export type CellWrap = 'wrap' | 'nowrap' | 'ellipsis';
@@ -79,15 +81,7 @@ export interface DataTableFilter {
   serialize?: (value: unknown) => unknown;
 }
 
-export interface DataTableError {
-  message: string;
-  code?: string;
-  retryable: boolean;
-  validationErrors?: Record<string, unknown>;
-  requestId?: string;
-  supportId?: string;
-  whatsappUrl?: string;
-}
+export type DataTableError = AppError;
 
 export interface DataTableInstance {
   refresh: () => Promise<void>;

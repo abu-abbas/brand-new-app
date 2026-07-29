@@ -8,6 +8,8 @@ description: Mewajibkan Error Definition Framework pada setiap module Laravel se
 
 ## Source of truth
 
+- Keputusan normalisasi error, retry policy, dan idempotency trigger mengikuti
+  [ADR 001](../../docs/decisions/001-error-normalization-and-retry-policy.md).
 - Setiap pembuatan atau perubahan module, endpoint, FormRequest, Service/Action, domain exception, atau error response **WAJIB** menjalankan skill `build-error-definitions`.
 - PHP/Laravel adalah source of truth. Error didefinisikan sekali melalui string backed enum `ErrorCode` dan attribute `ErrorDefinition`.
 - Tambahkan error pada enum konteks bisnis pemiliknya. Jangan membuat enum global atau mengelompokkan error berdasarkan halaman/controller.

@@ -44,6 +44,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { normalizeAppError } from '@/lib/axios';
 import type {
   DataTableError,
   DataTableFetcher,
@@ -61,7 +62,6 @@ import {
   getPath,
   highlightText,
   leafFields,
-  normalizeError,
   searchRows,
   sortRows,
   sortTreeRows,
@@ -134,7 +134,7 @@ const emit = defineEmits<{
   'update:filters': [value: Record<string, unknown>];
   'update:expandedKeys': [value: Array<string | number>];
   loading: [value: boolean];
-  loaded: [payload: { rows: T[]; meta?: DataTableMeta; message: string }];
+  loaded: [payload: { rows: T[]; meta?: DataTableMeta; message?: string }];
   error: [payload: DataTableError & { error: unknown }];
   'params-change': [params: ReturnType<typeof buildParams>];
   edit: [row: T];
@@ -240,13 +240,10 @@ const query = useQuery({
   queryFn: ({ signal }) => props.fetcher!({ params: params.value, signal }),
   placeholderData: (previous) => previous ?? cachedServerResponse.value ?? undefined,
   retry: (count, error) => {
-    const normalized = normalizeError(error);
-    if (!normalized.retryable) return false;
-    const status = (error as { response?: { status?: number } })?.response?.status;
-    if (status && status < 500) return false;
-    return count < 2;
+    return normalizeAppError(error).retryable && count < 2;
   },
-  retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 4000),
+  retryDelay: (attempt, error) =>
+    normalizeAppError(error).retryAfterMs ?? Math.min(1000 * 2 ** attempt, 4000),
 });
 
 const localTreeResult = computed(() =>
@@ -293,7 +290,7 @@ const initialLoading = computed(
   () => Boolean(props.fetcher) && query.isPending.value && !rows.value.length,
 );
 const refreshing = computed(() => query.isFetching.value && Boolean(rows.value.length));
-const error = computed(() => (query.error.value ? normalizeError(query.error.value) : null));
+const error = computed(() => (query.error.value ? normalizeAppError(query.error.value) : null));
 const hasActiveState = computed(() =>
   Boolean(search.value || Object.keys(activeFilters.value).length),
 );
@@ -360,7 +357,7 @@ async function loadTree(row: T, _node: unknown, resolve: (rows: T[]) => void): P
   } catch (error) {
     if (!controller.signal.aborted) {
       resolve([]);
-      emit('error', { error, ...normalizeError(error) });
+      emit('error', { error, ...normalizeAppError(error) });
     }
   } finally {
     loadControllers.delete(key);
@@ -705,7 +702,7 @@ watch(
 watch(
   () => query.error.value,
   (value) => {
-    if (value) emit('error', { error: value, ...normalizeError(value) });
+    if (value) emit('error', { error: value, ...normalizeAppError(value) });
   },
 );
 watch(pageCount, (count) => {
@@ -854,7 +851,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         :stripe="striped"
         :height="height"
         :max-height="maxHeight"
-        :row-key="(row) => String(rowIdentity(row))"
+        :row-key="(row: T) => String(rowIdentity(row))"
         :tree-props="{
           children: childrenKey,
           hasChildren: treeConfig.hasChildren ?? 'hasChildren',
@@ -868,9 +865,15 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         :cell-class-name="cellClassName"
         class="w-full"
         @header-dragend="handleHeaderDragend"
-        @row-click="(row, column, event) => emit('row-click', row, column, event)"
-        @row-dblclick="(row, column, event) => emit('row-dblclick', row, column, event)"
-        @row-contextmenu="(row, column, event) => emit('row-contextmenu', row, column, event)"
+        @row-click="
+          (row: T, column: unknown, event: unknown) => emit('row-click', row, column, event)
+        "
+        @row-dblclick="
+          (row: T, column: unknown, event: unknown) => emit('row-dblclick', row, column, event)
+        "
+        @row-contextmenu="
+          (row: T, column: unknown, event: unknown) => emit('row-contextmenu', row, column, event)
+        "
         @expand-change="handleExpand"
       >
         <ElTableColumn v-if="$slots.expand" type="expand" width="48" fixed="left">
@@ -892,7 +895,9 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
                 :model-value="pageSelection"
                 :disabled="selectableRows.length === 0"
                 aria-label="Pilih semua baris di halaman ini"
-                @update:model-value="(value) => togglePage(value === true)"
+                @update:model-value="
+                  (value: boolean | 'indeterminate') => togglePage(value === true)
+                "
               />
               <span v-else class="sr-only">Pilih</span>
             </div>
@@ -904,7 +909,9 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
                 :model-value="selectedKeys.has(rowIdentity(row))"
                 :disabled="rowSelectable?.(row) === false"
                 :aria-label="`Pilih baris ${rowIdentity(row)}`"
-                @update:model-value="(value) => toggleMultiple(row, Boolean(value))"
+                @update:model-value="
+                  (value: boolean | 'indeterminate') => toggleMultiple(row, Boolean(value))
+                "
               />
               <RadioGroup
                 v-else
@@ -990,7 +997,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
         v-if="showPerPage"
         :model-value="perPage"
         @update:model-value="
-          (value) => {
+          (value: unknown) => {
             perPage = Number(value);
             page = 1;
           }

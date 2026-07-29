@@ -165,7 +165,7 @@ describe('DataTable', () => {
     await nextTick();
 
     expect(fetcher).toHaveBeenCalled();
-    expect(wrapper.text()).toContain('Terjadi kesalahan saat memuat data.');
+    expect(wrapper.text()).toContain('Terjadi kesalahan saat memproses permintaan.');
   });
 
   it('menyimpan dan memulihkan columnWidths saat remember aktif', async () => {

@@ -5,11 +5,11 @@ import {
   filterTreeRows,
   getPath,
   highlightText,
-  normalizeError,
   searchRows,
   sortRows,
   sortTreeRows,
 } from './data-table.utils.ts';
+import { normalizeAppError } from '../../../lib/axios.ts';
 
 const rows = [
   { id: 1, name: 'Budi', unit: { name: 'Keuangan' }, roles: [{ name: 'Admin' }] },
@@ -60,7 +60,7 @@ test('params melindungi state internal dan memilih kontrak multi-sort', () => {
 
 test('normalisasi error memakai contract publik', () => {
   assert.deepEqual(
-    normalizeError({
+    normalizeAppError({
       response: {
         status: 422,
         data: {
@@ -78,6 +78,22 @@ test('normalisasi error memakai contract publik', () => {
       retryable: false,
       validationErrors: { name: [] },
       requestId: 'request-1',
+      status: 422,
+      supportId: undefined,
+      whatsappUrl: undefined,
+      retryAfterMs: undefined,
+      cause: {
+        response: {
+          status: 422,
+          data: {
+            message: 'Validasi gagal.',
+            code: 'USR-VAL-001',
+            retryable: false,
+            errors: { name: [] },
+          },
+          headers: { 'x-request-id': 'request-1' },
+        },
+      },
     },
   );
 });

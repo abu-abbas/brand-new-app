@@ -207,25 +207,17 @@ Validation error `422`:
 }
 ```
 
-Payload Error Terkini (`DataTableError`):
+Payload error memakai kontrak global `AppError`:
 
 ```ts
-interface DataTableError {
-  message: string;
-  code?: string;
-  retryable: boolean;
-  validationErrors?: Record<string, unknown>;
-  requestId?: string;
-  supportId?: string;
-  whatsappUrl?: string;
-}
+type DataTableError = AppError;
 ```
 
 Aturan & Fitur Error Handling:
 
 - branching memakai `code`, status, dan `retryable`, bukan teks `message`;
 - initial load gagal mempertahankan header/footer dan menampilkan error state terpusat via `DataTableErrorAlert.vue`;
-- `message` contract digunakan sebagai pesan publik; network/technical error di-normalize ke pesan generik ramah pengguna ("Terjadi kesalahan saat memuat data.");
+- `message` contract digunakan sebagai pesan publik; network/technical error di-normalize ke pesan generik ramah pengguna ("Terjadi kesalahan saat memproses permintaan.");
 - `retryable: true` menampilkan tombol **Coba lagi**;
 - `422` menampilkan top-level message dan meneruskan structured `errors` per-field lengkap dengan badge error code;
 - jika backend mengembalikan `support_id`, UI menyediakan **Copy Button** untuk menyalin Support ID;
@@ -237,8 +229,9 @@ Aturan & Fitur Error Handling:
 
 Retry TanStack Query:
 
-- tidak retry untuk `4xx` atau `retryable: false`;
-- maksimal dua retry dengan backoff untuk network error, `5xx`, atau `retryable: true`;
+- tidak retry ketika `retryable: false`;
+- maksimal dua retry dengan `Retry-After` atau exponential backoff untuk network error,
+  `429`, `5xx`, atau `retryable: true`;
 - setelah habis, tampilkan error state/tombol retry.
 
 ### 4.6 Waktu initial request

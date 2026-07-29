@@ -10,16 +10,21 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AssignRequestId
 {
-  public function handle(Request $request, Closure $next): Response
-  {
-    $requestId = $request->header('X-Request-Id') ?? (string) Str::uuid();
+    public function handle(Request $request, Closure $next): Response
+    {
+        $incoming = $request->header('X-Request-Id');
+        $requestId = is_string($incoming)
+          && strlen($incoming) === 36
+          && Str::isUuid($incoming, 4)
+            ? strtolower($incoming)
+            : (string) Str::uuid();
 
-    Log::withContext(['request_id' => $requestId]);
+        Log::withContext(['request_id' => $requestId]);
 
-    $response = $next($request);
+        $response = $next($request);
 
-    $response->headers->set('X-Request-Id', $requestId);
+        $response->headers->set('X-Request-Id', $requestId);
 
-    return $response;
-  }
+        return $response;
+    }
 }

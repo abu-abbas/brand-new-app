@@ -1,9 +1,4 @@
-import type {
-  DataTableError,
-  DataTableField,
-  DataTableParams,
-  DataTableSort,
-} from './data-table.types';
+import type { DataTableField, DataTableParams, DataTableSort } from './data-table.types';
 
 export function getPath(value: unknown, path: string): unknown {
   return path.split('.').reduce<unknown>((current, key) => {
@@ -184,56 +179,6 @@ export function buildParams(
     });
   else if (state.sorts.length > 1) params.sort = state.sorts;
   return params;
-}
-
-export function normalizeError(error: unknown): DataTableError {
-  const candidate = error as {
-    message?: string;
-    code?: string;
-    retryable?: boolean;
-    errors?: Record<string, unknown>;
-    requestId?: string;
-    response?: {
-      status?: number;
-      data?: {
-        message?: string;
-        code?: string;
-        retryable?: boolean;
-        errors?: Record<string, unknown>;
-        support_id?: string;
-        whatsapp_url?: string;
-      };
-      headers?: Record<string, string>;
-    };
-  };
-  const data = candidate?.response?.data ?? candidate;
-  const rawMessage = typeof data?.message === 'string' ? data.message.trim() : '';
-  const isTechnicalError =
-    !rawMessage ||
-    /^(network error|failed to fetch|axioserror|request failed|500 internal|fetch failed)/i.test(
-      rawMessage,
-    );
-
-  const result: DataTableError = {
-    message: isTechnicalError ? 'Terjadi kesalahan saat memuat data.' : rawMessage,
-    code: data?.code,
-    retryable:
-      data?.retryable ?? (!candidate?.response?.status || candidate.response.status >= 500),
-    validationErrors: data?.errors,
-    requestId: candidate?.requestId ?? candidate?.response?.headers?.['x-request-id'],
-  };
-
-  const supportId = (data as Record<string, unknown>)?.support_id;
-  if (typeof supportId === 'string') {
-    result.supportId = supportId;
-  }
-
-  const whatsappUrl = (data as Record<string, unknown>)?.whatsapp_url;
-  if (typeof whatsappUrl === 'string') {
-    result.whatsappUrl = whatsappUrl;
-  }
-
-  return result;
 }
 
 export function clearDataTableMemory(): void {

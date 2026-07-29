@@ -1,5 +1,18 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 
+export interface AppError {
+  message: string;
+  code?: string;
+  status?: number;
+  retryable: boolean;
+  validationErrors?: Record<string, unknown>;
+  requestId?: string;
+  supportId?: string;
+  whatsappUrl?: string;
+  retryAfterMs?: number;
+  cause?: unknown;
+}
+
 export const axiosInstance = axios.create({
   baseURL: '/api',
   headers: {
@@ -68,6 +81,66 @@ export function isFirewallBlocked(data: string): boolean {
   );
 }
 
+function parseRetryAfter(value: unknown): number | undefined {
+  if (typeof value !== 'string' && typeof value !== 'number') return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(String(value));
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now());
+}
+
+export function normalizeAppError(error: unknown): AppError {
+  const candidate = error as {
+    message?: string;
+    code?: string;
+    status?: number;
+    retryable?: boolean;
+    errors?: Record<string, unknown>;
+    validationErrors?: Record<string, unknown>;
+    requestId?: string;
+    supportId?: string;
+    whatsappUrl?: string;
+    support_id?: string;
+    whatsapp_url?: string;
+    retryAfterMs?: number;
+    cause?: unknown;
+    response?: {
+      status?: number;
+      data?: {
+        message?: string;
+        code?: string;
+        retryable?: boolean;
+        errors?: Record<string, unknown>;
+        support_id?: string;
+        whatsapp_url?: string;
+      };
+      headers?: Record<string, unknown>;
+    };
+  };
+  const data = candidate?.response?.data ?? candidate;
+  const status = candidate?.response?.status ?? candidate?.status;
+  const rawMessage = typeof data?.message === 'string' ? data.message.trim() : '';
+  const technical =
+    !rawMessage ||
+    /^(network error|failed to fetch|axioserror|request failed|500 internal|fetch failed)/i.test(
+      rawMessage,
+    );
+  const headers = candidate?.response?.headers;
+
+  return {
+    message: technical ? 'Terjadi kesalahan saat memproses permintaan.' : rawMessage,
+    code: data?.code,
+    status,
+    retryable: data?.retryable ?? (!status || status === 429 || status >= 500),
+    validationErrors: candidate?.validationErrors ?? data?.errors,
+    requestId: candidate?.requestId ?? (headers?.['x-request-id'] as string | undefined),
+    supportId: candidate?.supportId ?? data?.support_id,
+    whatsappUrl: candidate?.whatsappUrl ?? data?.whatsapp_url,
+    retryAfterMs: candidate?.retryAfterMs ?? parseRetryAfter(headers?.['retry-after']),
+    cause: candidate?.cause ?? error,
+  };
+}
+
 axiosInstance.interceptors.response.use(
   (response) => {
     // Deteksi jika response status 2xx tetapi berisi HTML block dari firewall
@@ -98,19 +171,12 @@ axiosInstance.interceptors.response.use(
         },
       );
 
-      return Promise.reject(firewallError);
+      return Promise.reject(normalizeAppError(firewallError));
     }
 
     return response;
   },
-  (error) => {
-    // 422 validation error diserahkan ke penangan form / caller
-    if (error.response?.status === 422) {
-      return Promise.reject(error);
-    }
-    // Error lain (401, 403, 409, 500) diproses atau diteruskan
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(normalizeAppError(error)),
 );
 
 export const customAxiosInstance = <T>(
