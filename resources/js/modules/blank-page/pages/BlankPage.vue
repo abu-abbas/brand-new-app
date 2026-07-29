@@ -1,25 +1,23 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { FileCode2, Plus } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { Button } from '@/components/ui/button';
 
 const route = useRoute();
-const router = useRouter();
-
 const icon = computed<Component>(() => (route.meta.icon as Component) || FileCode2);
-
-function goToDetail() {
-  router.push({ name: 'blank-page.detail' });
-}
 </script>
 
 <template>
   <AdminLayout>
     <!-- Slot Header Actions (Tombol Tambah yang Navigasi ke Detail) -->
-    <template #header-actions>
-      <Button variant="default" class="gap-2 font-medium cursor-pointer" @click="goToDetail">
+    <template #header-actions="{ push }">
+      <Button
+        variant="default"
+        class="gap-2 font-medium cursor-pointer"
+        @click.stop.prevent="push({ name: 'blank-page.detail' })"
+      >
         <Plus class="size-4" />
         Mulai Tambah Konten
       </Button>

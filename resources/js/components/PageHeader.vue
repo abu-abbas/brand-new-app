@@ -76,8 +76,14 @@ function handleBack(customTarget?: RouteLocationRaw | Event) {
       <!-- Icon Container / Back Button Slot -->
       <slot name="icon">
         <!-- Back Button Mode: Ghost Variant dengan Icon & Teks "Kembali" (Tanpa Title & Subtitle) -->
-        <Button v-if="isBackActive" variant="ghost" aria-label="Kembali" @click="handleBack">
-          <ArrowLeft class="size-4" />
+        <Button
+          v-if="isBackActive"
+          variant="ghost"
+          class="-ml-2 gap-2 shrink-0 rounded-xl px-3 text-sm font-medium text-foreground hover:bg-accent hover:text-foreground cursor-pointer"
+          aria-label="Kembali"
+          @click="handleBack"
+        >
+          <ArrowLeft class="size-4 text-foreground" />
           <span>Kembali</span>
         </Button>
 
@@ -104,9 +110,9 @@ function handleBack(customTarget?: RouteLocationRaw | Event) {
       </div>
     </div>
 
-    <!-- Right Section: Actions Slot -->
+    <!-- Right Section: Actions Slot (Juga mengekspos scoped slot push dari router) -->
     <div v-if="$slots.actions" class="flex items-center gap-2.5 shrink-0">
-      <slot name="actions" :go-back="handleBack" />
+      <slot name="actions" :go-back="handleBack" :push="router.push" />
     </div>
   </div>
 </template>

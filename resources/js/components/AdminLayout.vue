@@ -105,7 +105,7 @@ onUnmounted(() => {
                   :on-back="onBack"
                 >
                   <template v-if="$slots['header-actions']" #actions>
-                    <slot name="header-actions" :go-back="handleBack" />
+                    <slot name="header-actions" :go-back="handleBack" :push="router.push" />
                   </template>
                 </PageHeader>
               </slot>
