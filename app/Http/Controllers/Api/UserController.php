@@ -13,33 +13,33 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class UserController extends Controller
 {
-  public function __construct(
-    protected UserService $userService,
-    protected ErrorDefinitionReader $reader,
-  ) {}
+    public function __construct(
+        protected UserService $userService,
+        protected ErrorDefinitionReader $reader,
+    ) {}
 
-  /**
-   * Display a paginated list of users.
-   *
-   * @summary Mengambil daftar pengguna ter-paginasi dari server.
-   */
-  public function index(ListUserRequest $request): AnonymousResourceCollection
-  {
-    $users = $this->userService->getPaginatedUsers($request->validated());
+    /**
+     * Display a paginated list of users.
+     *
+     * @summary Mengambil daftar pengguna ter-paginasi dari server.
+     */
+    public function index(ListUserRequest $request): AnonymousResourceCollection
+    {
+        $users = $this->userService->getPaginatedUsers($request->validated());
 
-    return UserResource::collection($users);
-  }
+        return UserResource::collection($users);
+    }
 
-  /**
-   * Endpoint demonstrasi EDF ApplicationException.
-   *
-   * @summary Simulasi kegagalan bisnis (ApplicationException EDF).
-   */
-  public function testError(): never
-  {
-    throw new ApplicationException(
-      definition: $this->reader->read(UserManagementError::USER_LOCKED),
-      context: ['user_id' => 99, 'action' => 'update_status'],
-    );
-  }
+    /**
+     * Endpoint demonstrasi EDF ApplicationException.
+     *
+     * @summary Simulasi kegagalan bisnis (ApplicationException EDF).
+     */
+    public function testError(): never
+    {
+        throw new ApplicationException(
+            definition: $this->reader->read(UserManagementError::USER_LOCKED),
+            context: ['user_id' => 99, 'action' => 'update_status'],
+        );
+    }
 }

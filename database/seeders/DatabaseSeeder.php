@@ -8,19 +8,19 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-  use WithoutModelEvents;
+    use WithoutModelEvents;
 
-  public function run(): void
-  {
-    User::factory()->create([
-      'name' => 'Afria Administrator',
-      'username' => 'afria.admin',
-      'email' => 'afria@example.com',
-      'unit_name' => 'Teknologi Informasi',
-      'role' => 'Admin',
-      'is_active' => true,
-    ]);
+    public function run(): void
+    {
+        User::factory()->create([
+            'name' => 'Afria Administrator',
+            'username' => 'afria.admin',
+            'email' => 'afria@example.com',
+            'unit_name' => 'Teknologi Informasi',
+            'role' => 'Admin',
+            'is_active' => true,
+        ]);
 
-    User::factory(50)->create();
-  }
+        User::factory(50)->create();
+    }
 }

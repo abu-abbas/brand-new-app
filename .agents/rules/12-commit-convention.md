@@ -46,3 +46,4 @@ trigger: always_on
 14. Jika ada perubahan yang jelas tidak relevan dengan kelompok lain, buat commit terpisah, jangan diabaikan.
 15. Jika ada file yang meragukan relevansinya, jelaskan dulu pengelompokannya secara singkat lalu commit.
 16. Pastikan tidak ada console.log agar tidak membuat error saat proses CI/CD
+17. PHP wajib mengikuti Laravel Pint dengan indentasi 4 spasi. Jalankan `composer format:php:check` sebelum commit.

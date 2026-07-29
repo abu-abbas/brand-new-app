@@ -1,12 +1,11 @@
 <?php
 
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
-use App\Core\ErrorDefinition\Exceptions\MissingErrorDefinitionException;
 use App\Core\ErrorDefinition\ResolvedErrorDefinition;
 use App\Errors\UserManagementError;
 
 it('reads ErrorDefinition attribute from enum case and returns ResolvedErrorDefinition', function () {
-    $reader = new ErrorDefinitionReader();
+    $reader = new ErrorDefinitionReader;
     $resolved = $reader->read(UserManagementError::USER_LOCKED);
 
     expect($resolved)
@@ -20,7 +19,7 @@ it('reads ErrorDefinition attribute from enum case and returns ResolvedErrorDefi
 });
 
 it('returns cached result for subsequent reads of the same enum case', function () {
-    $reader = new ErrorDefinitionReader();
+    $reader = new ErrorDefinitionReader;
     $first = $reader->read(UserManagementError::USER_LOCKED);
     $second = $reader->read(UserManagementError::USER_LOCKED);
 
@@ -28,7 +27,7 @@ it('returns cached result for subsequent reads of the same enum case', function 
 });
 
 it('returns toPublicArray with only message, code, and retryable', function () {
-    $reader = new ErrorDefinitionReader();
+    $reader = new ErrorDefinitionReader;
     $resolved = $reader->read(UserManagementError::USER_NOT_FOUND);
     $public = $resolved->toPublicArray();
 

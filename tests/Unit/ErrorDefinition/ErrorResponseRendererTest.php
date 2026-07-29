@@ -1,12 +1,12 @@
 <?php
 
+use App\Core\ErrorDefinition\ErrorCategory;
 use App\Core\ErrorDefinition\ErrorResponseRenderer;
+use App\Core\ErrorDefinition\ErrorSeverity;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
 use App\Core\ErrorDefinition\Exceptions\ErrorValidationException;
 use App\Core\ErrorDefinition\ResolvedErrorDefinition;
 use App\Core\ErrorDefinition\ResolvedValidationError;
-use App\Core\ErrorDefinition\ErrorCategory;
-use App\Core\ErrorDefinition\ErrorSeverity;
 
 it('renders ApplicationException with only message, code, retryable and correct HTTP status', function () {
     $definition = new ResolvedErrorDefinition(
@@ -23,7 +23,7 @@ it('renders ApplicationException with only message, code, retryable and correct 
         context: ['sensitive_data' => 'should_not_appear'],
     );
 
-    $renderer = new ErrorResponseRenderer();
+    $renderer = new ErrorResponseRenderer;
     $response = $renderer->application($exception);
 
     expect($response->getStatusCode())->toBe(409);
@@ -80,7 +80,7 @@ it('renders ErrorValidationException with structured errors grouped by attribute
         validationErrors: $validationErrors,
     );
 
-    $renderer = new ErrorResponseRenderer();
+    $renderer = new ErrorResponseRenderer;
     $response = $renderer->validation($exception);
 
     expect($response->getStatusCode())->toBe(422);

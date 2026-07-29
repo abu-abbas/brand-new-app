@@ -1,10 +1,9 @@
 <?php
 
-use App\Core\ErrorDefinition\ErrorDefinitionReader;
-use App\Core\ErrorDefinition\Exceptions\ApplicationException;
-use App\Core\ErrorDefinition\ResolvedErrorDefinition;
 use App\Core\ErrorDefinition\ErrorCategory;
 use App\Core\ErrorDefinition\ErrorSeverity;
+use App\Core\ErrorDefinition\Exceptions\ApplicationException;
+use App\Core\ErrorDefinition\ResolvedErrorDefinition;
 
 it('is a final class extending RuntimeException', function () {
     $ref = new ReflectionClass(ApplicationException::class);

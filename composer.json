@@ -54,6 +54,8 @@
       "@php artisan config:clear --ansi @no_additional_args",
       "@php artisan test"
     ],
+    "format:php": "@php vendor/bin/pint",
+    "format:php:check": "@php vendor/bin/pint --test",
     "openapi:export": [
       "@php artisan scramble:export --path=docs/openapi.json"
     ],

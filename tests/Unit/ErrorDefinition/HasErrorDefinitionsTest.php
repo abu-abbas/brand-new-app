@@ -2,6 +2,7 @@
 
 use App\Core\ErrorDefinition\Exceptions\ErrorValidationException;
 use Illuminate\Routing\Redirector;
+use Illuminate\Validation\Validator;
 use Tests\Fixtures\ErrorDefinition\ManualValidationTestRequest;
 
 it('merges addValidationError() entries from after() with rule-based failures, keeps the real validator, and interpolates message placeholders', function () {
@@ -29,7 +30,7 @@ it('merges addValidationError() entries from after() with rule-based failures, k
         expect($structured['field_uji'][0]['message'])->toBe('field uji wajib diisi.');
 
         // Validator asli (dengan data request sesungguhnya) harus tetap dipakai, bukan stub kosong.
-        expect($e->validator)->toBeInstanceOf(\Illuminate\Validation\Validator::class)
+        expect($e->validator)->toBeInstanceOf(Validator::class)
             ->and($e->validator->getData())->toHaveKey('username', 'sudah_dipakai');
     }
 });

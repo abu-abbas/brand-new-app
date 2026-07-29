@@ -3,7 +3,7 @@
 use App\Core\ErrorDefinition\ContextSanitizer;
 
 it('redacts baseline sensitive keys', function () {
-    $sanitizer = new ContextSanitizer();
+    $sanitizer = new ContextSanitizer;
 
     $result = $sanitizer->sanitize([
         'user_id' => 42,
@@ -19,7 +19,7 @@ it('redacts baseline sensitive keys', function () {
 });
 
 it('redacts nested sensitive keys recursively', function () {
-    $sanitizer = new ContextSanitizer();
+    $sanitizer = new ContextSanitizer;
 
     $result = $sanitizer->sanitize([
         'user' => [
@@ -53,7 +53,7 @@ it('adds domain-specific sensitive keys', function () {
 });
 
 it('is case-insensitive for key matching', function () {
-    $sanitizer = new ContextSanitizer();
+    $sanitizer = new ContextSanitizer;
 
     $result = $sanitizer->sanitize([
         'Password' => 'secret',
@@ -67,8 +67,9 @@ it('is case-insensitive for key matching', function () {
 });
 
 it('converts non-scalar non-array values to string', function () {
-    $sanitizer = new ContextSanitizer();
-    $obj = new class () {
+    $sanitizer = new ContextSanitizer;
+    $obj = new class
+    {
         public function __toString(): string
         {
             return 'stringified';
