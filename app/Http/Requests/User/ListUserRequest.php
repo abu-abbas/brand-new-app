@@ -44,6 +44,8 @@ class ListUserRequest extends FormRequest
       // search
       'search.string' => UserManagementError::INVALID_SEARCH_TYPE,
       'search.max' => UserManagementError::INVALID_SEARCH_MAX,
+      'search_fields.array' => UserManagementError::INVALID_SEARCH_FIELDS_TYPE,
+      'search_fields.*.string' => UserManagementError::INVALID_SEARCH_FIELD_TYPE,
 
       // sort_by
       'sort_by.string' => UserManagementError::INVALID_SORT_BY_TYPE,

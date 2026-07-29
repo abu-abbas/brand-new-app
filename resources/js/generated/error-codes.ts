@@ -17,6 +17,8 @@ export const ERROR_CODES = {
   'UM_VAL_011': 'UM-VAL-011',
   'UM_VAL_012': 'UM-VAL-012',
   'UM_VAL_013': 'UM-VAL-013',
+  'UM_VAL_014': 'UM-VAL-014',
+  'UM_VAL_015': 'UM-VAL-015',
 } as const;
 
 export type ErrorCode =

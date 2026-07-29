@@ -115,6 +115,22 @@ enum UserManagementError: string implements ErrorCode
   )]
   case INVALID_ACTIVE_VALUE = 'UM-VAL-013';
 
+  #[ErrorDefinition(
+    message: 'Kolom pencarian harus berupa daftar.',
+    category: ErrorCategory::VALIDATION,
+    httpStatus: 422,
+    severity: ErrorSeverity::LOW,
+  )]
+  case INVALID_SEARCH_FIELDS_TYPE = 'UM-VAL-014';
+
+  #[ErrorDefinition(
+    message: 'Setiap kolom pencarian harus berupa teks.',
+    category: ErrorCategory::VALIDATION,
+    httpStatus: 422,
+    severity: ErrorSeverity::LOW,
+  )]
+  case INVALID_SEARCH_FIELD_TYPE = 'UM-VAL-015';
+
   // --- Business / Workflow Errors ---
 
   #[ErrorDefinition(
