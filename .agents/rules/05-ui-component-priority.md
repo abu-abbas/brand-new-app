@@ -8,9 +8,16 @@ description: Prioritas pemilihan komponen UI antara shadcn-vue, Element Plus, da
 
 ## Prioritas Pemilihan Komponen
 
-1. **shadcn-vue** — pilihan **utama/first choice** untuk **layout & struktur halaman**: `Layout`, `Card`, `Button`, `Dialog`, `Dropdown`, `Tabs`, `Sheet`, `Badge`, `Breadcrumb`, `Tooltip`.
-2. **Element Plus** — pilihan utama untuk **form & data kompleks** karena validasi bawaan lebih matang: `Form`, `Validation`, `Table` (jika bukan custom DataTable), `Tree`, `Upload`, `DatePicker`, `Select`, `Pagination`.
-3. **Tailwind CSS** — dipakai sebagai styling utama untuk spacing, warna, layout responsif. **Hindari menulis CSS manual/custom** selama utility class Tailwind sudah bisa mengakomodasi.
+1. **Custom component existing** — selalu cek dan gunakan dahulu komponen reusable di
+   `resources/js/components/custom-ui/` seperti `DataTable`, `Modal`, `DatePicker`, `Combobox`,
+   `ConfirmDialog`, dan komponen domain lain yang sudah tersedia.
+2. **shadcn-vue** — pilihan utama untuk visual control, layout, dan struktur halaman: `Input`, `Select`,
+   `Switch`, `Button`, `Dialog`, `Dropdown`, `Tabs`, `Sheet`, `Badge`, `Breadcrumb`, dan `Tooltip`.
+3. **Element Plus** — gunakan hanya sebagai engine kompleks yang memang dibutuhkan, terutama `Form`
+   beserta validation orchestration dan engine tabel di balik custom `DataTable`. Jangan mengganti visual
+   field shadcn-vue dengan raw Element Plus hanya demi validasi.
+4. **Tailwind CSS** — dipakai sebagai styling utama untuk spacing, warna, layout responsif. **Hindari
+   menulis CSS manual/custom** selama utility class Tailwind sudah bisa mengakomodasi.
 
 ## Skill Resmi shadcn-vue — WAJIB Terinstall
 
@@ -38,7 +45,10 @@ description: Prioritas pemilihan komponen UI antara shadcn-vue, Element Plus, da
 ## Prinsip Memilih Kapan Pakai Apa
 
 - Butuh modal/dialog sederhana, tab, breadcrumb, badge status -> **shadcn-vue**.
-- Butuh form dengan validasi banyak field, tree select, upload file, date range -> **Element Plus**.
+- Butuh form tervalidasi -> visual field **custom/shadcn-vue**, validation orchestration boleh memakai
+  **Element Plus Form**.
+- Butuh date/date range -> gunakan custom `DatePicker` bila tersedia, bukan raw Element Plus/native input.
+- Butuh tabel server -> gunakan custom `DataTable`, bukan merakit tabel baru di halaman.
 - Butuh konfirmasi/blocking alert -> **ConfirmDialog** berbasis shadcn-vue.
 - Butuh toast non-blocking -> **vue-sonner**.
 

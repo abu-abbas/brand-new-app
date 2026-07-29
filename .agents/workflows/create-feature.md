@@ -10,27 +10,29 @@ Workflow utama untuk membangun fitur baru end-to-end di project ini. Panggil den
 
 ## Steps
 
-1. **Klarifikasi kebutuhan**: Pastikan Agent memahami nama resource/module, field-field data, aturan bisnis (validasi, permission apa saja yang terlibat). Jika belum jelas, tanyakan ke user sebelum lanjut.
+1. **Discovery**
+   - Ikuti rule `feature-delivery-standard`.
+   - Telusuri alur existing end-to-end dan inventarisasi custom component yang dapat dipakai ulang.
+   - Klarifikasi hanya keputusan bisnis material yang tidak dapat ditemukan dari repository.
 2. **Backend**
-   - Jalankan skill `build-api` untuk membuat Migration (jika perlu tabel baru), Model, FormRequest, Policy, Controller, API Resource, dan Route.
+   - Jalankan skill `build-api-and-sync` untuk membuat Migration (jika perlu), Model, FormRequest, Policy,
+     Controller, API Resource, Service/Action, dan Route.
    - Jalankan skill `build-error-definitions` untuk menginventarisasi failure nyata, menambah enum error milik module, memetakan seluruh validation rule, dan memakai `ApplicationException` untuk kegagalan bisnis.
-   - Jika fitur butuh RBAC baru, jalankan juga skill `build-rbac`.
-   - Jika ada proses berat/async (kirim email, export, dsb), jalankan skill `build-queue-job`.
+   - Jika fitur butuh RBAC baru, jalankan juga skill `build-rbac-and-security`.
+   - Jika ada proses berat/async, jalankan skill `build-backend-services`.
    - Jangan memakai `abort()` atau response JSON manual untuk error module; ikuti renderer sentral dari `build-error-definitions`.
-3. **Generate OpenAPI**
-   - Jalankan skill `generate-openapi` untuk export `docs/openapi.json` dari Scramble.
-   - Verifikasi schema endpoint baru sudah benar.
-4. **Generate Orval**
-   - Jalankan skill `sync-orval` untuk regenerate TypeScript client dari OpenAPI terbaru.
-   - Pastikan `vue-tsc --noEmit` lolos.
-5. **Frontend**
-   - Jalankan skill `build-frontend-ui` dan/atau `build-admin-page` untuk membangun halaman/komponen.
-   - Gunakan skill `build-datatable` jika ada tampilan list/tabel, dan `build-form` untuk form create/edit.
+3. **Generate contract**
+   - Jalankan EDF lint/generate, `npm run generate:api`, lalu verifikasi OpenAPI dan tipe Orval.
+4. **Frontend**
+   - Jalankan skill `build-frontend-components` dan `shadcn-vue`.
+   - Gunakan custom `DataTable`, `Modal`, `DatePicker`, `Combobox`, dan `ConfirmDialog` yang sudah ada.
+   - Gunakan shadcn-vue untuk visual form; Element Plus hanya untuk Form validation orchestration.
    - Pastikan API Facade, Query, Mutation module baru sudah dibuat sesuai rule `folder-convention` & `architecture-layering`.
-6. **Testing**
-   - Jalankan skill `write-tests` untuk menambahkan test backend (Pest/PHPUnit) dan frontend (Vitest) sesuai rule `testing-strategy`.
+5. **Testing**
+   - Jalankan skill `debug-and-test` untuk menambahkan test backend dan frontend proporsional terhadap risiko.
    - Verifikasi minimal satu validation mapping dan setiap business failure baru mengembalikan `code`, status, serta `retryable` yang benar tanpa membocorkan runtime context.
-7. **Summary**
+   - Jalankan seluruh quality gate pada rule `feature-delivery-standard`.
+6. **Summary**
    - Berikan ringkasan ke user (dalam Bahasa Indonesia, ikuti rule `bahasa-indonesia`) yang mencakup:
      - Endpoint API yang dibuat/diubah.
      - File-file utama yang dibuat/diubah per layer (backend & frontend).
