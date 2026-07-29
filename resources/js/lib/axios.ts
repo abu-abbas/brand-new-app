@@ -1,5 +1,5 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
-import { clearDataTableMemory } from '../components/custom-ui/data-table/data-table.utils';
+import { clearDataTableMemory } from '../components/custom-ui/data-table/data-table.utils.ts';
 
 type RetriableAxiosRequestConfig = AxiosRequestConfig & {
   csrfRetried?: boolean;
