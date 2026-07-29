@@ -1,0 +1,258 @@
+<?php
+
+use App\Models\Feature;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+
+uses(RefreshDatabase::class);
+
+it('lists active and soft-deleted features when requested', function () {
+    Feature::query()->create([
+        'v_name' => 'Aktif',
+        'v_alias' => 'active-feature',
+        'e_type' => 'menu',
+    ]);
+
+    $deleted = Feature::query()->create([
+        'v_name' => 'Terhapus',
+        'v_alias' => 'deleted-feature',
+        'e_type' => 'crud',
+    ]);
+    $deleted->delete();
+
+    $this->getJson('/api/features?include_deleted=true')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.1.deleted_at', fn ($value) => $value !== null);
+
+    $this->getJson('/api/features?include_deleted=false')
+        ->assertOk()
+        ->assertJsonCount(1, 'data');
+});
+
+it('filters features by type and rejects an invalid type', function () {
+    Feature::query()->create([
+        'v_name' => 'Menu',
+        'v_alias' => 'menu',
+        'e_type' => 'menu',
+    ]);
+    Feature::query()->create([
+        'v_name' => 'Aksi',
+        'v_alias' => 'aksi',
+        'e_type' => 'crud',
+    ]);
+
+    $this->getJson('/api/features?type=crud')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.type', 'crud');
+
+    $this->getJson('/api/features?type=invalid')
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.type.0.code', 'FEAT-VAL-027');
+});
+
+it('filters features by updated date range', function () {
+    $older = Feature::query()->create([
+        'v_name' => 'Lama',
+        'v_alias' => 'lama',
+        'e_type' => 'menu',
+    ]);
+    $newer = Feature::query()->create([
+        'v_name' => 'Baru',
+        'v_alias' => 'baru',
+        'e_type' => 'menu',
+    ]);
+
+    DB::table('tm_features')
+        ->where('i_id', $older->i_id)
+        ->update(['dt_updated_at' => '2026-07-01 10:00:00']);
+    DB::table('tm_features')
+        ->where('i_id', $newer->i_id)
+        ->update(['dt_updated_at' => '2026-07-15 10:00:00']);
+
+    $this->getJson('/api/features?updated_at_from=2026-07-10&updated_at_to=2026-07-20')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.alias', 'baru');
+
+    $this->getJson('/api/features?updated_at_from=2026-07-20&updated_at_to=2026-07-10')
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.updated_at_to.0.code', 'FEAT-VAL-045');
+});
+
+it('creates a feature and only requires aliases to be unique among active records', function () {
+    $deleted = Feature::query()->create([
+        'v_name' => 'Lama',
+        'v_alias' => 'pengaturan-fitur',
+        'e_type' => 'menu',
+    ]);
+    $deleted->delete();
+
+    $this->postJson('/api/features', [
+        'name' => 'Pengaturan Fitur',
+        'alias' => 'pengaturan-fitur',
+        'type' => 'menu',
+        'route' => '/settings/features',
+        'icon' => 'ListTree',
+        'order' => 2,
+        'description' => 'Pengaturan fitur aplikasi.',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.alias', 'pengaturan-fitur')
+        ->assertJsonPath('data.show_on_sidebar', true);
+
+    $this->postJson('/api/features', [
+        'name' => 'Duplikat',
+        'alias' => 'pengaturan-fitur',
+        'type' => 'menu',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.alias.0.code', 'FEAT-VAL-024');
+});
+
+it('stores sidebar visibility only for menus', function () {
+    $this->postJson('/api/features', [
+        'name' => 'Aksi',
+        'alias' => 'aksi',
+        'type' => 'crud',
+        'show_on_sidebar' => true,
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.show_on_sidebar', false);
+
+    $this->postJson('/api/features', [
+        'name' => 'Menu Invalid',
+        'alias' => 'menu-invalid',
+        'type' => 'menu',
+        'show_on_sidebar' => 'yes',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.show_on_sidebar.0.code', 'FEAT-VAL-041');
+});
+
+it('rejects a menu whose parent is not a menu', function () {
+    Feature::query()->create([
+        'v_name' => 'Aksi',
+        'v_alias' => 'aksi',
+        'e_type' => 'crud',
+    ]);
+
+    $this->postJson('/api/features', [
+        'name' => 'Menu Anak',
+        'alias' => 'menu-anak',
+        'type' => 'menu',
+        'parent' => 'aksi',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.parent.0.code', 'FEAT-VAL-031');
+});
+
+it('allows a menu whose parent is a menu', function () {
+    Feature::query()->create([
+        'v_name' => 'Pengaturan',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+
+    $this->postJson('/api/features', [
+        'name' => 'Fitur',
+        'alias' => 'fitur',
+        'type' => 'menu',
+        'parent' => 'pengaturan',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.parent', 'pengaturan');
+});
+
+it('updates a feature without changing its alias', function () {
+    $parent = Feature::query()->create([
+        'v_name' => 'Pengaturan',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+    $child = Feature::query()->create([
+        'v_name' => 'Fitur',
+        'v_alias' => 'fitur',
+        'e_type' => 'menu',
+        'v_parent' => 'pengaturan',
+    ]);
+
+    $this->putJson("/api/features/{$parent->i_id}", [
+        'name' => 'Konfigurasi',
+        'alias' => 'konfigurasi',
+        'type' => 'menu',
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Konfigurasi')
+        ->assertJsonPath('data.alias', 'pengaturan');
+
+    expect($child->refresh()->v_parent)->toBe('pengaturan');
+});
+
+it('rejects a feature as its own parent', function () {
+    $feature = Feature::query()->create([
+        'v_name' => 'Pengaturan',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+
+    $this->putJson("/api/features/{$feature->i_id}", [
+        'name' => 'Pengaturan',
+        'alias' => 'pengaturan',
+        'type' => 'menu',
+        'parent' => 'pengaturan',
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.parent.0.code', 'FEAT-VAL-042');
+});
+
+it('soft deletes a feature', function () {
+    $feature = Feature::query()->create([
+        'v_name' => 'Pengaturan',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+
+    $this->deleteJson("/api/features/{$feature->i_id}")
+        ->assertNoContent();
+
+    expect(Feature::withTrashed()->find($feature->i_id)?->trashed())->toBeTrue();
+});
+
+it('restores a soft-deleted feature when its alias is available', function () {
+    $feature = Feature::query()->create([
+        'v_name' => 'Pengaturan',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+    $feature->delete();
+
+    $this->postJson("/api/features/{$feature->i_id}/restore")
+        ->assertOk()
+        ->assertJsonPath('data.deleted_at', null);
+
+    expect($feature->refresh()->trashed())->toBeFalse();
+});
+
+it('rejects restore when the alias is already active', function () {
+    $deleted = Feature::query()->create([
+        'v_name' => 'Pengaturan Lama',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+    $deleted->delete();
+
+    Feature::query()->create([
+        'v_name' => 'Pengaturan Baru',
+        'v_alias' => 'pengaturan',
+        'e_type' => 'menu',
+    ]);
+
+    $this->postJson("/api/features/{$deleted->i_id}/restore")
+        ->assertConflict()
+        ->assertJsonPath('code', 'FEAT-BIZ-001')
+        ->assertJsonMissingPath('context');
+
+    expect($deleted->refresh()->trashed())->toBeTrue();
+});

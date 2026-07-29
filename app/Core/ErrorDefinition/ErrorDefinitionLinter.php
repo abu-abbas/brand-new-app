@@ -245,10 +245,10 @@ final class ErrorDefinitionLinter
             ));
         }
 
-        // Buat instance melalui container untuk mendapat rules() dan errorCodes()
+        // Instansiasi langsung agar FormRequest tidak auto-validasi saat di-resolve container.
         try {
             /** @var FormRequest&HasErrorDefinitions $instance */
-            $instance = app()->make($requestClass);
+            $instance = $ref->newInstance();
             $rules = $instance->rules();
             $errorCodes = $instance->errorCodes();
         } catch (Throwable $e) {

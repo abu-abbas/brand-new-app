@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/vue-query';
 import { computed, type Ref } from 'vue';
-import type { UsersIndexParams } from '@/api/generated/models';
+import type { UsersIndexParams } from '@/api/generated/api';
 import { UserManagementFacade } from '../api/user-management.facade';
 
 export function useUsersQuery(paramsRef: Ref<UsersIndexParams>) {

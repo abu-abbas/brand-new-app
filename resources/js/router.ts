@@ -4,6 +4,7 @@ import { homeRoutes } from '@/modules/home/routes';
 import { exampleRoutes } from '@/modules/example/routes';
 import { announcementRoutes } from '@/modules/announcement/routes';
 import { blankPageRoutes } from '@/modules/blank-page/routes';
+import { featureRoutes } from '@/modules/features/routes';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -13,6 +14,7 @@ const router = createRouter({
     ...exampleRoutes,
     ...announcementRoutes,
     ...blankPageRoutes,
+    ...featureRoutes,
   ],
 });
 

@@ -5,8 +5,8 @@ export default defineConfig({
     input: './docs/openapi.json',
     output: {
       mode: 'single',
-      target: './resources/js/api/generated/users.ts',
-      schemas: './resources/js/api/generated/models',
+      target: './resources/js/api/generated/api.ts',
+      schemas: false,
       client: 'axios-functions',
       clean: true,
       override: {
@@ -15,6 +15,9 @@ export default defineConfig({
           name: 'customAxiosInstance',
         },
       },
+    },
+    hooks: {
+      afterAllFilesWrite: 'prettier --write',
     },
   },
 });

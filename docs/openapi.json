@@ -10,6 +10,412 @@
         }
     ],
     "paths": {
+        "/features": {
+            "get": {
+                "operationId": "features.index",
+                "summary": "Display a paginated list of features, optionally including soft-deleted records",
+                "tags": [
+                    "Feature"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 100
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "maxLength": 100
+                        }
+                    },
+                    {
+                        "name": "search_fields[]",
+                        "in": "query",
+                        "schema": {
+                            "type": "array",
+                            "enum": [
+                                "name",
+                                "alias",
+                                "type",
+                                "parent",
+                                "description",
+                                "route",
+                                "icon",
+                                "order",
+                                "show_on_sidebar",
+                                "updated_at",
+                                "deleted_at"
+                            ],
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "name",
+                                    "alias",
+                                    "type",
+                                    "parent",
+                                    "description",
+                                    "route",
+                                    "icon",
+                                    "order",
+                                    "show_on_sidebar",
+                                    "updated_at",
+                                    "deleted_at"
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "name",
+                                "alias",
+                                "type",
+                                "parent",
+                                "description",
+                                "route",
+                                "icon",
+                                "order",
+                                "show_on_sidebar",
+                                "updated_at",
+                                "deleted_at",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_direction",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "asc",
+                                "desc",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "menu",
+                                "crud",
+                                "filter",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "include_deleted",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "true",
+                                "false",
+                                "1",
+                                "0",
+                                null
+                            ]
+                        }
+                    },
+                    {
+                        "name": "updated_at_from",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "updated_at_to",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `FeatureResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FeatureResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "$ref": "#/components/schemas/PaginationLinks"
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "features.store",
+                "summary": "Store a new feature",
+                "tags": [
+                    "Feature"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreFeatureRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "`FeatureResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeatureResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/features/options": {
+            "get": {
+                "operationId": "features.options",
+                "summary": "Display active features for parent selection",
+                "tags": [
+                    "Feature"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Array of `FeatureOptionResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/FeatureOptionResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/features/{feature}": {
+            "put": {
+                "operationId": "features.update",
+                "summary": "Update an existing feature",
+                "tags": [
+                    "Feature"
+                ],
+                "parameters": [
+                    {
+                        "name": "feature",
+                        "in": "path",
+                        "required": true,
+                        "description": "The feature i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreFeatureRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`FeatureResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeatureResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "features.destroy",
+                "summary": "Soft-delete an existing feature",
+                "tags": [
+                    "Feature"
+                ],
+                "parameters": [
+                    {
+                        "name": "feature",
+                        "in": "path",
+                        "required": true,
+                        "description": "The feature i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/features/{feature}/restore": {
+            "post": {
+                "operationId": "features.restore",
+                "summary": "Restore a soft-deleted feature",
+                "tags": [
+                    "Feature"
+                ],
+                "parameters": [
+                    {
+                        "name": "feature",
+                        "in": "path",
+                        "required": true,
+                        "description": "The feature i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`FeatureResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/FeatureResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "operationId": "users.index",
@@ -176,6 +582,132 @@
     },
     "components": {
         "schemas": {
+            "FeatureOptionResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "alias": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "alias",
+                    "type"
+                ],
+                "title": "FeatureOptionResource"
+            },
+            "FeatureResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "alias": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "route": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "order": {
+                        "type": "integer"
+                    },
+                    "show_on_sidebar": {
+                        "type": "boolean"
+                    },
+                    "created_by": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updated_by": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "updated_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "deleted_by": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "deleted_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "id",
+                    "name",
+                    "alias",
+                    "type",
+                    "parent",
+                    "description",
+                    "route",
+                    "icon",
+                    "order",
+                    "show_on_sidebar",
+                    "created_by",
+                    "created_at",
+                    "updated_by",
+                    "updated_at",
+                    "deleted_by",
+                    "deleted_at"
+                ],
+                "title": "FeatureResource"
+            },
             "PaginationLinks": {
                 "type": "object",
                 "properties": {
@@ -298,6 +830,73 @@
                 ],
                 "title": "PaginationMetaLinksItem"
             },
+            "StoreFeatureRequest": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "alias": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+                        "maxLength": 150
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "menu",
+                            "crud",
+                            "filter"
+                        ]
+                    },
+                    "parent": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 150
+                    },
+                    "route": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 250
+                    },
+                    "icon": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 50
+                    },
+                    "order": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 1,
+                        "maximum": 32767
+                    },
+                    "show_on_sidebar": {
+                        "type": "boolean"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    }
+                },
+                "required": [
+                    "name",
+                    "alias",
+                    "type"
+                ],
+                "title": "StoreFeatureRequest"
+            },
             "UserResource": {
                 "type": "object",
                 "properties": {
@@ -384,6 +983,25 @@
                             "required": [
                                 "message",
                                 "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
                             ]
                         }
                     }

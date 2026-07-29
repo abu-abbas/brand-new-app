@@ -1,5 +1,9 @@
-import { usersIndex, usersTestError } from '@/api/generated/users';
-import type { UsersIndex200, UsersIndexParams } from '@/api/generated/models';
+import {
+  usersIndex,
+  usersTestError,
+  type UsersIndex200,
+  type UsersIndexParams,
+} from '@/api/generated/api';
 
 export class UserManagementFacade {
   public static async getUsers(

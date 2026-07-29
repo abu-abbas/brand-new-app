@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Http\Resources;
+
+use App\Models\Feature;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * @mixin Feature
+ */
+class FeatureResource extends JsonResource
+{
+    /**
+     * @return array{
+     *     id: int,
+     *     name: string,
+     *     alias: string,
+     *     type: string,
+     *     parent: string|null,
+     *     description: string|null,
+     *     route: string|null,
+     *     icon: string|null,
+     *     order: int,
+     *     show_on_sidebar: bool,
+     *     created_by: string|null,
+     *     created_at: string|null,
+     *     updated_by: string|null,
+     *     updated_at: string|null,
+     *     deleted_by: string|null,
+     *     deleted_at: string|null
+     * }
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->i_id,
+            'name' => $this->v_name,
+            'alias' => $this->v_alias,
+            'type' => $this->e_type->value,
+            'parent' => $this->v_parent,
+            'description' => $this->v_desc,
+            'route' => $this->v_route,
+            'icon' => $this->v_icon,
+            'order' => $this->si_order,
+            'show_on_sidebar' => $this->b_show_on_sidebar,
+            'created_by' => $this->v_created_by,
+            'created_at' => $this->dt_created_at?->toIso8601String(),
+            'updated_by' => $this->v_updated_by,
+            'updated_at' => $this->dt_updated_at?->toIso8601String(),
+            'deleted_by' => $this->v_deleted_by,
+            'deleted_at' => $this->dt_deleted_at?->toIso8601String(),
+        ];
+    }
+}
