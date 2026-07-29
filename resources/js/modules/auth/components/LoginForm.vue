@@ -286,7 +286,7 @@ const handleLogin = async () => {
 
             <!-- Captcha Card (Inspired by Reference Design: Refresh Left, Image Center, Sound Right) -->
             <div
-              class="relative p-2.5 rounded-xl border border-border/80 bg-[#f4f4f5] dark:bg-muted/30 flex items-center justify-between gap-2.5 select-none transition-all hover:border-border"
+              class="relative p-2.5 rounded-xl border border-border/80 bg-[#f4f4f5] dark:bg-[#0b0b0a] flex items-center justify-between gap-2.5 select-none transition-all hover:border-border"
             >
               <!-- Left: Refresh Button Badge -->
               <button
@@ -311,7 +311,7 @@ const handleLogin = async () => {
                   v-if="captchaImage"
                   :src="captchaImage"
                   alt="Kode keamanan"
-                  class="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                  class="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105 dark:invert dark:hue-rotate-180"
                 />
                 <span v-else class="text-xs font-medium text-muted-foreground animate-pulse"
                   >Memuat captcha...</span
