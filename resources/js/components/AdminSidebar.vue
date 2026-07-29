@@ -27,6 +27,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme, type ThemeName } from '@/composables/useTheme';
 import { useDarkMode } from '@/composables/useDarkMode';
+import { useAuthStore } from '@/stores/auth';
+import { computed } from 'vue';
 
 import {
   Command,
@@ -48,6 +50,21 @@ import {
 
 const { activeTheme, setTheme } = useTheme();
 const { isDark, toggleDarkMode } = useDarkMode();
+const auth = useAuthStore();
+const initials = computed(
+  () =>
+    auth.user?.name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || 'U',
+);
+
+const handleLogout = async () => {
+  await auth.logout();
+  window.location.assign('/login');
+};
 
 const themes: { name: ThemeName; label: string; color: string }[] = [
   { name: 'default', label: 'Sky (Default)', color: '#0ea5e9' },
@@ -282,14 +299,14 @@ const projectsMenu = [
                   <div
                     class="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
-                    JD
+                    {{ initials }}
                   </div>
                   <div class="flex flex-col group-data-[collapsible=icon]:hidden min-w-0 text-left">
                     <span class="text-sm font-semibold text-foreground truncate leading-tight">
-                      John Doe
+                      {{ auth.user?.name }}
                     </span>
                     <span class="text-[10px] text-muted-foreground truncate leading-none">
-                      john.doe@example.com
+                      {{ auth.user?.email }}
                     </span>
                   </div>
                 </div>
@@ -304,12 +321,14 @@ const projectsMenu = [
                   <div
                     class="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-xs"
                   >
-                    JD
+                    {{ initials }}
                   </div>
                   <div class="grid flex-1 text-left text-sm leading-tight">
-                    <span class="truncate font-semibold text-xs text-foreground"> John Doe </span>
+                    <span class="truncate font-semibold text-xs text-foreground">
+                      {{ auth.user?.name }}
+                    </span>
                     <span class="truncate text-[10px] text-muted-foreground">
-                      john.doe@example.com
+                      {{ auth.user?.email }}
                     </span>
                   </div>
                 </div>
@@ -367,7 +386,7 @@ const projectsMenu = [
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem @click="handleLogout">
                 <LogOut class="size-4 mr-2 text-destructive" />
                 <span class="text-destructive">Log out</span>
               </DropdownMenuItem>

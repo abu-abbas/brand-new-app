@@ -7,6 +7,7 @@ declare module 'vue-router' {
     subtitle?: string;
     icon?: import('vue').Component;
     backUrl?: string;
+    public?: boolean;
     breadcrumbs?: Array<{ label: string; route: string | null }>;
   }
 }

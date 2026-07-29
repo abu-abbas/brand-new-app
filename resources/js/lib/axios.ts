@@ -1,4 +1,9 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
+import { clearDataTableMemory } from '@/components/custom-ui/data-table/data-table.utils';
+
+type RetriableAxiosRequestConfig = AxiosRequestConfig & {
+  csrfRetried?: boolean;
+};
 
 export interface AppError {
   message: string;
@@ -20,6 +25,7 @@ export const axiosInstance = axios.create({
     Accept: 'application/json',
   },
   withCredentials: true,
+  withXSRFToken: true,
 });
 
 axiosInstance.interceptors.request.use((config) => {
@@ -176,7 +182,29 @@ axiosInstance.interceptors.response.use(
 
     return response;
   },
-  (error) => Promise.reject(normalizeAppError(error)),
+  async (error: AxiosError) => {
+    const config = error.config as RetriableAxiosRequestConfig | undefined;
+    const status = error.response?.status;
+
+    if (status === 419 && config && !config.csrfRetried && config.url !== '/sanctum/csrf-cookie') {
+      config.csrfRetried = true;
+      await axiosInstance.get('/sanctum/csrf-cookie', { baseURL: '/' });
+
+      return axiosInstance(config);
+    }
+
+    if (
+      (status === 401 || status === 419) &&
+      typeof window !== 'undefined' &&
+      window.location.pathname !== '/login'
+    ) {
+      clearDataTableMemory();
+      const intendedUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+      window.location.assign(`/login?redirect=${encodeURIComponent(intendedUrl)}`);
+    }
+
+    return Promise.reject(normalizeAppError(error));
+  },
 );
 
 export const customAxiosInstance = <T>(

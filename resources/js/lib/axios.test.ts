@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import type { AxiosAdapter } from 'axios';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
+  axiosInstance,
   extractSupportId,
   extractPhoneNumber,
   buildWhatsappUrl,
@@ -7,6 +9,12 @@ import {
   normalizeAppError,
 } from './axios';
 import mockFirewallHtml from '../../views/support-id.blade.php?raw';
+
+const defaultAdapter = axiosInstance.defaults.adapter;
+
+afterEach(() => {
+  axiosInstance.defaults.adapter = defaultAdapter;
+});
 
 describe('Axios Firewall Interceptor', () => {
   it('dapat mendeteksi respons HTML firewall block', () => {
@@ -76,5 +84,37 @@ describe('AppError normalizer', () => {
       retryable: true,
       retryAfterMs: 3000,
     });
+  });
+});
+
+describe('Axios session recovery', () => {
+  it('mengambil CSRF cookie baru dan mengulang request 419 sekali', async () => {
+    const requests: string[] = [];
+    const adapter: AxiosAdapter = async (config) => {
+      requests.push(config.url ?? '');
+
+      if (
+        config.url === '/protected' &&
+        requests.filter((url) => url === '/protected').length === 1
+      ) {
+        return Promise.reject({ config, response: { status: 419 } });
+      }
+
+      return {
+        config,
+        data: { ok: true },
+        headers: {},
+        status: 200,
+        statusText: 'OK',
+      };
+    };
+    axiosInstance.defaults.adapter = adapter;
+
+    const response = await axiosInstance.get('/protected', {
+      headers: { 'X-Request-Id': 'request-1' },
+    });
+
+    expect(response.data).toEqual({ ok: true });
+    expect(requests).toEqual(['/protected', '/sanctum/csrf-cookie', '/protected']);
   });
 });

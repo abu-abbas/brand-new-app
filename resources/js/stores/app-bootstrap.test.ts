@@ -13,6 +13,7 @@ describe('AppBootstrapStore', () => {
     const store = useAppBootstrapStore();
     expect(store.config.name).toBe('Laravel');
     expect(store.config.locale).toBe('en');
+    expect(store.config.captcha.enabled).toBe(false);
     expect(store.config.references.permission_types).toEqual([]);
   });
 
@@ -25,6 +26,9 @@ describe('AppBootstrapStore', () => {
       locale: 'id',
       current_date: '2026-07-28',
       current_fulldate: '2026-07-28T00:00:00+07:00',
+      captcha: {
+        enabled: true,
+      },
       references: {
         permission_types: [
           {
@@ -40,6 +44,7 @@ describe('AppBootstrapStore', () => {
     expect(store.config.timezone).toBe('Asia/Jakarta');
     expect(store.config.locale).toBe('id');
     expect(store.config.current_date).toBe('2026-07-28');
+    expect(store.config.captcha.enabled).toBe(true);
     expect(store.config.references.permission_types).toEqual([
       {
         value: 'menu',

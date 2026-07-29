@@ -18,6 +18,9 @@ interface AppConfig {
   locale: string;
   current_date: string;
   current_fulldate: string;
+  captcha: {
+    enabled: boolean;
+  };
   references: {
     permission_types: AppReferenceOption[];
   };
