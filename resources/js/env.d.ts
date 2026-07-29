@@ -5,6 +5,11 @@ declare module '*?raw' {
   export default content;
 }
 
+interface AppReferenceOption {
+  value: string;
+  label: string;
+}
+
 interface AppConfig {
   name: string;
   env: string;
@@ -13,6 +18,9 @@ interface AppConfig {
   locale: string;
   current_date: string;
   current_fulldate: string;
+  references: {
+    permission_types: AppReferenceOption[];
+  };
 }
 
 interface Window {

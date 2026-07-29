@@ -15,6 +15,9 @@
                 'locale' => config('app.locale'),
                 'current_date' => now()->format('Y-m-d'),
                 'current_fulldate' => now()->toIso8601String(),
+                'references' => [
+                    'permission_types' => App\Enums\PermissionType::options(),
+                ],
             ]) }};
         </script>
         {{ Vite::fonts() }}

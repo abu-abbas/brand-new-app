@@ -11,6 +11,9 @@ export const useAppBootstrapStore = defineStore('app-bootstrap', () => {
       locale: 'en',
       current_date: new Date().toISOString().split('T')[0],
       current_fulldate: new Date().toISOString(),
+      references: {
+        permission_types: [],
+      },
     },
   );
 
