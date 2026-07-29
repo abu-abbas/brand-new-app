@@ -1,13 +1,23 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { PanelLeft, Bell } from '@lucide/vue';
 
-defineProps<{
-  title?: string;
-  parentTitle?: string;
-}>();
+const route = useRoute();
+const router = useRouter();
+
+const breadcrumbs = computed(() => route.meta?.breadcrumbs ?? []);
+
+function navigateBreadcrumb(target: string) {
+  if (router.hasRoute(target)) {
+    router.push({ name: target });
+  } else {
+    router.push(target);
+  }
+}
 </script>
 
 <template>
@@ -27,14 +37,24 @@ defineProps<{
       </SidebarTrigger>
       <div class="mx-1 h-4 w-px bg-border self-center" />
 
-      <!-- Breadcrumbs style clean -->
+      <!-- Breadcrumbs dari route.meta.breadcrumbs -->
       <div class="flex items-center gap-2 text-xs select-none">
-        <span v-if="parentTitle" class="text-muted-foreground">
-          {{ parentTitle }}
-        </span>
-        <span v-if="parentTitle" class="text-muted-foreground/60">/</span>
-        <span class="font-medium text-foreground">
-          {{ title || 'Dashboard' }}
+        <template v-if="breadcrumbs.length > 0">
+          <template v-for="(crumb, i) in breadcrumbs" :key="i">
+            <span v-if="i > 0" class="text-muted-foreground/60">/</span>
+            <button
+              v-if="crumb.route !== null"
+              type="button"
+              class="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              @click="navigateBreadcrumb(crumb.route!)"
+            >
+              {{ crumb.label }}
+            </button>
+            <span v-else class="font-medium text-foreground">{{ crumb.label }}</span>
+          </template>
+        </template>
+        <span v-else class="font-medium text-foreground">
+          {{ route.meta?.title || 'Dashboard' }}
         </span>
       </div>
     </div>

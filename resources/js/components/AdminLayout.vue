@@ -84,7 +84,7 @@ onUnmounted(() => {
       <!-- 2. MAIN INSET CONTENT -->
       <SidebarInset class="flex h-svh flex-1 flex-col overflow-hidden bg-background">
         <!-- Header Clean (Warna Putih) -->
-        <AdminHeader :parent-title="parentTitle" :title="title" />
+        <AdminHeader />
 
         <!-- Main Content Area: Muted Container dengan Rounded Corners & Cross-Platform ScrollArea -->
         <div

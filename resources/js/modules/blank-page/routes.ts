@@ -10,8 +10,11 @@ export const blankPageRoutes: RouteRecordRaw[] = [
       title: 'Halaman Kosong',
       subtitle:
         'Gunakan template halaman ini sebagai titik awal untuk membangun fitur atau modul baru.',
-      parentTitle: 'Pages',
       icon: FileCode2,
+      breadcrumbs: [
+        { label: 'Beranda', route: 'home' },
+        { label: 'Halaman Kosong', route: null },
+      ],
     },
   },
   {
@@ -21,8 +24,12 @@ export const blankPageRoutes: RouteRecordRaw[] = [
     meta: {
       title: 'Detail Halaman Kosong',
       subtitle: 'Halaman ini menggunakan rute meta backUrl dengan named route scope "blank-page".',
-      parentTitle: 'Pages',
       backUrl: 'blank-page',
+      breadcrumbs: [
+        { label: 'Beranda', route: 'home' },
+        { label: 'Halaman Kosong', route: 'blank-page' },
+        { label: 'Detail', route: null },
+      ],
     },
   },
 ];
