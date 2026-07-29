@@ -1,8 +1,10 @@
 <script setup lang="ts">
 /* global Event */
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, type Component } from 'vue';
+import { useRouter, type RouteLocationRaw } from 'vue-router';
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import AdminHeader from '@/components/AdminHeader.vue';
+import PageHeader from '@/components/PageHeader.vue';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -12,7 +14,33 @@ import { ArrowUp } from '@lucide/vue';
 defineProps<{
   title?: string;
   parentTitle?: string;
+  subtitle?: string;
+  icon?: Component;
+  hideHeader?: boolean;
+  showBack?: boolean;
+  backUrl?: RouteLocationRaw;
+  useNative?: boolean;
+  onBack?: () => void;
 }>();
+
+const router = useRouter();
+
+function handleBack(customTarget?: RouteLocationRaw | Event) {
+  if (
+    customTarget &&
+    !(typeof window !== 'undefined' && customTarget instanceof Event) &&
+    !(typeof customTarget === 'object' && customTarget !== null && 'preventDefault' in customTarget)
+  ) {
+    const rawTarget = customTarget as RouteLocationRaw;
+    if (typeof rawTarget === 'string' && router.hasRoute(rawTarget)) {
+      router.push({ name: rawTarget });
+    } else {
+      router.push(rawTarget);
+    }
+  } else {
+    router.back();
+  }
+}
 
 const containerRef = ref<HTMLElement | null>(null);
 const viewportEl = ref<HTMLElement | null>(null);
@@ -65,7 +93,25 @@ onUnmounted(() => {
         >
           <ScrollArea class="flex-1 min-h-0 rounded-2xl bg-muted/60 dark:bg-muted/30 shadow-2xs">
             <main class="space-y-6 p-4 md:p-6">
-              <slot />
+              <!-- Slot Header dengan Default PageHeader -->
+              <slot v-if="!hideHeader" name="header" :go-back="handleBack">
+                <PageHeader
+                  :title="title"
+                  :subtitle="subtitle"
+                  :icon="icon"
+                  :show-back="showBack"
+                  :back-url="backUrl"
+                  :use-native="useNative"
+                  :on-back="onBack"
+                >
+                  <template v-if="$slots['header-actions']" #actions>
+                    <slot name="header-actions" :go-back="handleBack" />
+                  </template>
+                </PageHeader>
+              </slot>
+
+              <!-- Default Slot untuk Konten Utama Halaman (dengan Scoped Slot goBack) -->
+              <slot :go-back="handleBack" />
             </main>
           </ScrollArea>
 
