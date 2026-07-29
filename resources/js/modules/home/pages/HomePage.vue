@@ -42,7 +42,7 @@ function goToExamples() {
 </script>
 
 <template>
-  <AdminLayout parent-title="Building Your Application" title="Dashboard">
+  <AdminLayout parent-title="Building Your Application" title="Dashboard" hide-header>
     <!-- Backend Shared App Config Card -->
     <Card class="border-primary/20 bg-card shadow-sm">
       <CardHeader class="pb-3">
