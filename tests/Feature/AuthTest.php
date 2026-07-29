@@ -30,6 +30,21 @@ it('serves the flat captcha and rejects an invalid answer', function () {
         ->assertJsonPath('errors.captcha.0.code', 'AUTH-VAL-010');
 });
 
+it('returns audio wav for a valid captcha key', function () {
+    config(['captcha.disable' => false]);
+
+    $challenge = $this->getJson('/api/auth/captcha')
+        ->assertOk()
+        ->assertJsonStructure(['img', 'key'])
+        ->json();
+
+    $response = $this->get('/api/auth/captcha/audio?key=' . $challenge['key']);
+    $response->assertOk()
+        ->assertHeader('Content-Type', 'audio/wav');
+
+    expect(strlen((string) $response->getContent()))->toBeGreaterThan(44);
+});
+
 it('logs in an active user and returns the current session user', function () {
     $user = User::factory()->create([
         'username' => 'pegawai',

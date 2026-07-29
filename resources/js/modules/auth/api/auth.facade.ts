@@ -28,4 +28,17 @@ export class AuthFacade {
   public static captcha(): Promise<AuthCaptcha200> {
     return authCaptcha();
   }
+
+  public static async playCaptchaAudio(key: string): Promise<HTMLAudioElement> {
+    const response = await axiosInstance.get<Blob>('/auth/captcha/audio', {
+      params: { key },
+      responseType: 'blob',
+    });
+    const audioUrl = URL.createObjectURL(response.data);
+    const audio = new Audio(audioUrl);
+    audio.onended = () => URL.revokeObjectURL(audioUrl);
+    audio.onerror = () => URL.revokeObjectURL(audioUrl);
+    await audio.play();
+    return audio;
+  }
 }

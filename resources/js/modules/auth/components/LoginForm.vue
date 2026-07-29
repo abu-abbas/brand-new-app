@@ -1,7 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Shield, User, Lock, Eye, EyeOff, ArrowRight, HelpCircle, Megaphone } from '@lucide/vue';
+import {
+  Shield,
+  User,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  HelpCircle,
+  Megaphone,
+  AlertCircle,
+  RotateCcw,
+  Volume2,
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AuthFacade } from '@/modules/auth/api/auth.facade';
@@ -20,40 +32,91 @@ const form = reactive({
   captcha: '',
 });
 
+const errors = reactive({
+  username: '',
+  password: '',
+  captcha: '',
+  general: '',
+});
+
+function clearErrors() {
+  errors.username = '';
+  errors.password = '';
+  errors.captcha = '';
+  errors.general = '';
+}
+
 const showPassword = ref(false);
 const captchaImage = ref('');
 const captchaLoading = ref(false);
+const isAudioPlaying = ref(false);
 const isLoading = ref(false);
-const errorMessage = ref('');
 const auth = useAuthStore();
 const appBootstrap = useAppBootstrapStore();
 const captchaEnabled = computed(() => appBootstrap.config.captcha.enabled);
 const route = useRoute();
 const router = useRouter();
 
-const refreshCaptcha = async () => {
+const refreshCaptcha = async (resetError = false) => {
   captchaLoading.value = true;
   form.captcha = '';
   form.captcha_key = '';
+  if (resetError) {
+    errors.captcha = '';
+  }
 
   try {
     const challenge = await AuthFacade.captcha();
     captchaImage.value = challenge.img;
     form.captcha_key = challenge.key;
   } catch (error) {
-    errorMessage.value = (error as AppError).message;
+    errors.general = (error as AppError).message;
   } finally {
     captchaLoading.value = false;
   }
 };
 
+const playAudioCaptcha = async () => {
+  if (!form.captcha_key || isAudioPlaying.value) return;
+
+  isAudioPlaying.value = true;
+  try {
+    const audio = await AuthFacade.playCaptchaAudio(form.captcha_key);
+    audio.addEventListener('ended', () => {
+      isAudioPlaying.value = false;
+    });
+    audio.addEventListener('error', () => {
+      isAudioPlaying.value = false;
+    });
+  } catch {
+    isAudioPlaying.value = false;
+  }
+};
+
 onMounted(() => {
-  if (captchaEnabled.value) void refreshCaptcha();
+  if (captchaEnabled.value) void refreshCaptcha(true);
 });
 
 const handleLogin = async () => {
+  clearErrors();
+
+  let hasError = false;
+  if (!form.username.trim()) {
+    errors.username = 'Username wajib diisi.';
+    hasError = true;
+  }
+  if (!form.password) {
+    errors.password = 'Password wajib diisi.';
+    hasError = true;
+  }
+  if (captchaEnabled.value && !form.captcha.trim()) {
+    errors.captcha = 'Kode keamanan wajib diisi.';
+    hasError = true;
+  }
+
+  if (hasError) return;
+
   isLoading.value = true;
-  errorMessage.value = '';
 
   try {
     await auth.login(form);
@@ -61,16 +124,25 @@ const handleLogin = async () => {
     await router.replace(redirect);
   } catch (error) {
     const appError = error as AppError;
-    const firstValidationError = Object.values(appError.validationErrors ?? {})
-      .flat()
-      .find((value) => value);
-    errorMessage.value =
-      typeof firstValidationError === 'object' &&
-      firstValidationError !== null &&
-      'message' in firstValidationError
-        ? String(firstValidationError.message)
-        : appError.message;
-    if (captchaEnabled.value) void refreshCaptcha();
+
+    if (appError.validationErrors && Object.keys(appError.validationErrors).length > 0) {
+      for (const [field, fieldErrors] of Object.entries(appError.validationErrors)) {
+        const firstErr = Array.isArray(fieldErrors) ? fieldErrors[0] : fieldErrors;
+        const msg =
+          typeof firstErr === 'object' && firstErr !== null && 'message' in firstErr
+            ? String((firstErr as { message: string }).message)
+            : String(firstErr);
+        if (field in errors) {
+          errors[field as keyof typeof errors] = msg;
+        } else {
+          errors.general = msg;
+        }
+      }
+    } else {
+      errors.general = appError.message;
+    }
+
+    if (captchaEnabled.value) void refreshCaptcha(false);
   } finally {
     isLoading.value = false;
   }
@@ -121,11 +193,21 @@ const handleLogin = async () => {
       </h1>
 
       <!-- Description -->
-      <p class="text-[11px] text-muted-foreground mb-2.5 xl:mb-7.5 leading-relaxed">
+      <p class="text-[11px] text-muted-foreground mb-2.5 xl:mb-6 leading-relaxed">
         Selamat datang kembali. Masukkan kredensial Anda untuk melanjutkan.
       </p>
 
-      <form class="space-y-2.5" @submit.prevent="handleLogin">
+      <!-- General Error Alert -->
+      <div
+        v-if="errors.general"
+        class="mb-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200"
+        role="alert"
+      >
+        <AlertCircle class="h-4 w-4 shrink-0 mt-0.5" />
+        <span class="font-medium leading-snug">{{ errors.general }}</span>
+      </div>
+
+      <form class="space-y-3" novalidate @submit.prevent="handleLogin">
         <!-- Username Field -->
         <div class="space-y-1">
           <label class="text-[10px] font-bold tracking-wider uppercase text-muted-foreground block">
@@ -137,11 +219,22 @@ const handleLogin = async () => {
               v-model="form.username"
               type="text"
               placeholder="ID Pegawai / Username"
-              required
               autocomplete="username"
-              class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs"
+              class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 text-xs"
+              :class="
+                errors.username
+                  ? 'border-destructive focus-visible:ring-destructive focus-visible:border-destructive'
+                  : 'focus-visible:ring-primary focus-visible:border-primary'
+              "
+              @input="errors.username = ''"
             />
           </div>
+          <p
+            v-if="errors.username"
+            class="text-[11px] font-medium text-destructive mt-1 leading-none"
+          >
+            {{ errors.username }}
+          </p>
         </div>
 
         <!-- Password Field -->
@@ -155,12 +248,18 @@ const handleLogin = async () => {
               v-model="form.password"
               :type="showPassword ? 'text' : 'password'"
               placeholder="••••••••"
-              required
               autocomplete="current-password"
-              class="pl-8.5 pr-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs"
+              class="pl-8.5 pr-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 text-xs"
+              :class="
+                errors.password
+                  ? 'border-destructive focus-visible:ring-destructive focus-visible:border-destructive'
+                  : 'focus-visible:ring-primary focus-visible:border-primary'
+              "
+              @input="errors.password = ''"
             />
             <button
               type="button"
+              tabindex="-1"
               class="absolute right-3 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
               @click="showPassword = !showPassword"
             >
@@ -168,48 +267,106 @@ const handleLogin = async () => {
               <EyeOff v-else class="h-3.5 w-3.5" />
             </button>
           </div>
+          <p
+            v-if="errors.password"
+            class="text-[11px] font-medium text-destructive mt-1 leading-none"
+          >
+            {{ errors.password }}
+          </p>
         </div>
 
         <!-- Security Verification / Captcha -->
         <template v-if="captchaEnabled">
-          <div class="space-y-1">
+          <div class="space-y-1.5">
             <label
               class="text-[10px] font-bold tracking-wider uppercase text-muted-foreground block"
             >
-              Security Verification
+              Verifikasi Keamanan
             </label>
-            <div class="grid grid-cols-5 gap-2">
-              <div class="col-span-3">
-                <Input
-                  v-model="form.captcha"
-                  type="text"
-                  placeholder="CAPTCHA"
-                  required
-                  autocomplete="off"
-                  class="h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary text-xs uppercase"
-                />
-              </div>
+
+            <!-- Captcha Card (Inspired by Reference Design: Refresh Left, Image Center, Sound Right) -->
+            <div
+              class="relative p-2.5 rounded-xl border border-border/80 bg-[#f4f4f5] dark:bg-muted/30 flex items-center justify-between gap-2.5 select-none transition-all hover:border-border"
+            >
+              <!-- Left: Refresh Button Badge -->
               <button
                 type="button"
-                title="Klik untuk acak captcha"
+                tabindex="-1"
+                title="Acak kode captcha"
                 :disabled="captchaLoading"
-                class="col-span-2 h-9 bg-muted/70 dark:bg-muted/40 border border-input rounded-md flex items-center justify-center font-mono font-bold italic tracking-widest text-foreground text-xs hover:bg-muted transition-colors select-none cursor-pointer"
-                @click="refreshCaptcha"
+                class="h-9 w-9 rounded-lg bg-background dark:bg-muted/50 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-xs cursor-pointer group shrink-0 disabled:opacity-50"
+                @click="refreshCaptcha(true)"
+              >
+                <RotateCcw
+                  class="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-180"
+                  :class="{ 'animate-spin': captchaLoading }"
+                />
+              </button>
+
+              <!-- Center: Captcha Image -->
+              <div
+                class="relative flex-1 h-9 flex items-center justify-center overflow-hidden group"
               >
                 <img
                   v-if="captchaImage"
                   :src="captchaImage"
                   alt="Kode keamanan"
-                  class="size-full rounded object-contain"
+                  class="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105"
                 />
-                <span v-else>Memuat...</span>
+                <span v-else class="text-xs font-medium text-muted-foreground animate-pulse"
+                  >Memuat captcha...</span
+                >
+                <div
+                  v-if="captchaLoading"
+                  class="absolute inset-0 bg-background/70 backdrop-blur-[1px] flex items-center justify-center z-10 rounded"
+                >
+                  <RotateCcw class="h-4 w-4 text-primary animate-spin" />
+                </div>
+              </div>
+
+              <!-- Right: Sound Button Badge -->
+              <button
+                type="button"
+                tabindex="-1"
+                title="Dengarkan audio captcha"
+                :disabled="captchaLoading || isAudioPlaying || !form.captcha_key"
+                class="h-9 w-9 rounded-lg bg-background dark:bg-muted/50 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-xs cursor-pointer shrink-0 disabled:opacity-40"
+                @click="playAudioCaptcha"
+              >
+                <Volume2
+                  class="h-4 w-4 shrink-0"
+                  :class="{ 'animate-pulse text-primary': isAudioPlaying }"
+                />
               </button>
             </div>
-          </div>
 
-          <p v-if="errorMessage" role="alert" class="text-xs text-destructive">
-            {{ errorMessage }}
-          </p>
+            <!-- Full Width Captcha Text Input -->
+            <div class="relative flex items-center">
+              <Shield
+                class="absolute left-3 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10 shrink-0"
+              />
+              <Input
+                v-model="form.captcha"
+                type="text"
+                placeholder="Masukkan 5 angka di atas"
+                autocomplete="off"
+                class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 text-xs uppercase font-medium placeholder:normal-case placeholder:font-normal"
+                :class="
+                  errors.captcha
+                    ? 'border-destructive focus-visible:ring-destructive focus-visible:border-destructive'
+                    : 'focus-visible:ring-primary focus-visible:border-primary'
+                "
+                @input="errors.captcha = ''"
+              />
+            </div>
+
+            <p
+              v-if="errors.captcha"
+              class="text-[11px] font-medium text-destructive mt-1 leading-none"
+            >
+              {{ errors.captcha }}
+            </p>
+          </div>
         </template>
 
         <div class="my-2.5 lg:my-7.5" />

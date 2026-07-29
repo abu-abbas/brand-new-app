@@ -16,6 +16,9 @@ Route::post('/auth/login', [AuthController::class, 'login'])
 Route::get('/auth/captcha', [AuthController::class, 'captcha'])
     ->middleware('throttle:20,1')
     ->name('api.auth.captcha');
+Route::get('/auth/captcha/audio', [AuthController::class, 'captchaAudio'])
+    ->middleware('throttle:20,1')
+    ->name('api.auth.captcha.audio');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');

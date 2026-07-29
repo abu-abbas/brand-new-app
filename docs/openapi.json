@@ -85,6 +85,50 @@
                 }
             }
         },
+        "/auth/captcha/audio": {
+            "get": {
+                "operationId": "auth.captcha.audio",
+                "summary": "Return audio (WAV format) pronouncing the CAPTCHA code for accessibility",
+                "tags": [
+                    "Auth"
+                ],
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string"
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Cache-Control": {
+                                "schema": {
+                                    "type": "string",
+                                    "const": "no-cache, no-store, must-revalidate"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/auth/me": {
             "get": {
                 "operationId": "auth.me",
@@ -868,24 +912,20 @@
                         "maxLength": 255
                     },
                     "captcha_key": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
+                        "type": "string",
                         "minLength": 60,
                         "maxLength": 60
                     },
                     "captcha": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
+                        "type": "string",
                         "maxLength": 10
                     }
                 },
                 "required": [
                     "username",
-                    "password"
+                    "password",
+                    "captcha_key",
+                    "captcha"
                 ],
                 "title": "LoginRequest"
             },

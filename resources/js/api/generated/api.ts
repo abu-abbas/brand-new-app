@@ -51,17 +51,6 @@ export interface FeatureResource {
   deleted_at: FeatureResourceDeletedAt;
 }
 
-/**
- * @minLength 60
- * @maxLength 60
- */
-export type LoginRequestCaptchaKey = string | null;
-
-/**
- * @maxLength 10
- */
-export type LoginRequestCaptcha = string | null;
-
 export interface LoginRequest {
   /** @maxLength 255 */
   username: string;
@@ -71,9 +60,9 @@ export interface LoginRequest {
    * @minLength 60
    * @maxLength 60
    */
-  captcha_key?: LoginRequestCaptchaKey;
+  captcha_key: string;
   /** @maxLength 10 */
-  captcha?: LoginRequestCaptcha;
+  captcha: string;
 }
 
 export type PaginationLinksFirst = string | null;
@@ -143,8 +132,8 @@ export interface PaginationMetaLinksItem {
   active: boolean;
 }
 
-export type StoreFeatureRequestType =
-  (typeof StoreFeatureRequestType)[keyof typeof StoreFeatureRequestType];
+export type StoreFeatureRequestType = typeof StoreFeatureRequestType[keyof typeof StoreFeatureRequestType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const StoreFeatureRequestType = {
@@ -228,7 +217,7 @@ export interface UserResource {
 /**
  * A detailed description of each field that failed validation.
  */
-export type ValidationExceptionResponseErrors = { [key: string]: string[] };
+export type ValidationExceptionResponseErrors = {[key: string]: string[]};
 
 export type ValidationExceptionResponse = {
   /** Errors overview. */
@@ -256,47 +245,39 @@ export type AuthCaptcha200 = {
   key: string;
 };
 
+export type AuthCaptchaAudioParams = {
+key?: string;
+};
+
 export type AuthMe200 = {
   data: UserResource;
 };
 
 export type FeaturesIndexParams = {
-  /**
-   * @minimum 1
-   */
-  page?: number | null;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  per_page?: number | null;
-  /**
-   * @maxLength 100
-   */
-  search?: string | null;
-  'search_fields[]'?: FeaturesIndexSearchFieldsItem[];
-  sort_by?:
-    | 'name'
-    | 'alias'
-    | 'type'
-    | 'parent'
-    | 'description'
-    | 'route'
-    | 'icon'
-    | 'order'
-    | 'show_on_sidebar'
-    | 'updated_at'
-    | 'deleted_at'
-    | null;
-  sort_direction?: 'asc' | 'desc' | null;
-  type?: 'menu' | 'crud' | 'filter' | null;
-  include_deleted?: 'true' | 'false' | '1' | '0' | null;
-  updated_at_from?: string | null;
-  updated_at_to?: string | null;
+/**
+ * @minimum 1
+ */
+page?: number | null;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number | null;
+/**
+ * @maxLength 100
+ */
+search?: string | null;
+'search_fields[]'?: FeaturesIndexSearchFieldsItem[];
+sort_by?: 'name' | 'alias' | 'type' | 'parent' | 'description' | 'route' | 'icon' | 'order' | 'show_on_sidebar' | 'updated_at' | 'deleted_at' | null;
+sort_direction?: 'asc' | 'desc' | null;
+type?: 'menu' | 'crud' | 'filter' | null;
+include_deleted?: 'true' | 'false' | '1' | '0' | null;
+updated_at_from?: string | null;
+updated_at_to?: string | null;
 };
 
-export type FeaturesIndexSearchFieldsItem =
-  (typeof FeaturesIndexSearchFieldsItem)[keyof typeof FeaturesIndexSearchFieldsItem];
+export type FeaturesIndexSearchFieldsItem = typeof FeaturesIndexSearchFieldsItem[keyof typeof FeaturesIndexSearchFieldsItem];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FeaturesIndexSearchFieldsItem = {
@@ -336,24 +317,23 @@ export type FeaturesRestore200 = {
 };
 
 export type UsersIndexParams = {
-  /**
-   * @minimum 1
-   */
-  page?: number | null;
-  /**
-   * @minimum 1
-   * @maximum 100
-   */
-  per_page?: number | null;
-  /**
-   * @maxLength 100
-   */
-  search?: string | null;
-  'search_fields[]'?: string[];
-  sort_by?:
-    'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
-  sort_direction?: 'asc' | 'desc' | null;
-  active?: 'true' | 'false' | '1' | '0' | null;
+/**
+ * @minimum 1
+ */
+page?: number | null;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number | null;
+/**
+ * @maxLength 100
+ */
+search?: string | null;
+'search_fields[]'?: string[];
+sort_by?: 'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
+sort_direction?: 'asc' | 'desc' | null;
+active?: 'true' | 'false' | '1' | '0' | null;
 };
 
 export type UsersIndex200 = {
@@ -366,163 +346,183 @@ export type UsersTestError200 = { [key: string]: unknown };
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-/**
+
+  /**
  * @summary Authenticate a user with a username, password, and CAPTCHA
  */
 export const authLogin = (
-  loginRequest: LoginRequest,
-  options?: SecondParameter<typeof customAxiosInstance<AuthLogin200>>,
-) => {
-  return customAxiosInstance<AuthLogin200>(
-    {
-      url: `/auth/login`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: loginRequest,
+    loginRequest: LoginRequest,
+ options?: SecondParameter<typeof customAxiosInstance<AuthLogin200>>,) => {
+      return customAxiosInstance<AuthLogin200>(
+      {url: `/auth/login`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: loginRequest
     },
-    options,
-  );
-};
-
+      options);
+    }
+  
 /**
  * @summary Return a single-use CAPTCHA challenge as a base64 data URI
  */
 export const authCaptcha = (
-  options?: SecondParameter<typeof customAxiosInstance<AuthCaptcha200>>,
-) => {
-  return customAxiosInstance<AuthCaptcha200>({ url: `/auth/captcha`, method: 'GET' }, options);
-};
-
+    
+ options?: SecondParameter<typeof customAxiosInstance<AuthCaptcha200>>,) => {
+      return customAxiosInstance<AuthCaptcha200>(
+      {url: `/auth/captcha`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Return audio (WAV format) pronouncing the CAPTCHA code for accessibility
+ */
+export const authCaptchaAudio = (
+    params?: AuthCaptchaAudioParams,
+ options?: SecondParameter<typeof customAxiosInstance<string>>,) => {
+      return customAxiosInstance<string>(
+      {url: `/auth/captcha/audio`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 /**
  * @summary Return the authenticated user
  */
-export const authMe = (options?: SecondParameter<typeof customAxiosInstance<AuthMe200>>) => {
-  return customAxiosInstance<AuthMe200>({ url: `/auth/me`, method: 'GET' }, options);
-};
-
+export const authMe = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<AuthMe200>>,) => {
+      return customAxiosInstance<AuthMe200>(
+      {url: `/auth/me`, method: 'GET'
+    },
+      options);
+    }
+  
 /**
  * @summary End the authenticated session
  */
-export const authLogout = (options?: SecondParameter<typeof customAxiosInstance<void>>) => {
-  return customAxiosInstance<void>({ url: `/auth/logout`, method: 'POST' }, options);
-};
-
+export const authLogout = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
+      return customAxiosInstance<void>(
+      {url: `/auth/logout`, method: 'POST'
+    },
+      options);
+    }
+  
 /**
  * @summary Display a paginated list of features, optionally including soft-deleted records
  */
 export const featuresIndex = (
-  params?: FeaturesIndexParams,
-  options?: SecondParameter<typeof customAxiosInstance<FeaturesIndex200>>,
-) => {
-  return customAxiosInstance<FeaturesIndex200>(
-    { url: `/features`, method: 'GET', params },
-    options,
-  );
-};
-
+    params?: FeaturesIndexParams,
+ options?: SecondParameter<typeof customAxiosInstance<FeaturesIndex200>>,) => {
+      return customAxiosInstance<FeaturesIndex200>(
+      {url: `/features`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 /**
  * @summary Store a new feature
  */
 export const featuresStore = (
-  storeFeatureRequest: StoreFeatureRequest,
-  options?: SecondParameter<typeof customAxiosInstance<FeaturesStore201>>,
-) => {
-  return customAxiosInstance<FeaturesStore201>(
-    {
-      url: `/features`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: storeFeatureRequest,
+    storeFeatureRequest: StoreFeatureRequest,
+ options?: SecondParameter<typeof customAxiosInstance<FeaturesStore201>>,) => {
+      return customAxiosInstance<FeaturesStore201>(
+      {url: `/features`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: storeFeatureRequest
     },
-    options,
-  );
-};
-
+      options);
+    }
+  
 /**
  * @summary Display active features for parent selection
  */
 export const featuresOptions = (
-  options?: SecondParameter<typeof customAxiosInstance<FeaturesOptions200>>,
-) => {
-  return customAxiosInstance<FeaturesOptions200>(
-    { url: `/features/options`, method: 'GET' },
-    options,
-  );
-};
-
+    
+ options?: SecondParameter<typeof customAxiosInstance<FeaturesOptions200>>,) => {
+      return customAxiosInstance<FeaturesOptions200>(
+      {url: `/features/options`, method: 'GET'
+    },
+      options);
+    }
+  
 /**
  * @summary Update an existing feature
  */
 export const featuresUpdate = (
-  feature: number,
-  storeFeatureRequest: StoreFeatureRequest,
-  options?: SecondParameter<typeof customAxiosInstance<FeaturesUpdate200>>,
-) => {
-  return customAxiosInstance<FeaturesUpdate200>(
-    {
-      url: `/features/${feature}`,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      data: storeFeatureRequest,
+    feature: number,
+    storeFeatureRequest: StoreFeatureRequest,
+ options?: SecondParameter<typeof customAxiosInstance<FeaturesUpdate200>>,) => {
+      return customAxiosInstance<FeaturesUpdate200>(
+      {url: `/features/${feature}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: storeFeatureRequest
     },
-    options,
-  );
-};
-
+      options);
+    }
+  
 /**
  * @summary Soft-delete an existing feature
  */
 export const featuresDestroy = (
-  feature: number,
-  options?: SecondParameter<typeof customAxiosInstance<void>>,
-) => {
-  return customAxiosInstance<void>({ url: `/features/${feature}`, method: 'DELETE' }, options);
-};
-
+    feature: number,
+ options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
+      return customAxiosInstance<void>(
+      {url: `/features/${feature}`, method: 'DELETE'
+    },
+      options);
+    }
+  
 /**
  * @summary Restore a soft-deleted feature
  */
 export const featuresRestore = (
-  feature: number,
-  options?: SecondParameter<typeof customAxiosInstance<FeaturesRestore200>>,
-) => {
-  return customAxiosInstance<FeaturesRestore200>(
-    { url: `/features/${feature}/restore`, method: 'POST' },
-    options,
-  );
-};
-
+    feature: number,
+ options?: SecondParameter<typeof customAxiosInstance<FeaturesRestore200>>,) => {
+      return customAxiosInstance<FeaturesRestore200>(
+      {url: `/features/${feature}/restore`, method: 'POST'
+    },
+      options);
+    }
+  
 /**
  * @summary Display a paginated list of users
  */
 export const usersIndex = (
-  params?: UsersIndexParams,
-  options?: SecondParameter<typeof customAxiosInstance<UsersIndex200>>,
-) => {
-  return customAxiosInstance<UsersIndex200>({ url: `/users`, method: 'GET', params }, options);
-};
-
+    params?: UsersIndexParams,
+ options?: SecondParameter<typeof customAxiosInstance<UsersIndex200>>,) => {
+      return customAxiosInstance<UsersIndex200>(
+      {url: `/users`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 /**
  * @summary Endpoint demonstrasi EDF ApplicationException
  */
 export const usersTestError = (
-  options?: SecondParameter<typeof customAxiosInstance<UsersTestError200>>,
-) => {
-  return customAxiosInstance<UsersTestError200>(
-    { url: `/users/test-error`, method: 'GET' },
-    options,
-  );
-};
-
-export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>;
-export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>;
-export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>;
-export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>;
-export type FeaturesIndexResult = NonNullable<Awaited<ReturnType<typeof featuresIndex>>>;
-export type FeaturesStoreResult = NonNullable<Awaited<ReturnType<typeof featuresStore>>>;
-export type FeaturesOptionsResult = NonNullable<Awaited<ReturnType<typeof featuresOptions>>>;
-export type FeaturesUpdateResult = NonNullable<Awaited<ReturnType<typeof featuresUpdate>>>;
-export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featuresDestroy>>>;
-export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>;
-export type UsersIndexResult = NonNullable<Awaited<ReturnType<typeof usersIndex>>>;
-export type UsersTestErrorResult = NonNullable<Awaited<ReturnType<typeof usersTestError>>>;
+    
+ options?: SecondParameter<typeof customAxiosInstance<UsersTestError200>>,) => {
+      return customAxiosInstance<UsersTestError200>(
+      {url: `/users/test-error`, method: 'GET'
+    },
+      options);
+    }
+  
+export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>
+export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>
+export type AuthCaptchaAudioResult = NonNullable<Awaited<ReturnType<typeof authCaptchaAudio>>>
+export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>
+export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
+export type FeaturesIndexResult = NonNullable<Awaited<ReturnType<typeof featuresIndex>>>
+export type FeaturesStoreResult = NonNullable<Awaited<ReturnType<typeof featuresStore>>>
+export type FeaturesOptionsResult = NonNullable<Awaited<ReturnType<typeof featuresOptions>>>
+export type FeaturesUpdateResult = NonNullable<Awaited<ReturnType<typeof featuresUpdate>>>
+export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featuresDestroy>>>
+export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>
+export type UsersIndexResult = NonNullable<Awaited<ReturnType<typeof usersIndex>>>
+export type UsersTestErrorResult = NonNullable<Awaited<ReturnType<typeof usersTestError>>>
