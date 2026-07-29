@@ -1,10 +1,16 @@
 <?php
 
 use App\Models\Feature;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->withHeader('Referer', config('app.url'));
+    $this->actingAs(User::factory()->create());
+});
 
 it('lists active and soft-deleted features when requested', function () {
     Feature::query()->create([

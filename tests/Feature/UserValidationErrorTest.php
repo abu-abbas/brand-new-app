@@ -1,5 +1,15 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
+beforeEach(function () {
+    $this->withHeader('Referer', config('app.url'));
+    $this->actingAs(User::factory()->create());
+});
+
 it('returns structured EDF errors for invalid search fields', function () {
     $this->getJson('/api/users?search_fields=invalid')
         ->assertUnprocessable()
