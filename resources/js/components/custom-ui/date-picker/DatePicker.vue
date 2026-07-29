@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DateRange, DateValue } from 'reka-ui';
+import type { DateRange, DateValue, PopoverContentProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 import { computed, ref, watch } from 'vue';
 import { CalendarDate, getLocalTimeZone, parseDate, today } from '@internationalized/date';
@@ -41,6 +41,8 @@ const props = withDefaults(
     numberOfMonths?: number;
     disabled?: boolean;
     size?: 'sm' | 'default' | 'lg';
+    popoverSide?: PopoverContentProps['side'];
+    popoverAlign?: PopoverContentProps['align'];
     class?: HTMLAttributes['class'];
   }>(),
   {
@@ -57,6 +59,8 @@ const props = withDefaults(
     numberOfMonths: undefined,
     disabled: false,
     size: 'default',
+    popoverSide: 'bottom',
+    popoverAlign: 'start',
     class: undefined,
   },
 );
@@ -499,7 +503,12 @@ function handleManualInputBlur() {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent class="w-auto p-0" align="start">
+      <PopoverContent
+        class="max-h-[var(--reka-popper-available-height)] w-auto overflow-y-auto p-0"
+        :side="props.popoverSide"
+        :align="props.popoverAlign"
+        :collision-padding="8"
+      >
         <div class="flex flex-col sm:flex-row">
           <!-- Presets Sidebar -->
           <div

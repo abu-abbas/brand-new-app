@@ -16,6 +16,7 @@ import {
   ComboboxViewport,
 } from '@/components/ui/combobox';
 import { Spinner } from '@/components/ui/spinner';
+import { cn } from '@/lib/utils';
 import {
   defaultFilterOption,
   getOptionLabel,
@@ -425,6 +426,7 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
               :value="option"
               :text-value="getOptionLabel(option, labelKey)"
               :disabled="isDisabled(option)"
+              :class="cn(showSelectedIndicator && isSelected(option) && 'pr-9')"
             >
               <slot
                 name="option"

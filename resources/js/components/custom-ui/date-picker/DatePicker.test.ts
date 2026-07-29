@@ -118,4 +118,27 @@ describe('DatePicker', () => {
     const triggerBtn = wrapper.find('button');
     expect(triggerBtn.attributes('disabled')).toBeDefined();
   });
+
+  it('keeps the calendar popover inside short viewports', () => {
+    const wrapper = mount(DatePicker, {
+      props: { mode: 'range', popoverSide: 'left', popoverAlign: 'end' },
+      global: {
+        plugins: [pinia],
+        stubs: {
+          PopoverContent: {
+            props: ['align', 'collisionPadding', 'side'],
+            template:
+              '<div data-testid="popover-content" :data-align="align" :data-collision-padding="collisionPadding" :data-side="side"><slot /></div>',
+          },
+        },
+      },
+    });
+
+    const content = wrapper.get('[data-testid="popover-content"]');
+    expect(content.attributes('data-collision-padding')).toBe('8');
+    expect(content.attributes('data-side')).toBe('left');
+    expect(content.attributes('data-align')).toBe('end');
+    expect(content.classes()).toContain('max-h-[var(--reka-popper-available-height)]');
+    expect(content.classes()).toContain('overflow-y-auto');
+  });
 });

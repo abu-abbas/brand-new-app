@@ -13,6 +13,7 @@ import {
   Trash2,
   X,
 } from '@lucide/vue';
+import { DatePicker } from '@/components/custom-ui/date-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -45,6 +46,7 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { normalizeAppError } from '@/lib/axios';
+import { Switch } from '@/components/ui/switch';
 import type {
   DataTableError,
   DataTableFetcher,
@@ -92,6 +94,7 @@ const props = withDefaults(
     selection?: boolean | 'multiple';
     selected?: T | T[] | null;
     actions?: boolean;
+    actionsWidth?: string | number;
     canEdit?: (row: T) => boolean;
     canDelete?: (row: T) => boolean;
     rowSelectable?: (row: T) => boolean;
@@ -126,6 +129,7 @@ const props = withDefaults(
     showFilter: true,
     showRefresh: true,
     striped: true,
+    actionsWidth: 120,
   },
 );
 
@@ -540,12 +544,8 @@ function updateFilterValue(filter: DataTableFilter, value: unknown): void {
     value === '__all__' ? undefined : filter.type === 'boolean' ? value === 'true' : value;
 }
 
-function updateDateRange(key: string, index: number, value: string | number): void {
-  const range = Array.isArray(draftFilters.value[key])
-    ? [...(draftFilters.value[key] as unknown[])]
-    : ['', ''];
-  range[index] = value;
-  draftFilters.value[key] = range;
+function updateDateRange(key: string, value: unknown): void {
+  draftFilters.value[key] = Array.isArray(value) && value.some(Boolean) ? value : undefined;
 }
 
 function rowClassName({ row, rowIndex }: { row: T; rowIndex: number }): string {
@@ -929,7 +929,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
           </template>
         </ElTableColumn>
 
-        <ElTableColumn v-if="actions" width="120" fixed="left" align="center">
+        <ElTableColumn v-if="actions" :width="actionsWidth" fixed="left" align="center">
           <template #header>Aksi</template>
           <template #default="{ row }">
             <slot name="cell(action)" :row="row">
@@ -1076,7 +1076,13 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
             class="flex flex-col gap-2"
             :class="{ 'opacity-50': isFilterDisabled(filter.key) }"
           >
-            <div class="flex items-center justify-between">
+            <div v-if="filter.type === 'boolean'" class="flex items-center gap-2">
+              <Switch
+                :id="`datatable-filter-${filter.key}`"
+                :model-value="draftFilters[filter.key] === true"
+                :disabled="isFilterDisabled(filter.key)"
+                @update:model-value="draftFilters[filter.key] = $event || undefined"
+              />
               <label class="text-sm font-medium" :for="`datatable-filter-${filter.key}`">
                 {{ filter.label }}
               </label>
@@ -1112,65 +1118,33 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <Select
-              v-else-if="filter.type === 'boolean'"
+            <DatePicker
+              v-else-if="filter.type === 'date-range'"
+              mode="range"
+              popover-side="left"
+              popover-align="end"
+              clearable
               :model-value="
-                draftFilters[filter.key] == null ? undefined : String(draftFilters[filter.key])
+                Array.isArray(draftFilters[filter.key])
+                  ? (draftFilters[filter.key] as [string, string])
+                  : ['', '']
               "
+              :placeholder="`Pilih ${filter.label.toLocaleLowerCase()}`"
               :disabled="isFilterDisabled(filter.key)"
-              @update:model-value="updateFilterValue(filter, $event)"
-            >
-              <SelectTrigger :id="`datatable-filter-${filter.key}`" class="w-full">
-                <SelectValue :placeholder="`Pilih ${filter.label.toLocaleLowerCase()}`" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="__all__">Semua</SelectItem>
-                  <SelectItem value="true">Ya</SelectItem>
-                  <SelectItem value="false">Tidak</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            <div v-else-if="filter.type === 'date-range'" class="grid grid-cols-2 gap-2">
-              <Input
-                :id="`datatable-filter-${filter.key}-start`"
-                type="date"
-                :disabled="isFilterDisabled(filter.key)"
-                :model-value="
-                  String(
-                    Array.isArray(draftFilters[filter.key])
-                      ? ((draftFilters[filter.key] as unknown[])[0] ?? '')
-                      : '',
-                  )
-                "
-                :aria-label="`${filter.label} mulai`"
-                @update:model-value="updateDateRange(filter.key, 0, $event)"
-              />
-              <Input
-                :id="`datatable-filter-${filter.key}-end`"
-                type="date"
-                :disabled="isFilterDisabled(filter.key)"
-                :model-value="
-                  String(
-                    Array.isArray(draftFilters[filter.key])
-                      ? ((draftFilters[filter.key] as unknown[])[1] ?? '')
-                      : '',
-                  )
-                "
-                :aria-label="`${filter.label} selesai`"
-                @update:model-value="updateDateRange(filter.key, 1, $event)"
-              />
-            </div>
-            <Input
+              @update:model-value="updateDateRange(filter.key, $event)"
+            />
+            <DatePicker
               v-else-if="filter.type === 'date'"
-              :id="`datatable-filter-${filter.key}`"
-              type="date"
+              popover-side="left"
+              popover-align="end"
+              clearable
               :disabled="isFilterDisabled(filter.key)"
               :model-value="String(draftFilters[filter.key] ?? '')"
-              @update:model-value="draftFilters[filter.key] = $event"
+              :placeholder="`Pilih ${filter.label.toLocaleLowerCase()}`"
+              @update:model-value="draftFilters[filter.key] = $event || undefined"
             />
             <Input
-              v-else
+              v-else-if="filter.type === 'text'"
               :id="`datatable-filter-${filter.key}`"
               :disabled="isFilterDisabled(filter.key)"
               :model-value="String(draftFilters[filter.key] ?? '')"
@@ -1210,6 +1184,10 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
 
 :deep(.el-table__header th.el-table__cell) {
   height: 52px;
+}
+
+:deep(.el-table__body td.el-table__cell) {
+  vertical-align: top;
 }
 
 :deep(.datatable-row-selected),

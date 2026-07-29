@@ -34,7 +34,7 @@ import type {
   DataTableParams,
 } from './data-table.types';
 import { UserManagementFacade } from '@/modules/user-management/api/user-management.facade';
-import type { UsersIndexParams } from '@/api/generated/models';
+import type { UsersIndexParams } from '@/api/generated/api';
 import { axiosInstance } from '@/lib/axios';
 
 import supportIdBlade from '../../../../views/support-id.blade.php?raw';

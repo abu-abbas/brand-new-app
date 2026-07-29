@@ -149,6 +149,80 @@ describe('DataTable', () => {
     });
   });
 
+  it('merender filter boolean sebagai toggle', async () => {
+    const wrapper = mountTable({
+      props: {
+        items: rows,
+        fields,
+        filters: [{ key: 'include_deleted', label: 'Sertakan data terhapus', type: 'boolean' }],
+      },
+      attachTo: document.body,
+      global: {
+        plugins: [ElementPlus, [VueQueryPlugin, { queryClient: new QueryClient() }]],
+        stubs: { teleport: false },
+      },
+    });
+    await nextTick();
+    await nextTick();
+
+    await wrapper.get('button[aria-label="Buka filter"]').trigger('click');
+    await nextTick();
+    const toggle = document.querySelector('[role="switch"]') as HTMLElement;
+    expect(toggle.parentElement?.textContent).toContain('Sertakan data terhapus');
+    expect(toggle.nextElementSibling?.tagName).toBe('LABEL');
+    expect(toggle.parentElement?.parentElement?.querySelector('input')).toBeNull();
+    toggle.click();
+    (
+      [...document.querySelectorAll('button')].find(
+        (button) => button.textContent === 'Terapkan',
+      ) as HTMLElement
+    ).click();
+    await nextTick();
+
+    expect(wrapper.emitted('update:filters')?.at(-1)?.[0]).toEqual({ include_deleted: true });
+    wrapper.unmount();
+  });
+
+  it('merender filter tanggal dengan DatePicker', async () => {
+    const wrapper = mountTable({
+      props: {
+        items: rows,
+        fields,
+        filters: [
+          { key: 'created_at', label: 'Tanggal dibuat', type: 'date' },
+          { key: 'period', label: 'Periode', type: 'date-range' },
+        ],
+      },
+      global: {
+        plugins: [ElementPlus, [VueQueryPlugin, { queryClient: new QueryClient() }]],
+        stubs: {
+          teleport: true,
+          Sheet: { template: '<div><slot /></div>' },
+          SheetContent: { template: '<div><slot /></div>' },
+          SheetDescription: { template: '<div><slot /></div>' },
+          SheetFooter: { template: '<div><slot /></div>' },
+          SheetHeader: { template: '<div><slot /></div>' },
+          SheetTitle: { template: '<div><slot /></div>' },
+          DatePicker: {
+            props: ['mode', 'popoverAlign', 'popoverSide'],
+            template:
+              '<button data-testid="date-picker" :data-align="popoverAlign" :data-mode="mode" :data-side="popoverSide" />',
+          },
+        },
+      },
+    });
+    await nextTick();
+    await nextTick();
+
+    const datePickers = wrapper.findAll('[data-testid="date-picker"]');
+    expect(datePickers).toHaveLength(2);
+    expect(datePickers[0].attributes('data-mode')).toBeUndefined();
+    expect(datePickers[1].attributes('data-mode')).toBe('range');
+    expect(datePickers.every((picker) => picker.attributes('data-side') === 'left')).toBe(true);
+    expect(datePickers.every((picker) => picker.attributes('data-align') === 'end')).toBe(true);
+    expect(wrapper.find('input[type="date"]').exists()).toBe(false);
+  });
+
   it('menampilkan pesan ramah pengguna ketika terjadi network/technical error', async () => {
     const error = Object.assign(new Error('Network Error'), { retryable: false });
     const fetcher = vi.fn().mockRejectedValue(error);
