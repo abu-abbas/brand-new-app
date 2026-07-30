@@ -34,4 +34,11 @@ router.beforeEach(async (to) => {
   return true;
 });
 
+router.afterEach((to) => {
+  const appName = window.__APP_CONFIG__?.name || import.meta.env.VITE_APP_NAME;
+  const title = to.meta.title;
+
+  document.title = title ? `${title} | ${appName}` : appName;
+});
+
 export default router;
