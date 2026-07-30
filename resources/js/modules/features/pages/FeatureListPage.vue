@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { Plus } from '@lucide/vue';
+import { computed, ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue';
+import { useAppBootstrapStore } from '@/stores/app-bootstrap';
 import { DataTable } from '@/components/custom-ui/data-table';
 import type {
   DataTableFetcher,
   DataTableField,
   DataTableFilter,
 } from '@/components/custom-ui/data-table/data-table.types';
+import { LucideIcon } from '@/components/custom-ui/lucide-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,26 +30,29 @@ const formOpen = ref(false);
 const selectedFeature = ref<FeatureRow | null>(null);
 const selectedType = ref<'all' | NonNullable<FeaturesIndexParams['type']>>('all');
 
+const appBootstrap = useAppBootstrapStore();
+const permissionTypeOptions = computed(() => appBootstrap.config.references.permission_types);
+
 const fields: DataTableField<FeatureRow>[] = [
   {
     key: 'rownum',
-    label: 'No.',
-    width: 70,
+    label: 'No',
+    width: 50,
     sortable: false,
     filterColumn: false,
     align: 'center',
   },
-  { key: 'name', label: 'Nama', minWidth: 180 },
+  { key: 'name', label: 'Identitas Fitur', minWidth: 240 },
   { key: 'alias', label: 'Alias', minWidth: 180 },
-  { key: 'type', label: 'Tipe', width: 100, align: 'center' },
-  { key: 'parent', label: 'Parent', minWidth: 160 },
-  { key: 'description', label: 'Deskripsi', minWidth: 240 },
-  { key: 'route', label: 'Route', minWidth: 180 },
-  { key: 'icon', label: 'Icon', width: 120 },
-  { key: 'order', label: 'Urutan', width: 100, align: 'center' },
-  { key: 'show_on_sidebar', label: 'Sidebar', width: 110, align: 'center' },
-  { key: 'updated_at', label: 'Diperbarui', minWidth: 180 },
-  { key: 'deleted_at', label: 'Status', width: 120, align: 'center' },
+  { key: 'type', label: 'Tipe', align: 'center', hidden: true },
+  { key: 'parent', label: 'Parent', hidden: true },
+  { key: 'description', label: 'Deskripsi', hidden: true },
+  { key: 'route', label: 'Route', hidden: true },
+  { key: 'icon', label: 'Icon', hidden: true },
+  { key: 'order', label: 'Urutan', align: 'center', hidden: true },
+  { key: 'show_on_sidebar', label: 'Sidebar', width: 70, align: 'center' },
+  { key: 'deleted_at', label: 'Status', width: 80, align: 'center' },
+  { key: 'updated_at', label: 'Diperbarui', minWidth: 110 },
 ];
 
 const filters: DataTableFilter[] = [
@@ -111,7 +115,7 @@ function openEdit(feature: FeatureRow): void {
   <AdminLayout>
     <template #header-actions>
       <Button class="ml-auto gap-2" @click="openCreate">
-        <Plus data-icon="inline-start" />
+        <LucideIcon name="Plus" data-icon="inline-start" />
         Tambah Fitur
       </Button>
     </template>
@@ -133,25 +137,83 @@ function openEdit(feature: FeatureRow): void {
         <template #toolbar>
           <div class="flex justify-end">
             <Select v-model="selectedType">
-              <SelectTrigger class="w-36" aria-label="Filter tipe fitur">
+              <SelectTrigger class="w-40" aria-label="Filter tipe fitur">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Tipe fitur</SelectLabel>
                   <SelectItem value="all">Semua tipe</SelectItem>
-                  <SelectItem value="menu">Menu</SelectItem>
-                  <SelectItem value="crud">CRUD</SelectItem>
-                  <SelectItem value="filter">Filter</SelectItem>
+                  <SelectItem
+                    v-for="option in permissionTypeOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
+                  </SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
           </div>
         </template>
 
-        <template #cell(type)="{ value }">
-          <Badge variant="outline">{{ value }}</Badge>
+        <template #cell(name)="{ row }">
+          <div class="flex gap-1.5" :class="{ 'items-center': !row.description }">
+            <div class="flex size-10 items-center justify-center rounded-lg bg-muted">
+              <LucideIcon
+                :name="row.icon"
+                fallback="CircleDashed"
+                class="size-4.5"
+                fallback-class="text-muted-foreground/65"
+              />
+            </div>
+
+            <div class="flex-1">
+              <div class="flex flex-col gap-0.5">
+                <span class="leading-snug">
+                  {{ row.name }}
+                </span>
+                <span class="text-2sm text-muted-foreground leading-tight">
+                  {{ row.description }}
+                </span>
+              </div>
+            </div>
+          </div>
         </template>
+
+        <template #cell(alias)="{ value, row }">
+          <div class="flex flex-col">
+            <span class="text-2sm">{{ value }}</span>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <div class="flex items-center text-xs gap-1.5">
+                <span
+                  class="size-1.5 rounded-full"
+                  :class="{
+                    'bg-blue-500': row.type === 'menu',
+                    'bg-emerald-500': row.type === 'crud',
+                    'bg-amber-500': row.type === 'filter',
+                  }"
+                />
+                {{ row.type_label }}
+              </div>
+
+              <div
+                v-if="!!row.route"
+                class="flex-1 flex items-center gap-1 text-xs text-muted-foreground leading-tight"
+              >
+                <LucideIcon
+                  name="Link2"
+                  fallback="CircleDashed"
+                  class="size-3"
+                  fallback-class="text-muted-foreground/65"
+                />
+
+                <span class="font-mono text-2xs">{{ row.route }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
         <template #cell(show_on_sidebar)="{ value }">
           <Badge :variant="value ? 'default' : 'secondary'">{{ value ? 'Ya' : 'Tidak' }}</Badge>
         </template>

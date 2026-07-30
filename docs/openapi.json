@@ -1,7 +1,7 @@
 {
     "openapi": "3.1.0",
     "info": {
-        "title": "Laravel",
+        "title": "Brand New App",
         "version": "0.0.1"
     },
     "servers": [
@@ -480,9 +480,9 @@
                         "name": "feature",
                         "in": "path",
                         "required": true,
-                        "description": "The feature i id",
+                        "description": "The feature v alias",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -537,9 +537,9 @@
                         "name": "feature",
                         "in": "path",
                         "required": true,
-                        "description": "The feature i id",
+                        "description": "The feature v alias",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -568,9 +568,9 @@
                         "name": "feature",
                         "in": "path",
                         "required": true,
-                        "description": "The feature i id",
+                        "description": "The feature v alias",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -777,9 +777,6 @@
             "FeatureOptionResource": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer"
-                    },
                     "name": {
                         "type": "string"
                     },
@@ -791,7 +788,6 @@
                     }
                 },
                 "required": [
-                    "id",
                     "name",
                     "alias",
                     "type"
@@ -801,9 +797,6 @@
             "FeatureResource": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer"
-                    },
                     "name": {
                         "type": "string"
                     },
@@ -811,6 +804,9 @@
                         "type": "string"
                     },
                     "type": {
+                        "type": "string"
+                    },
+                    "type_label": {
                         "type": "string"
                     },
                     "parent": {
@@ -881,10 +877,10 @@
                     }
                 },
                 "required": [
-                    "id",
                     "name",
                     "alias",
                     "type",
+                    "type_label",
                     "parent",
                     "description",
                     "route",
@@ -912,20 +908,24 @@
                         "maxLength": 255
                     },
                     "captcha_key": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "minLength": 60,
                         "maxLength": 60
                     },
                     "captcha": {
-                        "type": "string",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
                         "maxLength": 10
                     }
                 },
                 "required": [
                     "username",
-                    "password",
-                    "captcha_key",
-                    "captcha"
+                    "password"
                 ],
                 "title": "LoginRequest"
             },
@@ -1122,7 +1122,7 @@
                 "type": "object",
                 "properties": {
                     "id": {
-                        "type": "integer"
+                        "type": "string"
                     },
                     "name": {
                         "type": "string"
