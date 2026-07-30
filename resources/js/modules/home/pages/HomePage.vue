@@ -45,7 +45,7 @@ function goToExamples() {
   <AdminLayout parent-title="Building Your Application" title="Dashboard" hide-header>
     <!-- Backend Shared App Config Card -->
     <Card class="border-primary/20 bg-card shadow-sm">
-      <CardHeader class="pb-3">
+      <CardHeader class="pb-0">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <div
@@ -66,7 +66,7 @@ function goToExamples() {
 
       <CardContent>
         <!-- 6 Grid Items Seimbang (3x2 di medium, 6x1 di large screen) -->
-        <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
           <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/30 p-3">
             <Server class="size-4 text-muted-foreground shrink-0" />
             <div class="min-w-0">

@@ -60,6 +60,7 @@ export default defineConfig({
     watch: {
       ignored: [
         '**/app/**',
+        '**/docs/**',
         '**/lang/**',
         '**/tests/**',
         '**/storage/**',
