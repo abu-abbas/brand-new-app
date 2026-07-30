@@ -2,8 +2,11 @@ import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import router from './router';
-import 'element-plus/dist/index.css';
 import App from './App.vue';
+
+// custom style
+import 'element-plus/dist/index.css';
+import './../css/form.css';
 
 const app = createApp(App);
 const pinia = createPinia();

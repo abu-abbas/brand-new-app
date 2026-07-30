@@ -1,0 +1,24 @@
+.custom-form {
+  --el-color-danger: var(--destructive);
+}
+
+.custom-form .el-form-item {
+  margin-bottom: 0 !important;
+  transition: margin-bottom 0.15s ease;
+}
+
+.custom-form .el-form-item__label {
+  height: auto;
+  margin-bottom: 0.45rem;
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+
+.custom-form .el-form-item__error {
+  position: static;
+  padding-top: 0.35rem;
+  color: var(--destructive);
+  font-size: 0.75rem;
+}
