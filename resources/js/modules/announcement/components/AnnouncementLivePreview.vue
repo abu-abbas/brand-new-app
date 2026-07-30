@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, type Component } from 'vue';
-import * as LucideIcons from '@lucide/vue';
+import { computed, ref } from 'vue';
 import { Cog, Info } from '@lucide/vue';
+import { getLucideIcon } from '@/components/custom-ui/lucide-icon';
 import { formatHumanDate } from '@/lib/utils';
 
 export interface HighlightItem {
@@ -38,18 +38,6 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: 'toggleStatus'): void;
 }>();
-
-// Helper dynamic icon resolver untuk mendukung nama icon PascalCase maupun kebab-case
-function getLucideIcon(iconName: string, fallback: Component) {
-  if (!iconName) return fallback;
-
-  const pascalName = iconName.replace(/(^\w|-\w)/g, (clear) =>
-    clear.replace('-', '').toUpperCase(),
-  );
-
-  const icons = LucideIcons as unknown as Record<string, Component>;
-  return icons[pascalName] || icons[iconName] || fallback;
-}
 
 const mainIconComponent = computed(() => getLucideIcon(props.data.icon, Cog));
 

@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Modal } from '@/components/custom-ui/modal';
+import { getLucideIcon } from '@/components/custom-ui/lucide-icon';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -283,15 +284,8 @@ watch([searchQuery, activeCategory], () => {
   currentPage.value = 1;
 });
 
-// Get icon component safely (dukung format PascalCase maupun kebab-case/lowercase)
 function getIconComponent(iconName: string) {
-  if (!iconName) return null;
-  const pascalName = iconName.replace(/(^\w|-\w)/g, (clear) =>
-    clear.replace('-', '').toUpperCase(),
-  );
-  const icons = LucideIcons as Record<string, unknown>;
-  const icon = icons[pascalName] || icons[iconName];
-  return icon || null;
+  return getLucideIcon(iconName);
 }
 
 const currentIconComponent = computed(() => {
