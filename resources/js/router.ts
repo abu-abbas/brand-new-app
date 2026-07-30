@@ -4,7 +4,7 @@ import { homeRoutes } from '@/modules/home/routes';
 import { exampleRoutes } from '@/modules/example/routes';
 import { announcementRoutes } from '@/modules/announcement/routes';
 import { blankPageRoutes } from '@/modules/blank-page/routes';
-import { featureRoutes } from '@/modules/features/routes';
+import { featureRoutes } from '@/modules/features-management/routes';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({

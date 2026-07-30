@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { FeatureResource, FeaturesIndexParams } from '@/api/generated/api';
-import { FeaturesFacade } from '../api/features.facade';
+import { FeaturesFacade } from '../api/features.facade.ts';
 import FeatureFormModal from '../components/FeatureFormModal.vue';
 
 interface FeatureRow extends Record<string, unknown>, FeatureResource {}

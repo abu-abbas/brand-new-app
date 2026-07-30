@@ -395,7 +395,7 @@ watch(open, (isOpen) => {
     :loading="isPending"
     :hide-confirm="isDeleted"
     :confirm-text="isEdit ? 'Simpan Perubahan' : 'Simpan Fitur'"
-    body-class="feature-form space-y-0"
+    body-class="custom-form space-y-0"
     @confirm="submit"
   >
     <template #header>
@@ -435,7 +435,7 @@ watch(open, (isOpen) => {
       require-asterisk-position="right"
       status-icon
     >
-      <section class="flex flex-col gap-4">
+      <section class="flex flex-col gap-4 mb-5">
         <div>
           <h3 class="font-semibold">Identitas fitur</h3>
           <p class="text-xs text-muted-foreground">Nama publik dan alias unik untuk sistem.</p>
@@ -472,7 +472,7 @@ watch(open, (isOpen) => {
         </div>
 
         <ElFormItem label="Deskripsi" prop="description" :error="serverErrors.description">
-          <div class="w-full">
+          <div class="w-full relative">
             <Textarea
               v-model="form.description"
               :disabled="isDeleted"
@@ -482,16 +482,16 @@ watch(open, (isOpen) => {
               :aria-invalid="Boolean(serverErrors.description)"
               @blur="validateField('description')"
             />
-            <p class="mt-1 text-right text-xs text-muted-foreground">
+            <p class="absolute bottom-1.5 right-2 text-xs text-muted-foreground">
               {{ form.description.length }}/100
             </p>
           </div>
         </ElFormItem>
       </section>
 
-      <Separator class="my-1" />
+      <Separator />
 
-      <section class="flex flex-col gap-4 pt-5">
+      <section class="flex flex-col gap-4 py-5">
         <div>
           <h3 class="font-semibold">Struktur fitur</h3>
           <p class="text-xs text-muted-foreground">Tentukan tipe, induk, dan posisi tampil.</p>
@@ -572,7 +572,7 @@ watch(open, (isOpen) => {
       </section>
 
       <template v-if="form.type === 'menu'">
-        <Separator class="my-1" />
+        <Separator />
 
         <section class="flex flex-col gap-4 pt-5">
           <div>
@@ -614,7 +614,10 @@ watch(open, (isOpen) => {
           </div>
 
           <ElFormItem prop="show_on_sidebar" :error="serverErrors.show_on_sidebar" class="mb-0">
-            <div class="flex w-full items-center justify-between gap-4 rounded-lg border p-3">
+            <div
+              class="flex w-full items-center justify-between gap-4 rounded-lg border border-muted/85 bg-muted/85 p-3"
+              :class="{ 'border-primary/10': form.show_on_sidebar }"
+            >
               <div class="flex min-w-0 flex-col gap-1">
                 <Label for="show-on-sidebar">Tampilkan pada sidebar</Label>
                 <p class="text-xs text-muted-foreground">
