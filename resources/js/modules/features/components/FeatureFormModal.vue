@@ -95,7 +95,7 @@ const form = reactive<FeatureForm>({
 const availableParents = computed(() =>
   parentOptions.value.filter(
     (feature) =>
-      feature.id !== props.feature?.id && (form.type !== 'menu' || feature.type === 'menu'),
+      feature.alias !== props.feature?.alias && (form.type !== 'menu' || feature.type === 'menu'),
   ),
 );
 const parentComboboxOptions = computed(() =>
@@ -280,7 +280,7 @@ async function submit(): Promise<void> {
       onConfirm: async () => {
         try {
           if (feature) {
-            await updateMutation.mutateAsync({ id: feature.id, data: payload });
+            await updateMutation.mutateAsync({ alias: feature.alias, data: payload });
           } else {
             await createMutation.mutateAsync(payload);
           }
@@ -319,7 +319,7 @@ async function deleteFeature(): Promise<void> {
       confirmVariant: 'destructive',
       loadingLabel: 'Menghapus...',
       onConfirm: async () => {
-        await deleteMutation.mutateAsync(feature.id);
+        await deleteMutation.mutateAsync(feature.alias);
         open.value = false;
       },
       successTitle: 'Fitur berhasil dihapus',
@@ -343,7 +343,7 @@ async function restoreFeature(): Promise<void> {
       confirmLabel: 'Pulihkan Fitur',
       loadingLabel: 'Memulihkan...',
       onConfirm: async () => {
-        await restoreMutation.mutateAsync(feature.id);
+        await restoreMutation.mutateAsync(feature.alias);
         open.value = false;
       },
       successTitle: 'Fitur berhasil dipulihkan',

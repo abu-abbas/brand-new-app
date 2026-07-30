@@ -13,7 +13,6 @@ class FeatureResource extends JsonResource
 {
     /**
      * @return array{
-     *     id: int,
      *     name: string,
      *     alias: string,
      *     type: string,
@@ -34,7 +33,6 @@ class FeatureResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->i_id,
             'name' => $this->v_name,
             'alias' => $this->v_alias,
             'type' => $this->e_type->value,

@@ -184,7 +184,7 @@ it('updates a feature without changing its alias', function () {
         'v_parent' => 'pengaturan',
     ]);
 
-    $this->putJson("/api/features/{$parent->i_id}", [
+    $this->putJson("/api/features/{$parent->v_alias}", [
         'name' => 'Konfigurasi',
         'alias' => 'konfigurasi',
         'type' => 'menu',
@@ -203,7 +203,7 @@ it('rejects a feature as its own parent', function () {
         'e_type' => 'menu',
     ]);
 
-    $this->putJson("/api/features/{$feature->i_id}", [
+    $this->putJson("/api/features/{$feature->v_alias}", [
         'name' => 'Pengaturan',
         'alias' => 'pengaturan',
         'type' => 'menu',
@@ -220,7 +220,7 @@ it('soft deletes a feature', function () {
         'e_type' => 'menu',
     ]);
 
-    $this->deleteJson("/api/features/{$feature->i_id}")
+    $this->deleteJson("/api/features/{$feature->v_alias}")
         ->assertNoContent();
 
     expect(Feature::withTrashed()->find($feature->i_id)?->trashed())->toBeTrue();
@@ -234,7 +234,7 @@ it('restores a soft-deleted feature when its alias is available', function () {
     ]);
     $feature->delete();
 
-    $this->postJson("/api/features/{$feature->i_id}/restore")
+    $this->postJson("/api/features/{$feature->v_alias}/restore")
         ->assertOk()
         ->assertJsonPath('data.deleted_at', null);
 
@@ -255,7 +255,7 @@ it('rejects restore when the alias is already active', function () {
         'e_type' => 'menu',
     ]);
 
-    $this->postJson("/api/features/{$deleted->i_id}/restore")
+    $this->postJson("/api/features/{$deleted->v_alias}/restore")
         ->assertConflict()
         ->assertJsonPath('code', 'FEAT-BIZ-001')
         ->assertJsonMissingPath('context');

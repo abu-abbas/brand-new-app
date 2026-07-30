@@ -6,7 +6,6 @@
  */
 import { customAxiosInstance } from '../../lib/axios';
 export interface FeatureOptionResource {
-  id: number;
   name: string;
   alias: string;
   type: string;
@@ -33,7 +32,6 @@ export type FeatureResourceDeletedBy = string | null;
 export type FeatureResourceDeletedAt = string | null;
 
 export interface FeatureResource {
-  id: number;
   name: string;
   alias: string;
   type: string;
@@ -200,7 +198,7 @@ export type UserResourceUnit = {
 export type UserResourceCreatedAt = string | null;
 
 export interface UserResource {
-  id: number;
+  id: string;
   name: string;
   username: string;
   email: string;
@@ -453,7 +451,7 @@ export const featuresOptions = (
  * @summary Update an existing feature
  */
 export const featuresUpdate = (
-    feature: number,
+    feature: string,
     storeFeatureRequest: StoreFeatureRequest,
  options?: SecondParameter<typeof customAxiosInstance<FeaturesUpdate200>>,) => {
       return customAxiosInstance<FeaturesUpdate200>(
@@ -468,7 +466,7 @@ export const featuresUpdate = (
  * @summary Soft-delete an existing feature
  */
 export const featuresDestroy = (
-    feature: number,
+    feature: string,
  options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
       return customAxiosInstance<void>(
       {url: `/features/${feature}`, method: 'DELETE'
@@ -480,7 +478,7 @@ export const featuresDestroy = (
  * @summary Restore a soft-deleted feature
  */
 export const featuresRestore = (
-    feature: number,
+    feature: string,
  options?: SecondParameter<typeof customAxiosInstance<FeaturesRestore200>>,) => {
       return customAxiosInstance<FeaturesRestore200>(
       {url: `/features/${feature}/restore`, method: 'POST'

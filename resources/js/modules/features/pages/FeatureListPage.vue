@@ -123,7 +123,7 @@ function openEdit(feature: FeatureRow): void {
         :fields="fields"
         :filters="filters"
         :extra-params="{ type: selectedType === 'all' ? undefined : selectedType }"
-        row-key="id"
+        row-key="alias"
         remember="features"
         actions
         :actions-width="60"

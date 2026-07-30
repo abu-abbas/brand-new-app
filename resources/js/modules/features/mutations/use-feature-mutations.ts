@@ -15,8 +15,8 @@ export function useUpdateFeatureMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: StoreFeatureRequest }) =>
-      FeaturesFacade.update(id, data),
+    mutationFn: ({ alias, data }: { alias: string; data: StoreFeatureRequest }) =>
+      FeaturesFacade.update(alias, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['features'] }),
   });
 }
@@ -25,7 +25,7 @@ export function useDeleteFeatureMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => FeaturesFacade.delete(id),
+    mutationFn: (alias: string) => FeaturesFacade.delete(alias),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['features'] }),
   });
 }
@@ -34,7 +34,7 @@ export function useRestoreFeatureMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => FeaturesFacade.restore(id),
+    mutationFn: (alias: string) => FeaturesFacade.restore(alias),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['features'] }),
   });
 }

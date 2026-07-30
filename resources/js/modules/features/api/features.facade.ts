@@ -30,15 +30,15 @@ export class FeaturesFacade {
     return featuresStore(data);
   }
 
-  public static update(id: number, data: StoreFeatureRequest): Promise<FeaturesUpdate200> {
-    return featuresUpdate(id, data);
+  public static update(alias: string, data: StoreFeatureRequest): Promise<FeaturesUpdate200> {
+    return featuresUpdate(alias, data);
   }
 
-  public static delete(id: number): Promise<void> {
-    return featuresDestroy(id);
+  public static delete(alias: string): Promise<void> {
+    return featuresDestroy(alias);
   }
 
-  public static restore(id: number): Promise<FeaturesRestore200> {
-    return featuresRestore(id);
+  public static restore(alias: string): Promise<FeaturesRestore200> {
+    return featuresRestore(alias);
   }
 }

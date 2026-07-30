@@ -36,6 +36,11 @@ class Feature extends Model
 
     protected $primaryKey = 'i_id';
 
+    public function getRouteKeyName(): string
+    {
+        return 'v_alias';
+    }
+
     /** @var string */
     const CREATED_AT = 'dt_created_at';
 
