@@ -16,6 +16,12 @@ import {
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { AuthFacade } from '@/modules/auth/api/auth.facade';
 import { useAuthStore } from '@/stores/auth';
 import { useAppBootstrapStore } from '@/stores/app-bootstrap';
@@ -284,81 +290,84 @@ const handleLogin = async () => {
               Verifikasi Keamanan
             </label>
 
-            <!-- Captcha Card (Inspired by Reference Design: Refresh Left, Image Center, Sound Right) -->
-            <div
-              class="relative p-2.5 rounded-xl border border-border/80 bg-[#f4f4f5] dark:bg-[#0b0b0a] flex items-center justify-between gap-2.5 select-none transition-all hover:border-border"
+            <!-- InputGroup Card ala AI Prompt Box -->
+            <InputGroup
+              class="rounded-lg border bg-muted/40 dark:bg-muted/20 px-1.5 py-1 shadow-xs"
             >
-              <!-- Left: Refresh Button Badge -->
-              <button
-                type="button"
-                tabindex="-1"
-                title="Acak kode captcha"
-                :disabled="captchaLoading"
-                class="h-9 w-9 rounded-lg bg-background dark:bg-muted/50 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-xs cursor-pointer group shrink-0 disabled:opacity-50"
-                @click="refreshCaptcha(true)"
-              >
-                <RotateCcw
-                  class="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:rotate-180"
-                  :class="{ 'animate-spin': captchaLoading }"
-                />
-              </button>
-
-              <!-- Center: Captcha Image -->
-              <div
-                class="relative flex-1 h-9 flex items-center justify-center overflow-hidden group"
-              >
-                <img
-                  v-if="captchaImage"
-                  :src="captchaImage"
-                  alt="Kode keamanan"
-                  class="h-full w-auto object-contain transition-transform duration-200 group-hover:scale-105 dark:invert dark:hue-rotate-180"
-                />
-                <span v-else class="text-xs font-medium text-muted-foreground animate-pulse"
-                  >Memuat captcha...</span
-                >
-                <div
-                  v-if="captchaLoading"
-                  class="absolute inset-0 bg-background/70 backdrop-blur-[1px] flex items-center justify-center z-10 rounded"
-                >
-                  <RotateCcw class="h-4 w-4 text-primary animate-spin" />
-                </div>
-              </div>
-
-              <!-- Right: Sound Button Badge -->
-              <button
-                type="button"
-                tabindex="-1"
-                title="Dengarkan audio captcha"
-                :disabled="captchaLoading || isAudioPlaying || !form.captcha_key"
-                class="h-9 w-9 rounded-lg bg-background dark:bg-muted/50 border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all shadow-xs cursor-pointer shrink-0 disabled:opacity-40"
-                @click="playAudioCaptcha"
-              >
-                <Volume2
-                  class="h-4 w-4 shrink-0"
-                  :class="{ 'animate-pulse text-primary': isAudioPlaying }"
-                />
-              </button>
-            </div>
-
-            <!-- Full Width Captcha Text Input -->
-            <div class="relative flex items-center">
-              <Shield
-                class="absolute left-3 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10 shrink-0"
-              />
-              <Input
+              <!-- Input Text di Atas (Centered Vertically) -->
+              <InputGroupInput
                 v-model="form.captcha"
                 type="text"
-                placeholder="Masukkan 5 angka di atas"
+                placeholder="Masukkan Captcha"
                 autocomplete="off"
-                class="pl-8.5 h-9 bg-muted/40 dark:bg-muted/20 border-input text-foreground focus-visible:ring-1 text-xs uppercase font-medium placeholder:normal-case placeholder:font-normal"
-                :class="
-                  errors.captcha
-                    ? 'border-destructive focus-visible:ring-destructive focus-visible:border-destructive'
-                    : 'focus-visible:ring-primary focus-visible:border-primary'
-                "
+                class="h-9 p-1.5! border-0 shadow-none focus-visible:ring-0 text-xs uppercase font-medium placeholder:normal-case placeholder:font-normal flex items-center"
+                :class="errors.captcha ? 'text-destructive' : ''"
                 @input="errors.captcha = ''"
               />
-            </div>
+
+              <div class="mb-2.5"></div>
+
+              <!-- Bottom Row: Refresh (kiri) | Gambar Captcha (tengah) | Sound (kanan) - Tanpa Border Separator -->
+              <InputGroupAddon
+                align="block-end"
+                class="flex items-center justify-between p-0 px-0.5 pb-0! gap-2 border-0"
+              >
+                <!-- Left: Refresh Button -->
+                <InputGroupButton
+                  variant="ghost"
+                  size="icon-xs"
+                  title="Acak kode captcha"
+                  type="button"
+                  tabindex="-1"
+                  :disabled="captchaLoading"
+                  class="shrink-0"
+                  @click="refreshCaptcha(true)"
+                >
+                  <RotateCcw
+                    class="h-4 w-4 text-muted-foreground"
+                    :class="{ 'animate-spin': captchaLoading }"
+                  />
+                </InputGroupButton>
+
+                <!-- Center: Gambar Captcha -->
+                <div
+                  class="relative flex-1 h-8 flex items-center justify-center overflow-hidden rounded bg-blue dark:bg-muted/20 px-2 select-none"
+                >
+                  <img
+                    v-if="captchaImage"
+                    :src="captchaImage"
+                    alt="Kode keamanan"
+                    class="h-full w-auto object-contain dark:mix-blend-screen dark:invert dark:hue-rotate-180"
+                  />
+                  <span v-else class="text-[11px] font-medium text-muted-foreground animate-pulse"
+                    >Memuat...</span
+                  >
+                  <div
+                    v-if="captchaLoading"
+                    class="absolute inset-0 bg-muted/40 backdrop-blur-[1px] flex items-center justify-center z-10"
+                  >
+                    <RotateCcw class="h-3.5 w-3.5 text-primary animate-spin" />
+                  </div>
+                </div>
+
+                <!-- Right: Sound Button -->
+                <InputGroupButton
+                  variant="default"
+                  size="icon-xs"
+                  title="Dengarkan audio captcha"
+                  type="button"
+                  tabindex="-1"
+                  :disabled="captchaLoading || isAudioPlaying || !form.captcha_key"
+                  class="shrink-0 rounded-full"
+                  @click="playAudioCaptcha"
+                >
+                  <Volume2
+                    class="text-primary-foreground/65"
+                    :class="{ 'animate-pulse text-primary': isAudioPlaying }"
+                  />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
 
             <p
               v-if="errors.captcha"

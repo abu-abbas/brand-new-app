@@ -24,7 +24,7 @@ return [
         'lines' => -1,
         'angle' => -15,
         'bgImage' => false,
-        'bgColor' => '#f4f4f5',
+        'bgColor' => '#fff',
         'lineColor' => '#e4e4e7',
         'fontColors' => ['#333333', '#444444', '#555555'],
         'contrast' => 0,
