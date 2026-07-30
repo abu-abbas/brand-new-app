@@ -57,7 +57,7 @@ it('logs in an active user and returns the current session user', function () {
         'password' => 'rahasia',
     ])
         ->assertOk()
-        ->assertJsonPath('data.id', $user->id);
+        ->assertJsonPath('data.id', $user->hash_id);
 
     $this->getJson('/api/auth/me')
         ->assertOk()
