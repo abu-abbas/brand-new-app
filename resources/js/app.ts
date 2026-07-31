@@ -3,9 +3,7 @@ import { createPinia } from 'pinia';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import router from './router';
 
-// custom style
-import 'element-plus/dist/index.css';
-import './../css/form.css';
+import '../css/element-plus.css';
 
 import App from './App.vue';
 

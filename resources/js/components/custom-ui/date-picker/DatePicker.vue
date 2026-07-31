@@ -504,7 +504,7 @@ function handleManualInputBlur() {
       </PopoverTrigger>
 
       <PopoverContent
-        class="max-h-[var(--reka-popper-available-height)] w-auto overflow-y-auto p-0"
+        class="max-h-(--reka-popper-available-height) w-auto overflow-y-auto p-0"
         :side="props.popoverSide"
         :align="props.popoverAlign"
         :collision-padding="8"
