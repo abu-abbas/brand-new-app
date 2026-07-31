@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Enums\PermissionType;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -27,6 +29,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $dt_updated_at
  * @property string|null $v_deleted_by
  * @property Carbon|null $dt_deleted_at
+ * @property Collection<int, Role> $roles
  */
 class Feature extends Model
 {
@@ -88,6 +91,19 @@ class Feature extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Feature::class, 'v_parent', 'v_alias');
+    }
+
+    /**
+     * Relasi ke roles.
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'tr_role_features',
+            'i_feature_id',
+            'i_role_id'
+        );
     }
 
     /**
