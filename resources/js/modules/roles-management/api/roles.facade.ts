@@ -18,7 +18,7 @@ export interface StoreRoleRequest {
   code: string;
   name: string;
   region?: boolean;
-  regional_device?: boolean;
+  unit?: boolean;
   permissions: string[];
   active_date_range?: DateRangeValue;
 }

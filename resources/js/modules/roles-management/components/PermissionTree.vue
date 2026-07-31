@@ -295,7 +295,7 @@ function updateRealCheckedKeys(): void {
 
 function handleCheck() {
   if (!treeRef.value) return;
-  const checkedKeys = treeRef.value.getCheckedKeys(true) as string[];
+  const checkedKeys = treeRef.value.getCheckedKeys() as string[];
   updateRealCheckedKeys();
   emit('update:modelValue', checkedKeys);
 }
@@ -469,7 +469,7 @@ watch(
       <span
         class="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
       >
-        {{ realCheckedKeys.length }} Terpilih
+        {{ modelValue.length }} Terpilih
       </span>
     </div>
 

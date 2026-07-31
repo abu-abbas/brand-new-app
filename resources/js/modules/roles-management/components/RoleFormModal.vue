@@ -41,7 +41,7 @@ const form = reactive<StoreRoleRequest>({
   code: '',
   name: '',
   region: false,
-  regional_device: false,
+  unit: false,
   permissions: [],
   active_date_range: { start: null, end: null },
 });
@@ -66,7 +66,7 @@ function resetForm(): void {
     code: role?.code ?? '',
     name: role?.name ?? '',
     region: Boolean(role?.region),
-    regional_device: Boolean(role?.regional_device),
+    unit: Boolean(role?.unit),
     permissions: role?.permissions ? [...role.permissions] : [],
     active_date_range: role?.active_date_range
       ? { ...role.active_date_range }
@@ -81,13 +81,13 @@ watch(
   () => form.region,
   (enabled) => {
     if (enabled) {
-      form.regional_device = false;
+      form.unit = false;
     }
   },
 );
 
 watch(
-  () => form.regional_device,
+  () => form.unit,
   (enabled) => {
     if (enabled) {
       form.region = false;
@@ -118,7 +118,7 @@ async function submit(): Promise<void> {
     code: form.code.trim(),
     name: form.name.trim(),
     region: form.region,
-    regional_device: form.regional_device,
+    unit: form.unit,
     permissions: [...form.permissions],
     active_date_range: hasTimeLimit.value ? form.active_date_range : undefined,
   };
@@ -289,7 +289,7 @@ watch(open, (isOpen) => {
           <!-- limit berdasarkan perangkat daerah -->
           <div
             class="rounded-lg border border-muted/60 bg-muted/60 p-3 space-y-3"
-            :class="{ 'border-primary/10': form.regional_device }"
+            :class="{ 'border-primary/10': form.unit }"
           >
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-0.5">
@@ -301,7 +301,7 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="form.regional_device" />
+              <Switch v-model="form.unit" />
             </div>
           </div>
 
