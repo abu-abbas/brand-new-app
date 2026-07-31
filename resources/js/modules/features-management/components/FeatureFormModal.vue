@@ -17,7 +17,6 @@ import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
@@ -489,9 +488,7 @@ watch(open, (isOpen) => {
         </ElFormItem>
       </section>
 
-      <Separator />
-
-      <section class="flex flex-col gap-4 py-5">
+      <section class="flex flex-col gap-4">
         <div>
           <h3 class="font-semibold">Struktur fitur</h3>
           <p class="text-xs text-muted-foreground">Tentukan tipe, induk, dan posisi tampil.</p>
@@ -572,8 +569,6 @@ watch(open, (isOpen) => {
       </section>
 
       <template v-if="form.type === 'menu'">
-        <Separator />
-
         <section class="flex flex-col gap-4 pt-5">
           <div>
             <h3 class="font-semibold">Navigasi menu</h3>

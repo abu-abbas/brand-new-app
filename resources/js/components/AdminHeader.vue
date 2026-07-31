@@ -25,7 +25,7 @@ function navigateBreadcrumb(target: string) {
   <header
     :class="
       cn(
-        'shrink-0 flex h-14 items-center justify-between bg-background/95 backdrop-blur-md px-4 lg:pl-2.5 md:px-6 gap-4 border-none',
+        'shrink-0 flex h-14 items-center justify-between bg-background/95 backdrop-blur-md px-4 md:px-6 gap-4 border-none',
       )
     "
   >

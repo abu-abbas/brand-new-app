@@ -5,6 +5,7 @@ import { exampleRoutes } from '@/modules/example/routes';
 import { announcementRoutes } from '@/modules/announcement/routes';
 import { blankPageRoutes } from '@/modules/blank-page/routes';
 import { featureRoutes } from '@/modules/features-management/routes';
+import { roleRoutes } from '@/modules/roles-management/routes';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -16,6 +17,7 @@ const router = createRouter({
     ...announcementRoutes,
     ...blankPageRoutes,
     ...featureRoutes,
+    ...roleRoutes,
   ],
 });
 

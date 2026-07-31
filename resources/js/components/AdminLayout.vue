@@ -89,10 +89,10 @@ onUnmounted(() => {
         <!-- Main Content Area: Muted Container dengan Rounded Corners & Cross-Platform ScrollArea -->
         <div
           ref="containerRef"
-          class="relative flex flex-1 flex-col min-h-0 p-4 lg:pl-2.5 pt-1 md:p-6 md:pt-1"
+          class="relative flex flex-1 flex-col min-h-0 p-4 pt-1 md:p-6 md:pt-1"
         >
           <ScrollArea class="flex-1 min-h-0 rounded-2xl bg-muted/60 dark:bg-muted/30 shadow-2xs">
-            <main class="space-y-6 p-4 md:p-6">
+            <main class="space-y-4 md:p-6">
               <!-- Slot Header dengan Default PageHeader -->
               <slot v-if="!hideHeader" name="header" :go-back="handleBack">
                 <PageHeader
