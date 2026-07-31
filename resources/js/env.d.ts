@@ -12,6 +12,7 @@ interface AppReferenceOption {
 
 interface AppConfig {
   name: string;
+  theme_accent?: string;
   env: string;
   url: string;
   timezone: string;

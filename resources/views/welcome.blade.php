@@ -9,6 +9,7 @@
         <script>
             window.__APP_CONFIG__ = {{ Illuminate\Support\Js::from([
                 'name' => config('app.name'),
+                'theme_accent' => config('app.theme_accent'),
                 'env' => config('app.env'),
                 'url' => config('app.url'),
                 'timezone' => config('app.timezone'),

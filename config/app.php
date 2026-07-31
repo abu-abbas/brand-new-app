@@ -15,6 +15,18 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'theme_accent' => env('APP_THEME_ACCENT', (function () {
+        $path = base_path('components.json');
+
+        if (file_exists($path)) {
+            $json = json_decode((string) file_get_contents($path), true);
+
+            return $json['tailwind']['baseColor'] ?? 'neutral';
+        }
+
+        return 'neutral';
+    })()),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

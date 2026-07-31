@@ -1,0 +1,257 @@
+/* ============================================================
+   ACCENT COLOR THEMES
+   Diaplikasikan via class `theme-{nama}` pada <html>
+   Dikelola oleh composables/useTheme.ts
+   ============================================================ */
+
+/* TEMA SKY (default) */
+.theme-sky,
+.theme-sky .light,
+.dark .theme-sky .light {
+  --primary: oklch(0.588 0.158 241.97);
+  --primary-foreground: oklch(0.98 0.01 241.97);
+}
+.theme-sky.dark:not(.light *),
+.theme-sky .dark:not(.light *),
+.dark .theme-sky:not(.light *) {
+  --primary: oklch(0.685 0.169 237.32);
+  --primary-foreground: oklch(0.98 0.01 237.32);
+}
+
+/* TEMA AMBER */
+.theme-amber,
+.theme-amber .light,
+.dark .theme-amber .light {
+  --primary: oklch(0.79 0.15 75.83);
+  --primary-foreground: oklch(0.2 0.04 75.83);
+}
+.theme-amber.dark:not(.light *),
+.theme-amber .dark:not(.light *),
+.dark .theme-amber:not(.light *) {
+  --primary: oklch(0.79 0.15 75.83);
+  --primary-foreground: oklch(0.2 0.04 75.83);
+}
+
+/* TEMA BLUE */
+.theme-blue,
+.theme-blue .light,
+.dark .theme-blue .light {
+  --primary: oklch(0.5 0.134 242.75);
+  --primary-foreground: oklch(0.98 0.01 242.75);
+}
+.theme-blue.dark:not(.light *),
+.theme-blue .dark:not(.light *),
+.dark .theme-blue:not(.light *) {
+  --primary: oklch(0.443 0.11 240.79);
+  --primary-foreground: oklch(0.98 0.01 240.79);
+}
+
+/* TEMA CYAN */
+.theme-cyan,
+.theme-cyan .light,
+.dark .theme-cyan .light {
+  --primary: oklch(0.66 0.14 205.1);
+  --primary-foreground: oklch(0.98 0.01 205.1);
+}
+.theme-cyan.dark:not(.light *),
+.theme-cyan .dark:not(.light *),
+.dark .theme-cyan:not(.light *) {
+  --primary: oklch(0.66 0.14 205.1);
+  --primary-foreground: oklch(0.98 0.01 205.1);
+}
+
+/* TEMA EMERALD */
+.theme-emerald,
+.theme-emerald .light,
+.dark .theme-emerald .light {
+  --primary: oklch(0.627 0.194 149.21);
+  --primary-foreground: oklch(0.98 0.01 149.21);
+}
+.theme-emerald.dark:not(.light *),
+.theme-emerald .dark:not(.light *),
+.dark .theme-emerald:not(.light *) {
+  --primary: oklch(0.627 0.194 149.21);
+  --primary-foreground: oklch(0.98 0.01 149.21);
+}
+
+/* TEMA FUCHSIA */
+.theme-fuchsia,
+.theme-fuchsia .light,
+.dark .theme-fuchsia .light {
+  --primary: oklch(0.62 0.22 315.6);
+  --primary-foreground: oklch(0.98 0.01 315.6);
+}
+.theme-fuchsia.dark:not(.light *),
+.theme-fuchsia .dark:not(.light *),
+.dark .theme-fuchsia:not(.light *) {
+  --primary: oklch(0.62 0.22 315.6);
+  --primary-foreground: oklch(0.98 0.01 315.6);
+}
+
+/* TEMA GREEN */
+.theme-green,
+.theme-green .light,
+.dark .theme-green .light {
+  --primary: oklch(0.64 0.18 134.1);
+  --primary-foreground: oklch(0.98 0.01 134.1);
+}
+.theme-green.dark:not(.light *),
+.theme-green .dark:not(.light *),
+.dark .theme-green:not(.light *) {
+  --primary: oklch(0.64 0.18 134.1);
+  --primary-foreground: oklch(0.98 0.01 134.1);
+}
+
+/* TEMA INDIGO */
+.theme-indigo,
+.theme-indigo .light,
+.dark .theme-indigo .light {
+  --primary: oklch(0.51 0.18 260.4);
+  --primary-foreground: oklch(0.98 0.01 260.4);
+}
+.theme-indigo.dark:not(.light *),
+.theme-indigo .dark:not(.light *),
+.dark .theme-indigo:not(.light *) {
+  --primary: oklch(0.51 0.18 260.4);
+  --primary-foreground: oklch(0.98 0.01 260.4);
+}
+
+/* TEMA LIME */
+.theme-lime,
+.theme-lime .light,
+.dark .theme-lime .light {
+  --primary: oklch(0.79 0.18 115.2);
+  --primary-foreground: oklch(0.2 0.04 115.2);
+}
+.theme-lime.dark:not(.light *),
+.theme-lime .dark:not(.light *),
+.dark .theme-lime:not(.light *) {
+  --primary: oklch(0.79 0.18 115.2);
+  --primary-foreground: oklch(0.2 0.04 115.2);
+}
+
+/* TEMA NEUTRAL */
+.theme-neutral,
+.theme-neutral .light,
+.dark .theme-neutral .light {
+  --primary: oklch(0.145 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+}
+.theme-neutral.dark:not(.light *),
+.theme-neutral .dark:not(.light *),
+.dark .theme-neutral:not(.light *) {
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.145 0 0);
+}
+
+/* TEMA ORANGE */
+.theme-orange,
+.theme-orange .light,
+.dark .theme-orange .light {
+  --primary: oklch(0.65 0.19 45.2);
+  --primary-foreground: oklch(0.98 0.01 45.2);
+}
+.theme-orange.dark:not(.light *),
+.theme-orange .dark:not(.light *),
+.dark .theme-orange:not(.light *) {
+  --primary: oklch(0.65 0.19 45.2);
+  --primary-foreground: oklch(0.98 0.01 45.2);
+}
+
+/* TEMA PINK */
+.theme-pink,
+.theme-pink .light,
+.dark .theme-pink .light {
+  --primary: oklch(0.63 0.2 340.5);
+  --primary-foreground: oklch(0.98 0.01 340.5);
+}
+.theme-pink.dark:not(.light *),
+.theme-pink .dark:not(.light *),
+.dark .theme-pink:not(.light *) {
+  --primary: oklch(0.63 0.2 340.5);
+  --primary-foreground: oklch(0.98 0.01 340.5);
+}
+
+/* TEMA PURPLE */
+.theme-purple,
+.theme-purple .light,
+.dark .theme-purple .light {
+  --primary: oklch(0.58 0.19 281.3);
+  --primary-foreground: oklch(0.98 0.01 281.3);
+}
+.theme-purple.dark:not(.light *),
+.theme-purple .dark:not(.light *),
+.dark .theme-purple:not(.light *) {
+  --primary: oklch(0.58 0.19 281.3);
+  --primary-foreground: oklch(0.98 0.01 281.3);
+}
+
+/* TEMA RED */
+.theme-red,
+.theme-red .light,
+.dark .theme-red .light {
+  --primary: oklch(0.577 0.245 27.325);
+  --primary-foreground: oklch(0.98 0.01 27.325);
+}
+.theme-red.dark:not(.light *),
+.theme-red .dark:not(.light *),
+.dark .theme-red:not(.light *) {
+  --primary: oklch(0.577 0.245 27.325);
+  --primary-foreground: oklch(0.98 0.01 27.325);
+}
+
+/* TEMA ROSE */
+.theme-rose,
+.theme-rose .light,
+.dark .theme-rose .light {
+  --primary: oklch(0.643 0.207 356.9);
+  --primary-foreground: oklch(0.98 0.01 356.9);
+}
+.theme-rose.dark:not(.light *),
+.theme-rose .dark:not(.light *),
+.dark .theme-rose:not(.light *) {
+  --primary: oklch(0.643 0.207 356.9);
+  --primary-foreground: oklch(0.98 0.01 356.9);
+}
+
+/* TEMA TEAL */
+.theme-teal,
+.theme-teal .light,
+.dark .theme-teal .light {
+  --primary: oklch(0.61 0.13 175.4);
+  --primary-foreground: oklch(0.98 0.01 175.4);
+}
+.theme-teal.dark:not(.light *),
+.theme-teal .dark:not(.light *),
+.dark .theme-teal:not(.light *) {
+  --primary: oklch(0.61 0.13 175.4);
+  --primary-foreground: oklch(0.98 0.01 175.4);
+}
+
+/* TEMA VIOLET */
+.theme-violet,
+.theme-violet .light,
+.dark .theme-violet .light {
+  --primary: oklch(0.52 0.19 270.3);
+  --primary-foreground: oklch(0.98 0.01 270.3);
+}
+.theme-violet.dark:not(.light *),
+.theme-violet .dark:not(.light *),
+.dark .theme-violet:not(.light *) {
+  --primary: oklch(0.52 0.19 270.3);
+  --primary-foreground: oklch(0.98 0.01 270.3);
+}
+
+/* TEMA YELLOW */
+.theme-yellow,
+.theme-yellow .light,
+.dark .theme-yellow .light {
+  --primary: oklch(0.85 0.17 90.2);
+  --primary-foreground: oklch(0.2 0.04 90.2);
+}
+.theme-yellow.dark:not(.light *),
+.theme-yellow .dark:not(.light *),
+.dark .theme-yellow:not(.light *) {
+  --primary: oklch(0.85 0.17 90.2);
+  --primary-foreground: oklch(0.2 0.04 90.2);
+}

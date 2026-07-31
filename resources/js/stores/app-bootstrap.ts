@@ -5,6 +5,7 @@ export const useAppBootstrapStore = defineStore('app-bootstrap', () => {
   const config = ref<AppConfig>(
     window.__APP_CONFIG__ || {
       name: 'Laravel',
+      theme_accent: 'neutral',
       env: 'production',
       url: '',
       timezone: 'UTC',

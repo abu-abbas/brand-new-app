@@ -25,7 +25,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
-import { useTheme, type ThemeName } from '@/composables/useTheme';
+import { useTheme } from '@/composables/useTheme';
 import { useDarkMode } from '@/composables/useDarkMode';
 import { useAuthStore } from '@/stores/auth';
 import { computed } from 'vue';
@@ -47,8 +47,9 @@ import {
   Sun,
   Moon,
 } from '@lucide/vue';
+import type { Component } from 'vue';
 
-const { activeTheme, setTheme } = useTheme();
+const { activeTheme, otherThemes, setTheme, activeThemeLabel, activeThemeColor } = useTheme();
 const { isDark, toggleDarkMode } = useDarkMode();
 const auth = useAuthStore();
 const initials = computed(
@@ -65,29 +66,6 @@ const handleLogout = async () => {
   await auth.logout();
   window.location.assign('/login');
 };
-
-const themes: { name: ThemeName; label: string; color: string }[] = [
-  { name: 'default', label: 'Sky (Default)', color: '#0ea5e9' },
-  { name: 'amber', label: 'Amber', color: '#f59e0b' },
-  { name: 'blue', label: 'Blue', color: '#3b82f6' },
-  { name: 'cyan', label: 'Cyan', color: '#06b6d4' },
-  { name: 'emerald', label: 'Emerald', color: '#10b981' },
-  { name: 'fuchsia', label: 'Fuchsia', color: '#d946ef' },
-  { name: 'green', label: 'Green', color: '#22c55e' },
-  { name: 'indigo', label: 'Indigo', color: '#6366f1' },
-  { name: 'lime', label: 'Lime', color: '#84cc16' },
-  { name: 'neutral', label: 'Neutral', color: '#737373' },
-  { name: 'orange', label: 'Orange', color: '#f97316' },
-  { name: 'pink', label: 'Pink', color: '#ec4899' },
-  { name: 'purple', label: 'Purple', color: '#a855f7' },
-  { name: 'red', label: 'Red', color: '#ef4444' },
-  { name: 'rose', label: 'Rose', color: '#f43f5e' },
-  { name: 'teal', label: 'Teal', color: '#14b8a6' },
-  { name: 'violet', label: 'Violet', color: '#8b5cf6' },
-  { name: 'yellow', label: 'Yellow', color: '#eab308' },
-];
-
-import type { Component } from 'vue';
 
 interface SubMenuItem {
   title: string;
@@ -363,7 +341,19 @@ const projectsMenu = [
                     <span>Accent Color</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent class="w-48 max-h-72 overflow-y-auto">
-                    <template v-for="t in themes" :key="t.name">
+                    <!-- Item aktif di paling atas -->
+                    <DropdownMenuItem
+                      class="flex items-center justify-between bg-accent/40 font-semibold"
+                      @click="setTheme(activeTheme)"
+                    >
+                      <span>{{ activeThemeLabel }}</span>
+                      <span
+                        class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
+                        :style="{ backgroundColor: activeThemeColor }"
+                      />
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <template v-for="t in otherThemes" :key="t.name">
                       <DropdownMenuItem
                         class="flex items-center justify-between"
                         :class="activeTheme === t.name ? 'bg-accent/40 font-semibold' : ''"
@@ -375,7 +365,6 @@ const projectsMenu = [
                           :style="{ backgroundColor: t.color }"
                         />
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator v-if="t.name === 'default'" />
                     </template>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
