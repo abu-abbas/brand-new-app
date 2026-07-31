@@ -1,4 +1,3 @@
-
 # ID Obfuscation — Wajib untuk Semua API Resource
 
 ## Aturan Utama

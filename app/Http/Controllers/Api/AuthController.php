@@ -63,7 +63,7 @@ class AuthController extends Controller
             return response('', 400);
         }
 
-        $cacheKey = 'captcha_' . md5($key);
+        $cacheKey = 'captcha_'.md5($key);
         $value = Cache::get($cacheKey);
 
         if (! $value) {
@@ -95,9 +95,9 @@ class AuthController extends Controller
 
         $dataSize = strlen($pcmData);
         $fileSize = $dataSize + 36;
-        $header = pack('a4Va4a4VvvVVvv', 'RIFF', $fileSize, 'WAVE', 'fmt ', 16, 1, 1, 22050, 44100, 2, 16) . pack('a4V', 'data', $dataSize);
+        $header = pack('a4Va4a4VvvVVvv', 'RIFF', $fileSize, 'WAVE', 'fmt ', 16, 1, 1, 22050, 44100, 2, 16).pack('a4V', 'data', $dataSize);
 
-        return response($header . $pcmData, 200, [
+        return response($header.$pcmData, 200, [
             'Content-Type' => 'audio/wav',
             'Cache-Control' => 'no-cache, no-store, must-revalidate',
         ]);

@@ -38,7 +38,7 @@ it('returns audio wav for a valid captcha key', function () {
         ->assertJsonStructure(['img', 'key'])
         ->json();
 
-    $response = $this->get('/api/auth/captcha/audio?key=' . $challenge['key']);
+    $response = $this->get('/api/auth/captcha/audio?key='.$challenge['key']);
     $response->assertOk()
         ->assertHeader('Content-Type', 'audio/wav');
 
