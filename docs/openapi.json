@@ -1525,6 +1525,9 @@
                     "name": {
                         "type": "string"
                     },
+                    "level": {
+                        "type": "integer"
+                    },
                     "need_region": {
                         "type": "boolean"
                     },
@@ -1651,6 +1654,11 @@
                         "type": "string",
                         "maxLength": 255
                     },
+                    "level": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 999
+                    },
                     "need_region": {
                         "type": "boolean"
                     },
@@ -1693,6 +1701,11 @@
                     "name": {
                         "type": "string",
                         "maxLength": 255
+                    },
+                    "level": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 999
                     },
                     "need_region": {
                         "type": "boolean"
@@ -1761,6 +1774,9 @@
                         "minItems": 1,
                         "maxItems": 1,
                         "additionalItems": false
+                    },
+                    "is_root": {
+                        "type": "boolean"
                     },
                     "active": {
                         "type": "boolean"

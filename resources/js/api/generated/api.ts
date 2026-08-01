@@ -155,6 +155,7 @@ export interface RoleResource {
   id: string;
   code: string;
   name: string;
+  level?: number;
   need_region: boolean;
   need_unit: boolean;
   active_periode: RoleResourceActivePeriode;
@@ -237,6 +238,11 @@ export interface StoreRoleRequest {
   code: string;
   /** @maxLength 255 */
   name: string;
+  /**
+   * @minimum 0
+   * @maximum 999
+   */
+  level?: number;
   need_region?: boolean;
   need_unit?: boolean;
   active_periode?: StoreRoleRequestActivePeriode;
@@ -255,6 +261,11 @@ export interface UpdateRoleRequest {
   code: string;
   /** @maxLength 255 */
   name: string;
+  /**
+   * @minimum 0
+   * @maximum 999
+   */
+  level?: number;
   need_region?: boolean;
   need_unit?: boolean;
   active_periode?: UpdateRoleRequestActivePeriode;
@@ -278,6 +289,7 @@ export interface UserResource {
    * @maxItems 1
    */
   roles: [string];
+  is_root?: boolean;
   active: boolean;
   created_at: UserResourceCreatedAt;
 }
