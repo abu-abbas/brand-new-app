@@ -77,7 +77,7 @@ describe('DataTable', () => {
 
     await input.setValue('tidak-ada-hasil');
     await input.trigger('keydown.enter');
-    expect(wrapper.text()).toContain('Data tidak ditemukan.');
+    expect(wrapper.text()).toContain('Data Tidak Ditemukan');
   });
 
   it('memancarkan action dan row event', async () => {

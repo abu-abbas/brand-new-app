@@ -138,7 +138,7 @@ describe('DatePicker', () => {
     expect(content.attributes('data-collision-padding')).toBe('8');
     expect(content.attributes('data-side')).toBe('left');
     expect(content.attributes('data-align')).toBe('end');
-    expect(content.classes()).toContain('max-h-[var(--reka-popper-available-height)]');
+    expect(content.classes()).toContain('max-h-(--reka-popper-available-height)');
     expect(content.classes()).toContain('overflow-y-auto');
   });
 });
