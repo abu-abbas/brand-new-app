@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  * @property string $hash_id
  * @property string $v_code
  * @property string $v_name
+ * @property int $i_level
  * @property bool $b_need_region
  * @property bool $b_need_unit
  * @property array<string, string>|null $v_active_periode
@@ -46,6 +47,7 @@ class Role extends Model
     protected $fillable = [
         'v_code',
         'v_name',
+        'i_level',
         'b_need_region',
         'b_need_unit',
         'v_active_periode',
@@ -56,6 +58,7 @@ class Role extends Model
     ];
 
     protected $casts = [
+        'i_level' => 'integer',
         'b_need_region' => 'boolean',
         'b_need_unit' => 'boolean',
         'b_locked' => 'boolean',

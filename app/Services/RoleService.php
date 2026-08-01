@@ -31,7 +31,11 @@ class RoleService
      */
     public function paginate(array $params): LengthAwarePaginator
     {
-        $query = Role::query()->with('features');
+        $currentUserLevel = Auth::user()?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+
+        $query = Role::query()
+            ->with('features')
+            ->where('i_level', '<=', $currentUserLevel);
 
         if (in_array((string) ($params['include_deleted'] ?? 'false'), ['true', '1'], true)) {
             $query->withTrashed();
@@ -88,7 +92,10 @@ class RoleService
      */
     public function options(): Collection
     {
+        $currentUserLevel = Auth::user()?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+
         return Role::query()
+            ->where('i_level', '<=', $currentUserLevel)
             ->orderBy('v_name')
             ->get();
     }
@@ -98,11 +105,21 @@ class RoleService
      */
     public function create(array $data): Role
     {
-        return DB::transaction(function () use ($data) {
+        $currentUser = Auth::user();
+        $currentUserLevel = $currentUser?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+
+        if ($currentUser?->isRoot() && isset($data['level'])) {
+            $targetLevel = min((int) $data['level'], $currentUserLevel);
+        } else {
+            $targetLevel = $currentUserLevel;
+        }
+
+        return DB::transaction(function () use ($data, $targetLevel) {
             /** @var Role $role */
             $role = Role::query()->create([
                 'v_code' => $data['code'],
                 'v_name' => $data['name'],
+                'i_level' => $targetLevel,
                 'b_need_region' => $data['need_region'] ?? false,
                 'b_need_unit' => $data['need_unit'] ?? false,
                 'v_active_periode' => $data['active_periode'] ?? null,
@@ -127,7 +144,10 @@ class RoleService
      */
     public function update(Role $role, array $data): Role
     {
-        return DB::transaction(function () use ($role, $data) {
+        $currentUser = Auth::user();
+        $currentUserLevel = $currentUser?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+
+        return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel) {
             $updateData = [
                 'v_name' => $data['name'],
                 'b_need_region' => $data['need_region'] ?? $role->b_need_region,
@@ -135,6 +155,10 @@ class RoleService
                 'v_active_periode' => array_key_exists('active_periode', $data) ? $data['active_periode'] : $role->v_active_periode,
                 'v_updated_by' => Auth::user()?->username,
             ];
+
+            if ($currentUser?->isRoot() && isset($data['level'])) {
+                $updateData['i_level'] = min((int) $data['level'], $currentUserLevel);
+            }
 
             if (! $role->b_locked && isset($data['code'])) {
                 $updateData['v_code'] = $data['code'];

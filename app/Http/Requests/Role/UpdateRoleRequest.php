@@ -31,6 +31,7 @@ class UpdateRoleRequest extends FormRequest
                 "unique:tm_roles,v_code,{$roleId},i_id,dt_deleted_at,NULL",
             ],
             'name' => ['required', 'string', 'max:255'],
+            'level' => ['sometimes', 'integer', 'min:0', 'max:' . \App\Constants\RoleConstant::ROOT_LEVEL],
             'need_region' => ['sometimes', 'boolean'],
             'need_unit' => ['sometimes', 'boolean'],
             'active_periode' => ['nullable', 'array'],

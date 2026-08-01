@@ -16,6 +16,7 @@ return new class extends Migration
             // Core fields
             $table->string('v_code', 100);
             $table->string('v_name', 255);
+            $table->integer('i_level')->default(0)->index();
             $table->boolean('b_need_region')->default(false);
             $table->boolean('b_need_unit')->default(false);
             $table->string('v_active_periode', 255)->nullable();

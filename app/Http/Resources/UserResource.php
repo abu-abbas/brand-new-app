@@ -36,6 +36,7 @@ class UserResource extends JsonResource
                 'name' => $this->unit_name ?? 'Umum',
             ],
             'roles' => [$this->role ?? 'Staff'],
+            'is_root' => $this->when($this->isRoot(), true),
             'active' => (bool) $this->is_active,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
