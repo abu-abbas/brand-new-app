@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue';
+import { BadgeList } from '@/components/custom-ui/badge-list';
 import { DataTable } from '@/components/custom-ui/data-table';
 import type {
   DataTableFetcher,
   DataTableField,
   DataTableFilter,
+  DataTableParams,
 } from '@/components/custom-ui/data-table/data-table.types';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { LucideIcon } from '@/components/custom-ui/lucide-icon';
-import { useConfirmDialog } from '@/composables/useConfirmDialog';
+import { CircleCheck, CircleX } from '@lucide/vue';
 import RoleFormModal from '../components/RoleFormModal.vue';
 import { RolesFacade, type RoleRow } from '../api/roles.facade';
 
-const confirmDialog = useConfirmDialog();
 const dataTableRef = ref();
 
 const modalOpen = ref(false);
@@ -29,29 +30,89 @@ const fields: DataTableField<RoleRow>[] = [
     filterColumn: false,
     align: 'center',
   },
-  { key: 'code', label: 'Kode Group', minWidth: 160, sortable: true },
-  { key: 'name', label: 'Nama Group', minWidth: 200, sortable: true },
-  { key: 'region', label: 'Wilayah', minWidth: 130, align: 'center' },
-  { key: 'regional_device', label: 'Perangkat Daerah', minWidth: 160, align: 'center' },
-  { key: 'user_count', label: 'Jumlah User', width: 110, align: 'center' },
-  { key: 'permissions', label: 'Akses', minWidth: 120, align: 'center' },
-  { key: 'updated_at', label: 'Diperbarui', minWidth: 150 },
+  { key: 'name', label: 'Group', minWidth: 200, sortable: true },
+  { key: 'code', label: 'Kode Group', hidden: true },
+  { key: 'features', label: 'Hak Akses', minWidth: 150 },
+  {
+    key: 'limitasi',
+    label: 'Limitasi',
+    headerAlign: 'center',
+    sortable: false,
+    filterColumn: false,
+    children: [
+      {
+        key: 'need_region',
+        label: 'Wilayah',
+        minWidth: 40,
+        align: 'center',
+        sortable: false,
+        filterColumn: false,
+      },
+      {
+        key: 'need_unit',
+        label: 'OPD',
+        minWidth: 40,
+        align: 'center',
+        sortable: false,
+        filterColumn: false,
+      },
+      {
+        key: 'active_periode',
+        label: 'Periode',
+        minWidth: 40,
+        align: 'center',
+        sortable: false,
+        filterColumn: false,
+      },
+    ],
+  },
+  {
+    key: 'deleted_at',
+    label: 'Status',
+    minWidth: 40,
+    align: 'center',
+    sortable: true,
+    filterColumn: true,
+  },
+  { key: 'updated_at', label: 'Diperbarui', minWidth: 80, sortable: true },
 ];
 
 const filters: DataTableFilter[] = [
+  { key: 'include_deleted', label: 'Sertakan data terhapus', type: 'boolean' },
   { key: 'updated_at', label: 'Tanggal diperbarui', type: 'date-range' },
 ];
 
-const fetcher: DataTableFetcher<RoleRow> = async () => {
-  const result = await RolesFacade.list();
+const fetcher: DataTableFetcher<RoleRow> = async ({ params }: { params: DataTableParams }) => {
+  const activeFilters = params.filters as Record<string, unknown> | undefined;
+
+  let updated_at_from: string | undefined;
+  let updated_at_to: string | undefined;
+
+  const rawDateRange = activeFilters?.updated_at as { start?: string; end?: string } | undefined;
+  if (rawDateRange) {
+    updated_at_from = rawDateRange.start;
+    updated_at_to = rawDateRange.end;
+  }
+
+  const result = await RolesFacade.list({
+    page: params.page,
+    per_page: params.per_page,
+    search: params.search,
+    sort_by: params.sort_by,
+    sort_direction: params.sort_direction,
+    include_deleted: activeFilters?.include_deleted === true,
+    updated_at_from,
+    updated_at_to,
+  });
+
   return {
     data: result.data,
     meta: {
-      current_page: 1,
-      from: 1,
-      last_page: 1,
-      per_page: result.total,
-      to: result.total,
+      current_page: result.current_page,
+      from: (result.current_page - 1) * result.per_page + 1,
+      last_page: result.last_page,
+      per_page: result.per_page,
+      to: Math.min(result.current_page * result.per_page, result.total),
       total: result.total,
     },
   };
@@ -78,19 +139,6 @@ function openEdit(role: RoleRow): void {
 function onSubmitted(): void {
   dataTableRef.value?.reload();
 }
-
-function handleDelete(role: RoleRow): void {
-  confirmDialog({
-    title: 'Hapus Group',
-    description: `Apakah Anda yakin ingin menghapus group "${role.name}" (${role.code})?`,
-    confirmLabel: 'Ya, Hapus',
-    confirmVariant: 'destructive',
-    onConfirm: async () => {
-      await RolesFacade.delete(role.code);
-      dataTableRef.value?.reload();
-    },
-  });
-}
 </script>
 
 <template>
@@ -110,66 +158,63 @@ function handleDelete(role: RoleRow): void {
         :fetcher="fetcher as unknown as DataTableFetcher<Record<string, unknown>>"
         :fields="fields as unknown as DataTableField<Record<string, unknown>>[]"
         :filters="filters"
-        row-key="code"
+        row-key="id"
         remember="roles"
         search-placeholder="Cari berdasarkan nama atau kode group..."
-        action-column-title="Aksi"
-        action-column-width="110"
+        actions
+        :actions-width="60"
+        :can-delete="() => false"
+        @edit="(row: unknown) => openEdit(row as RoleRow)"
+        @create="openCreate"
       >
-        <template #cell(code)="{ value }">
-          <span class="font-mono text-xs font-semibold">{{ value }}</span>
+        <template #cell(name)="{ row, value }">
+          <div class="flex flex-col gap-0">
+            <p>{{ value }}</p>
+            <p class="text-sm text-muted-foreground">{{ row.code }}</p>
+          </div>
         </template>
 
-        <template #cell(region)="{ value }">
-          <Badge v-if="value" variant="outline" class="font-normal">
-            {{ value }}
+        <template #cell(need_region)="{ value }">
+          <CircleCheck v-if="value" class="mx-auto size-4 text-emerald-500" />
+          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+        </template>
+
+        <template #cell(need_unit)="{ value }">
+          <CircleCheck v-if="value" class="mx-auto size-4 text-emerald-500" />
+          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+        </template>
+
+        <template #cell(active_periode)="{ value }">
+          <CircleCheck
+            v-if="value && (value.start || value.end)"
+            class="mx-auto size-4 text-emerald-500"
+          />
+          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+        </template>
+
+        <template #cell(features)="{ value, search }">
+          <BadgeList :items="value" :search="search" :max="10" />
+        </template>
+
+        <template #cell(deleted_at)="{ value }">
+          <Badge
+            v-if="!value"
+            variant="outline"
+            class="font-normal border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+          >
+            Aktif
           </Badge>
-          <span v-else class="text-xs text-muted-foreground">-</span>
-        </template>
-
-        <template #cell(regional_device)="{ value }">
-          <Badge v-if="value" variant="secondary" class="font-normal">
-            {{ value }}
-          </Badge>
-          <span v-else class="text-xs text-muted-foreground">-</span>
-        </template>
-
-        <template #cell(user_count)="{ value }">
-          <span class="font-medium text-xs">{{ value }} pengguna</span>
-        </template>
-
-        <template #cell(permissions)="{ value }">
-          <Badge variant="default" class="bg-primary/90">
-            {{ Array.isArray(value) ? value.length : 0 }} Fitur
+          <Badge
+            v-else
+            variant="outline"
+            class="font-normal border-destructive/30 text-destructive"
+          >
+            Tidak Aktif
           </Badge>
         </template>
 
         <template #cell(updated_at)="{ value }">
           {{ formatDate(value) }}
-        </template>
-
-        <template #actions="{ row }">
-          <div class="flex items-center justify-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              title="Edit Group"
-              @click="openEdit(row as RoleRow)"
-            >
-              <LucideIcon
-                name="Pencil"
-                class="size-3.5 text-muted-foreground hover:text-foreground"
-              />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              title="Hapus Group"
-              @click="handleDelete(row as RoleRow)"
-            >
-              <LucideIcon name="Trash2" class="size-3.5 text-destructive" />
-            </Button>
-          </div>
         </template>
       </DataTable>
 

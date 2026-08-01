@@ -2,18 +2,20 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { ElTree } from 'element-plus';
 import 'element-plus/es/components/tree/style/css';
-import { CheckSquare, Square, Link2, Search, X } from '@lucide/vue';
+import { CheckSquare, Square, Link2, Search, X, ShieldAlert } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PermissionTreeNode } from '../api/roles.facade';
 
 interface Props {
   modelValue?: string[];
   nodes?: PermissionTreeNode[];
+  disabled?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: () => [],
   nodes: () => [],
+  disabled: false,
 });
 
 const emit = defineEmits<{
@@ -25,230 +27,7 @@ const treeContainerRef = ref<InstanceType<typeof ScrollArea> | HTMLElement | nul
 const searchQuery = ref('');
 const realCheckedKeys = defineModel<string[]>('realCheckedKeys', { default: () => [] });
 
-// Fallback data tree permission jika nodes tidak dipassing
-const defaultTreeData: PermissionTreeNode[] = [
-  {
-    id: 'beranda',
-    label: 'Beranda',
-    code: 'home.view',
-  },
-  {
-    id: 'manajemen-pengguna-akses',
-    label: 'Manajemen Pengguna & Hak Akses',
-    children: [
-      {
-        id: 'manajemen-pengguna',
-        label: 'Manajemen Pengguna',
-        code: 'user.view',
-      },
-      {
-        id: 'manajemen-group-akses',
-        label: 'Manajemen Group & Hak Akses',
-        code: 'roles.view',
-      },
-      {
-        id: 'manajemen-fitur',
-        label: 'Manajemen Fitur',
-        code: 'features.view',
-      },
-      {
-        id: 'manajemen-permission',
-        label: 'Pengaturan Izin Akses',
-        code: 'permissions.edit',
-      },
-    ],
-  },
-  {
-    id: 'input-kinerja',
-    label: 'Input Kinerja',
-    children: [
-      {
-        id: 'kinerja-harian',
-        label: 'Kinerja Harian',
-        code: 'kinerja.harian',
-      },
-      {
-        id: 'kinerja-bulanan',
-        label: 'Kinerja Bulanan',
-        code: 'kinerja.bulanan',
-      },
-      {
-        id: 'kinerja-tahunan',
-        label: 'Kinerja Tahunan (SKP)',
-        code: 'kinerja.tahunan',
-      },
-      {
-        id: 'verifikasi-kinerja',
-        label: 'Verifikasi & Persetujuan Kinerja',
-        code: 'kinerja.verifikasi',
-      },
-    ],
-  },
-  {
-    id: 'cetak-upah',
-    label: 'Cetak Upah & Penggajian',
-    children: [
-      {
-        id: 'cetak-rekap',
-        label: 'Rekap Upah',
-        code: 'upah.rekap',
-      },
-      {
-        id: 'cetak-slip',
-        label: 'Slip Gaji',
-        code: 'upah.slip',
-      },
-      {
-        id: 'potongan-gaji',
-        label: 'Manajemen Potongan Gaji',
-        code: 'upah.potongan',
-      },
-      {
-        id: 'tunjangan-kinerja',
-        label: 'Kalkulasi Tunjangan Kinerja',
-        code: 'upah.tunjangan',
-      },
-    ],
-  },
-  {
-    id: 'master-data',
-    label: 'Master Data & Wilayah',
-    children: [
-      {
-        id: 'master-wilayah',
-        label: 'Master Data Wilayah & Kecamatan',
-        code: 'master.wilayah',
-      },
-      {
-        id: 'master-opd',
-        label: 'Master Perangkat Daerah (OPD)',
-        code: 'master.opd',
-      },
-      {
-        id: 'master-jabatan',
-        label: 'Master Struktur Jabatan',
-        code: 'master.jabatan',
-      },
-      {
-        id: 'master-golongan',
-        label: 'Master Pangkat & Golongan',
-        code: 'master.golongan',
-      },
-    ],
-  },
-  {
-    id: 'keuangan-anggaran',
-    label: 'Keuangan & Perencanaan Anggaran',
-    children: [
-      {
-        id: 'rencana-kerja',
-        label: 'Rencana Kerja & Anggaran (RKA)',
-        code: 'keuangan.rka',
-      },
-      {
-        id: 'dokumen-pelaksanaan',
-        label: 'Dokumen Pelaksanaan Anggaran (DPA)',
-        code: 'keuangan.dpa',
-      },
-      {
-        id: 'realisasi-anggaran',
-        label: 'Laporan Realisasi Anggaran',
-        code: 'keuangan.realisasi',
-      },
-    ],
-  },
-  {
-    id: 'monitoring-evaluasi',
-    label: 'Monitoring & Evaluasi Kinerja',
-    children: [
-      {
-        id: 'progres-kegiatan',
-        label: 'Monitoring Progres Kegiatan',
-        code: 'evaluasi.progres',
-      },
-      {
-        id: 'capaian-target',
-        label: 'Evaluasi Capaian Target',
-        code: 'evaluasi.capaian',
-      },
-      {
-        id: 'rekomendasi-kinerja',
-        label: 'Rekomendasi & Catatan Evaluasi',
-        code: 'evaluasi.rekomendasi',
-      },
-    ],
-  },
-  {
-    id: 'manajemen-dokumen',
-    label: 'Manajemen Dokumen & Persuratan',
-    children: [
-      {
-        id: 'surat-masuk',
-        label: 'Surat Masuk & Register',
-        code: 'dokumen.masuk',
-      },
-      {
-        id: 'surat-keluar',
-        label: 'Surat Keluar & Penomoran',
-        code: 'dokumen.keluar',
-      },
-      {
-        id: 'disposisi-surat',
-        label: 'Disposisi & Instruksi Pimpinan',
-        code: 'dokumen.disposisi',
-      },
-      {
-        id: 'arsip-digital',
-        label: 'Arsip Digital & Dokumen Pendukung',
-        code: 'dokumen.arsip',
-      },
-    ],
-  },
-  {
-    id: 'pengaturan-sistem',
-    label: 'Pengaturan Sistem & Keamanan',
-    children: [
-      {
-        id: 'konfigurasi-aplikasi',
-        label: 'Konfigurasi Umum Aplikasi',
-        code: 'system.setting',
-      },
-      {
-        id: 'audit-trail',
-        label: 'Audit Log & Riwayat Aktivitas',
-        code: 'system.audit_log',
-      },
-      {
-        id: 'backup-restore',
-        label: 'Backup & Restore Data',
-        code: 'system.backup',
-      },
-    ],
-  },
-  {
-    id: 'integrasi-api',
-    label: 'Integrasi & Layanan API',
-    children: [
-      {
-        id: 'api-token',
-        label: 'Manajemen API Key & Token',
-        code: 'api.token',
-      },
-      {
-        id: 'api-webhook',
-        label: 'Pengaturan Webhook Layanan',
-        code: 'api.webhook',
-      },
-      {
-        id: 'api-logs',
-        label: 'Log Transaksi API Interoperabilitas',
-        code: 'api.logs',
-      },
-    ],
-  },
-];
-
-const treeData = computed(() => (props.nodes.length > 0 ? props.nodes : defaultTreeData));
+const treeData = computed(() => props.nodes);
 
 const defaultProps = {
   children: 'children',
@@ -394,22 +173,28 @@ watch(searchQuery, (newQuery) => {
   });
 });
 
-// Sinkronkan nilai modelValue ke ElTree saat diinisialisasi atau berubah dari luar
+function syncCheckedKeys(): void {
+  if (!treeRef.value || !props.nodes || props.nodes.length === 0) return;
+
+  const resolvedLeafIds = resolveKeysToNodeIds(props.modelValue || [], props.nodes);
+  const currentCheckedLeaves = treeRef.value.getCheckedKeys(true) as string[];
+
+  const isSame =
+    currentCheckedLeaves.length === resolvedLeafIds.length &&
+    currentCheckedLeaves.every((val) => resolvedLeafIds.includes(val));
+
+  if (!isSame) {
+    treeRef.value.setCheckedKeys(resolvedLeafIds, true);
+  }
+  updateRealCheckedKeys();
+}
+
+// Sinkronkan nilai modelValue dan nodes ke ElTree saat diinisialisasi atau berubah dari luar
 watch(
-  () => props.modelValue,
-  (newVal) => {
-    if (!treeRef.value || !newVal) return;
-
-    const currentChecked = treeRef.value.getCheckedKeys(true) as string[];
-    const isSame =
-      currentChecked.length === newVal.length &&
-      currentChecked.every((val) => newVal.includes(val));
-
-    if (!isSame) {
-      const resolvedIds = resolveKeysToNodeIds(newVal, treeData.value);
-      treeRef.value.setCheckedKeys(resolvedIds, true);
-    }
-    updateRealCheckedKeys();
+  [() => props.modelValue, () => props.nodes],
+  async () => {
+    await nextTick();
+    syncCheckedKeys();
   },
   { immediate: true, deep: true },
 );
@@ -418,6 +203,7 @@ watch(
 <template>
   <div
     class="permission-tree-container flex flex-col overflow-hidden rounded-xl border border-muted/60 bg-muted/50"
+    :class="{ 'pointer-events-none opacity-60': disabled }"
   >
     <!-- Header Section dengan Input Search & Quick Actions (Non-scrolling Header) -->
     <div
@@ -432,12 +218,14 @@ watch(
           <input
             v-model="searchQuery"
             type="text"
+            :disabled="disabled"
             placeholder="Cari hak akses..."
             class="h-7 w-full rounded-md border border-input bg-background pl-8 pr-6 text-xs shadow-2xs transition-colors placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
           />
           <button
             v-if="searchQuery"
             type="button"
+            :disabled="disabled"
             class="absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-0.5 text-muted-foreground hover:text-foreground"
             title="Bersihkan pencarian"
             @click="searchQuery = ''"
@@ -448,6 +236,7 @@ watch(
 
         <button
           type="button"
+          :disabled="disabled"
           class="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="Pilih semua hak akses"
           @click="selectAll"
@@ -457,6 +246,7 @@ watch(
         </button>
         <button
           type="button"
+          :disabled="disabled"
           class="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-md bg-muted/60 px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           title="Bersihkan semua pilihan"
           @click="clearAll"
@@ -473,8 +263,26 @@ watch(
       </span>
     </div>
 
+    <!-- Empty State jika data dari backend kosong -->
+    <div
+      v-if="treeData.length === 0"
+      class="flex flex-col items-center justify-center gap-2 py-8 px-4 text-center"
+    >
+      <div
+        class="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground/70"
+      >
+        <ShieldAlert class="size-5" />
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <p class="text-xs font-medium text-foreground">Tidak Ada Hak Akses</p>
+        <p class="text-2xs text-muted-foreground">
+          Belum ada data fitur atau hak akses yang terdaftar dari backend.
+        </p>
+      </div>
+    </div>
+
     <!-- Scrollable Tree Content dengan ScrollArea shadcn-vue -->
-    <ScrollArea ref="treeContainerRef" class="h-95 p-3">
+    <ScrollArea v-else ref="treeContainerRef" class="max-h-72 min-h-28 p-3">
       <ElTree
         ref="treeRef"
         :data="treeData"
@@ -483,6 +291,7 @@ watch(
         check-on-click-node
         node-key="id"
         default-expand-all
+        empty-text="Tidak ada hak akses"
         :check-strictly="false"
         class="custom-el-tree cursor-pointer"
         @check="handleCheck"

@@ -133,6 +133,7 @@ function openEdit(feature: FeatureRow): void {
         :actions-width="60"
         :can-delete="() => false"
         @edit="openEdit"
+        @create="openCreate"
       >
         <template #toolbar>
           <div class="flex justify-end">

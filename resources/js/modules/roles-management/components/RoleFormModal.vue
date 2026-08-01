@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { ElForm, ElFormItem, type FormInstance, type FormRules } from 'element-plus';
-import { ShieldCheck, CircleHelp } from '@lucide/vue';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CircleAlert, CircleHelp, RotateCcw, ShieldCheck, Trash2 } from '@lucide/vue';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import DatePicker from '@/components/custom-ui/date-picker/DatePicker.vue';
 import { Modal } from '@/components/custom-ui/modal';
 import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
+import { normalizeAppError } from '@/lib/axios';
 import PermissionTree from './PermissionTree.vue';
-import { RolesFacade, type RoleRow, type StoreRoleRequest } from '../api/roles.facade';
+import {
+  RolesFacade,
+  type PermissionTreeNode,
+  type RoleRow,
+  type StoreRolePayload,
+} from '../api/roles.facade';
 
 interface Props {
   role?: RoleRow | null;
@@ -29,98 +36,128 @@ const emit = defineEmits<{
 const formRef = ref<FormInstance>();
 const confirmDialog = useConfirmDialog();
 
-const isEdit = ref(false);
+const isEdit = computed(() => Boolean(props.role));
+const isDeleted = computed(() => Boolean(props.role?.deleted_at));
+const isLocked = ref(false);
 const isPending = ref(false);
 const submitError = ref('');
 const serverErrors = reactive<Record<string, string>>({});
 
 // Toggle state untuk limitasi group
 const hasTimeLimit = ref(false);
+const permissionNodes = ref<PermissionTreeNode[]>([]);
+const isTreeLoading = ref(false);
 
-const form = reactive<StoreRoleRequest>({
+const form = reactive<StoreRolePayload>({
   code: '',
   name: '',
-  region: false,
-  unit: false,
-  permissions: [],
-  active_date_range: { start: null, end: null },
+  need_region: false,
+  need_unit: false,
+  features: [],
+  active_periode: { start: null, end: null },
 });
 
 // Rules validasi Element Plus Form
-const rules: FormRules<StoreRoleRequest> = {
+const rules: FormRules<StoreRolePayload> = {
   code: [
     { required: true, message: 'Kode Group wajib diisi.', trigger: 'blur' },
-    { min: 3, max: 50, message: 'Kode Group antara 3-50 karakter.', trigger: 'blur' },
+    { min: 2, max: 100, message: 'Kode Group antara 2-100 karakter.', trigger: 'blur' },
+    {
+      pattern: /^[A-Za-z0-9_-]+$/,
+      message: 'Kode Group hanya boleh berupa huruf, angka, strip, atau garis bawah.',
+      trigger: 'blur',
+    },
   ],
   name: [
     { required: true, message: 'Nama Group wajib diisi.', trigger: 'blur' },
-    { min: 3, max: 100, message: 'Nama Group antara 3-100 karakter.', trigger: 'blur' },
+    { min: 2, max: 255, message: 'Nama Group antara 2-255 karakter.', trigger: 'blur' },
   ],
 };
 
 function resetForm(): void {
   const role = props.role;
-  isEdit.value = Boolean(role);
-  hasTimeLimit.value = Boolean(role?.active_date_range?.start || role?.active_date_range?.end);
+  isLocked.value = Boolean(role?.locked);
+  hasTimeLimit.value = Boolean(role?.active_periode?.start || role?.active_periode?.end);
   Object.assign(form, {
     code: role?.code ?? '',
     name: role?.name ?? '',
-    region: Boolean(role?.region),
-    unit: Boolean(role?.unit),
-    permissions: role?.permissions ? [...role.permissions] : [],
-    active_date_range: role?.active_date_range
-      ? { ...role.active_date_range }
-      : { start: null, end: null },
+    need_region: Boolean(role?.need_region),
+    need_unit: Boolean(role?.need_unit),
+    features: role?.feature_aliases
+      ? [...role.feature_aliases]
+      : (role?.features?.map((f) => (typeof f === 'string' ? f : f.alias)) ?? []),
+    active_periode: role?.active_periode ? { ...role.active_periode } : { start: null, end: null },
   });
   submitError.value = '';
   Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
   formRef.value?.clearValidate();
 }
 
+async function loadPermissionTree(): Promise<void> {
+  isTreeLoading.value = true;
+  try {
+    const nodes = await RolesFacade.getPermissionTree();
+    permissionNodes.value = nodes;
+  } finally {
+    isTreeLoading.value = false;
+  }
+}
+
 watch(
-  () => form.region,
+  () => form.need_region,
   (enabled) => {
     if (enabled) {
-      form.unit = false;
+      form.need_unit = false;
     }
   },
 );
 
 watch(
-  () => form.unit,
+  () => form.need_unit,
   (enabled) => {
     if (enabled) {
-      form.region = false;
+      form.need_region = false;
     }
   },
 );
 
 watch(hasTimeLimit, (enabled) => {
-  if (!enabled && form.active_date_range) {
-    form.active_date_range.start = null;
-    form.active_date_range.end = null;
+  if (!enabled && form.active_periode) {
+    form.active_periode.start = null;
+    form.active_periode.end = null;
   }
 });
 
-function validateField(field: keyof StoreRoleRequest): void {
+function validateField(field: keyof StoreRolePayload): void {
   delete serverErrors[field];
   void formRef.value?.validateField(field).catch(() => undefined);
 }
 
+watch(
+  () => form.code,
+  (val) => {
+    if (val && /\s/.test(val)) {
+      form.code = val.replace(/\s+/g, '_');
+    }
+  },
+);
+
 async function submit(): Promise<void> {
+  if (isDeleted.value) return;
+
   submitError.value = '';
 
   const isValid = await formRef.value?.validate().catch(() => false);
   if (!isValid) return;
 
   const role = props.role;
-  const payload: StoreRoleRequest = {
+  const payload: StoreRolePayload = {
     code: form.code.trim(),
     name: form.name.trim(),
-    region: form.region,
-    unit: form.unit,
-    permissions: [...form.permissions],
-    active_date_range: hasTimeLimit.value ? form.active_date_range : undefined,
+    need_region: form.need_region,
+    need_unit: form.need_unit,
+    features: [...form.features],
+    active_periode: hasTimeLimit.value ? form.active_periode : null,
   };
 
   try {
@@ -133,7 +170,7 @@ async function submit(): Promise<void> {
       loadingLabel: 'Menyimpan...',
       onConfirm: async () => {
         if (role) {
-          await RolesFacade.update(role.code, payload);
+          await RolesFacade.update(role.id, payload);
         } else {
           await RolesFacade.create(payload);
         }
@@ -149,13 +186,65 @@ async function submit(): Promise<void> {
         error instanceof Error ? error.message : 'Terjadi kesalahan sistem.',
     });
   } catch {
-    // Error sudah ditangani oleh ConfirmDialog
+    // Error ditangani oleh ConfirmDialog
+  }
+}
+
+async function deleteRole(): Promise<void> {
+  const role = props.role;
+  if (!role) return;
+
+  try {
+    await confirmDialog({
+      title: 'Hapus group ini?',
+      description: `Group "${role.name}" (${role.code}) akan dihapus dari daftar group aktif.`,
+      confirmLabel: 'Hapus Group',
+      confirmVariant: 'destructive',
+      loadingLabel: 'Menghapus...',
+      onConfirm: async () => {
+        await RolesFacade.delete(role.id);
+        open.value = false;
+        emit('submitted');
+      },
+      successTitle: 'Group berhasil dihapus',
+      successDescription: `Group "${role.name}" sudah dihapus dari daftar group aktif.`,
+      errorTitle: 'Group gagal dihapus',
+      errorDescription: (error) => normalizeAppError(error).message,
+    });
+  } catch {
+    // Error sudah ditampilkan oleh ConfirmDialog.
+  }
+}
+
+async function restoreRole(): Promise<void> {
+  const role = props.role;
+  if (!role?.deleted_at) return;
+
+  try {
+    await confirmDialog({
+      title: 'Pulihkan group ini?',
+      description: `Group "${role.name}" (${role.code}) akan dikembalikan ke daftar group aktif.`,
+      confirmLabel: 'Pulihkan Group',
+      loadingLabel: 'Memulihkan...',
+      onConfirm: async () => {
+        await RolesFacade.restore(role.id);
+        open.value = false;
+        emit('submitted');
+      },
+      successTitle: 'Group berhasil dipulihkan',
+      successDescription: `Group "${role.name}" sudah kembali aktif.`,
+      errorTitle: 'Group gagal dipulihkan',
+      errorDescription: (error) => normalizeAppError(error).message,
+    });
+  } catch {
+    // Error sudah ditampilkan oleh ConfirmDialog.
   }
 }
 
 watch(open, (isOpen) => {
   if (!isOpen) return;
   resetForm();
+  void loadPermissionTree();
 });
 </script>
 
@@ -166,6 +255,7 @@ watch(open, (isOpen) => {
     as-form
     :close-on-interact-outside="false"
     :loading="isPending"
+    :hide-confirm="isDeleted"
     :confirm-text="isEdit ? 'Simpan Perubahan' : 'Simpan Group'"
     body-class="custom-form space-y-0"
     @confirm="submit"
@@ -179,13 +269,17 @@ watch(open, (isOpen) => {
         </div>
         <div class="flex min-w-0 flex-col gap-1">
           <DialogTitle class="font-semibold leading-snug">
-            {{ isEdit ? 'Edit Group & Hak Akses' : 'Tambah Group Baru' }}
+            {{
+              isDeleted ? 'Pulihkan Group' : isEdit ? 'Edit Group & Hak Akses' : 'Tambah Group Baru'
+            }}
           </DialogTitle>
           <DialogDescription class="text-2sm">
             {{
-              isEdit
-                ? 'Perbarui identitas group dan konfigurasi hak akses aplikasi.'
-                : 'Atur identitas group pengguna dan tentukan hak akses (permissions) fitur.'
+              isDeleted
+                ? 'Tinjau data group sebelum memulihkannya.'
+                : isEdit
+                  ? 'Perbarui identitas group dan konfigurasi hak akses aplikasi.'
+                  : 'Atur identitas group pengguna dan tentukan hak akses (permissions) fitur.'
             }}
           </DialogDescription>
         </div>
@@ -225,8 +319,8 @@ watch(open, (isOpen) => {
             >
               <Input
                 v-model="form.code"
-                :disabled="isEdit"
-                maxlength="50"
+                :disabled="isDeleted || (isEdit && Boolean(role?.locked))"
+                maxlength="100"
                 placeholder="adm_sys"
                 @input="validateField('code')"
               />
@@ -240,7 +334,8 @@ watch(open, (isOpen) => {
             >
               <Input
                 v-model="form.name"
-                maxlength="100"
+                :disabled="isDeleted"
+                maxlength="255"
                 placeholder="Administrator Utama"
                 @input="validateField('name')"
               />
@@ -257,7 +352,7 @@ watch(open, (isOpen) => {
             </p>
           </div>
 
-          <PermissionTree v-model="form.permissions" />
+          <PermissionTree v-model="form.features" :nodes="permissionNodes" :disabled="isDeleted" />
         </div>
 
         <!-- 3. Limitasi Group & Hak Akses (Paling Bawah) -->
@@ -272,7 +367,7 @@ watch(open, (isOpen) => {
           <!-- limit berdasarkan wilayah -->
           <div
             class="rounded-lg border border-muted/60 bg-muted/60 p-3 space-y-3"
-            :class="{ 'border-primary/10': form.region }"
+            :class="{ 'border-primary/10': form.need_region }"
           >
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-0.5">
@@ -282,14 +377,14 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="form.region" />
+              <Switch v-model="form.need_region" :disabled="isDeleted" />
             </div>
           </div>
 
           <!-- limit berdasarkan perangkat daerah -->
           <div
             class="rounded-lg border border-muted/60 bg-muted/60 p-3 space-y-3"
-            :class="{ 'border-primary/10': form.unit }"
+            :class="{ 'border-primary/10': form.need_unit }"
           >
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-0.5">
@@ -301,7 +396,7 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="form.unit" />
+              <Switch v-model="form.need_unit" :disabled="isDeleted" />
             </div>
           </div>
 
@@ -318,7 +413,7 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="hasTimeLimit" />
+              <Switch v-model="hasTimeLimit" :disabled="isDeleted" />
             </div>
 
             <Transition
@@ -329,12 +424,13 @@ watch(open, (isOpen) => {
               leave-from-class="opacity-100"
               leave-to-class="opacity-0"
             >
-              <ElFormItem v-if="hasTimeLimit" prop="active_date_range" class="w-full">
+              <ElFormItem v-if="hasTimeLimit" prop="active_periode" class="w-full">
                 <DatePicker
-                  v-model="form.active_date_range"
+                  v-model="form.active_periode"
                   mode="range"
                   placeholder="Pilih rentang tanggal aktif"
                   clearable
+                  :disabled="isDeleted"
                   class="w-full"
                 />
               </ElFormItem>
@@ -343,5 +439,50 @@ watch(open, (isOpen) => {
         </div>
       </div>
     </ElForm>
+
+    <template v-if="isEdit && !isDeleted && !isLocked">
+      <section class="flex flex-col gap-3 mt-3">
+        <Alert variant="destructive" class="bg-destructive/5 border-dashed border-destructive/20">
+          <CircleAlert />
+          <div class="ml-2">
+            <AlertTitle>Danger zone</AlertTitle>
+            <AlertDescription class="text-2sm leading-snug">
+              Tindakan ini akan menghapus group dari daftar aktif. Group yang dihapus dapat
+              dipulihkan kembali selama kodenya belum digunakan oleh group lain.
+            </AlertDescription>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              class="mt-3"
+              :disabled="isPending"
+              @click="deleteRole"
+            >
+              <Trash2 data-icon="inline-start" />
+              Hapus Group
+            </Button>
+          </div>
+        </Alert>
+      </section>
+    </template>
+
+    <template v-else-if="isDeleted">
+      <section class="mt-3 flex flex-col gap-3">
+        <Alert class="bg-blue-500/5 border-dashed border-blue-200">
+          <RotateCcw />
+          <div class="ml-2">
+            <AlertTitle>Pulihkan group</AlertTitle>
+            <AlertDescription class="text-2sm leading-snug">
+              Group akan dikembalikan ke daftar group aktif. Pemulihan hanya dapat dilakukan jika
+              kode group belum digunakan oleh group aktif lain.
+            </AlertDescription>
+            <Button type="button" size="sm" class="mt-3" :disabled="isPending" @click="restoreRole">
+              <RotateCcw data-icon="inline-start" />
+              Pulihkan Group
+            </Button>
+          </div>
+        </Alert>
+      </section>
+    </template>
   </Modal>
 </template>

@@ -8,6 +8,7 @@ import {
   CornerDownLeft,
   ListFilter,
   Pencil,
+  Plus,
   RefreshCw,
   Search,
   Trash2,
@@ -115,6 +116,10 @@ const props = withDefaults(
         };
     loadChildren?: (row: T, signal: Parameters<DataTableFetcher<T>>[0]['signal']) => Promise<T[]>;
     expandedKeys?: Array<string | number>;
+    emptyTitle?: string;
+    emptyDescription?: string;
+    emptyButtonText?: string;
+    showCreateButton?: boolean;
   }>(),
   {
     enabled: true,
@@ -128,6 +133,7 @@ const props = withDefaults(
     showSearch: true,
     showFilter: true,
     showRefresh: true,
+    showCreateButton: true,
     striped: true,
     actionsWidth: 120,
   },
@@ -143,6 +149,8 @@ const emit = defineEmits<{
   'params-change': [params: ReturnType<typeof buildParams>];
   edit: [row: T];
   delete: [row: T];
+  create: [];
+  add: [];
   'row-click': [row: T, column: unknown, event: unknown];
   'row-dblclick': [row: T, column: unknown, event: unknown];
   'row-contextmenu': [row: T, column: unknown, event: unknown];
@@ -756,7 +764,15 @@ onMounted(async () => {
   mounted.value = true;
 });
 
-defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, collapseAll });
+defineExpose({
+  refresh,
+  reload: refresh,
+  resetFilters,
+  clearSelection,
+  scrollToTop,
+  expandAll,
+  collapseAll,
+});
 </script>
 
 <template>
@@ -844,7 +860,7 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
       </div>
     </header>
 
-    <div class="overflow-hidden rounded-lg border">
+    <div class="overflow-hidden rounded-lg border transform-[translateZ(0)]">
       <ElTable
         ref="table"
         :data="rows"
@@ -973,17 +989,58 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
 
         <template #empty>
           <div
-            class="flex min-h-36 flex-col items-center justify-center gap-2 text-muted-foreground"
+            class="flex min-h-64 flex-col items-center justify-center gap-3 py-10 px-4 text-center"
             aria-live="polite"
           >
             <template v-if="initialLoading">
               <Spinner />
-              <span>Memuat data…</span>
+              <span class="text-xs text-muted-foreground">Memuat data…</span>
             </template>
             <template v-else-if="error">
               <DataTableErrorAlert :error="error" @retry="refresh" />
             </template>
-            <span v-else>{{ hasActiveState ? 'Data tidak ditemukan.' : 'Belum ada data.' }}</span>
+            <slot v-else name="empty">
+              <div class="flex max-w-sm flex-col items-center justify-center gap-3 py-4">
+                <div class="flex flex-col gap-1">
+                  <h3 class="text-sm font-semibold text-foreground">
+                    {{
+                      emptyTitle ||
+                      (hasActiveState
+                        ? 'Data Tidak Ditemukan'
+                        : title
+                          ? `Belum Ada ${title.replace(/^Daftar\s+/i, '')}`
+                          : 'Belum Ada Data')
+                    }}
+                  </h3>
+                  <p class="text-xs text-muted-foreground leading-relaxed">
+                    {{
+                      emptyDescription ||
+                      (hasActiveState
+                        ? 'Coba ubah kata kunci atau filter pencarian Anda.'
+                        : 'Belum ada data yang tersimpan. Klik tombol di bawah untuk menambah data baru.')
+                    }}
+                  </p>
+                </div>
+                <Button
+                  v-if="showCreateButton"
+                  variant="default"
+                  size="sm"
+                  class="mt-1 font-medium cursor-pointer shadow-2xs"
+                  @click="
+                    emit('create');
+                    emit('add');
+                  "
+                >
+                  <Plus class="mr-1.5 size-4" />
+                  <span>
+                    {{
+                      emptyButtonText ||
+                      (title ? `Tambah ${title.replace(/^Daftar\s+/i, '')}` : 'Tambah Data')
+                    }}
+                  </span>
+                </Button>
+              </div>
+            </slot>
           </div>
         </template>
       </ElTable>
@@ -1200,16 +1257,99 @@ defineExpose({ refresh, resetFilters, clearSelection, scrollToTop, expandAll, co
   opacity: 0.55;
 }
 
-:deep(.el-table:not(.el-table--border) .el-table__cell:not(:last-child)) {
-  border-right: 1px solid var(--border);
+/* Complete reset for all Element Plus table wrapper borders and pseudo-elements */
+:deep(.el-table),
+:deep(.el-table--border),
+:deep(.el-table--group),
+:deep(.el-table__inner-wrapper),
+:deep(.el-table__header-wrapper),
+:deep(.el-table__body-wrapper),
+:deep(.el-table__footer-wrapper),
+:deep(.el-table__fixed),
+:deep(.el-table__fixed-left),
+:deep(.el-table__fixed-right),
+:deep(.el-table__fixed-right-patch) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-:deep(.el-table__inner-wrapper::before) {
-  display: none;
+:deep(.el-table::before),
+:deep(.el-table::after),
+:deep(.el-table--border::before),
+:deep(.el-table--border::after),
+:deep(.el-table--group::before),
+:deep(.el-table--group::after),
+:deep(.el-table__inner-wrapper::before),
+:deep(.el-table__inner-wrapper::after),
+:deep(.el-table__header-wrapper::before),
+:deep(.el-table__header-wrapper::after),
+:deep(.el-table__body-wrapper::before),
+:deep(.el-table__body-wrapper::after),
+:deep(.el-table__fixed::before),
+:deep(.el-table__fixed::after),
+:deep(.el-table__fixed-left::before),
+:deep(.el-table__fixed-left::after),
+:deep(.el-table__fixed-right::before),
+:deep(.el-table__fixed-right::after) {
+  display: none !important;
+  content: none !important;
+  border: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
+/* Inner cell column dividers */
+:deep(.el-table .el-table__cell) {
+  border-right: 1px solid var(--border) !important;
+  border-left: 0 !important;
+}
+
+/* Remove left border and inset shadows on first-column cells (including sticky fixed columns) */
+:deep(.el-table .el-table__cell:first-child),
+:deep(.el-table .el-table-fixed-column--left),
+:deep(.el-table .el-table-fixed-column--left.is-first-column),
+:deep(.el-table__cell.el-table-fixed-column--left),
+:deep(.el-table__cell.el-table-fixed-column--left.is-first-column) {
+  border-left: 0 !important;
+  box-shadow: none !important;
+}
+
+:deep(.el-table .el-table-fixed-column--left.is-first-column::before),
+:deep(.el-table .el-table-fixed-column--left.is-first-column::after),
+:deep(.el-table__cell.el-table-fixed-column--left.is-first-column::before),
+:deep(.el-table__cell.el-table-fixed-column--left.is-first-column::after) {
+  display: none !important;
+}
+
+/* Remove right border on the rightmost column */
+:deep(.el-table tbody tr td.el-table__cell:last-child),
+:deep(.el-table thead tr:first-child th.el-table__cell:last-child) {
+  border-right: 0 !important;
+}
+
+/* Rounded corner cell clipping for sticky fixed columns */
+:deep(.el-table thead tr:first-child th:first-child),
+:deep(.el-table thead tr:first-child th.el-table-fixed-column--left.is-first-column) {
+  border-top-left-radius: calc(var(--radius) - 2px) !important;
+}
+
+:deep(.el-table tbody tr:last-child td:first-child),
+:deep(.el-table tbody tr:last-child td.el-table-fixed-column--left.is-first-column) {
+  border-bottom-left-radius: calc(var(--radius) - 2px) !important;
+}
+
+:deep(.el-table thead tr:first-child th:last-child) {
+  border-top-right-radius: calc(var(--radius) - 2px) !important;
+}
+
+:deep(.el-table tbody tr:last-child td:last-child) {
+  border-bottom-right-radius: calc(var(--radius) - 2px) !important;
+}
+
+/* Remove bottom border on the last row */
 :deep(.el-table__body tr:last-child td.el-table__cell) {
-  border-bottom: 0;
+  border-bottom: 0 !important;
 }
 
 :deep(.el-table__cell .cell) {
