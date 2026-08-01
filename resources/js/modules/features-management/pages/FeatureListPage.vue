@@ -210,7 +210,7 @@ function openEdit(feature: FeatureRow): void {
             <div class="flex gap-2" :class="{ 'items-center': !row.description }">
               <div
                 v-if="row.type === 'menu' && !!row.icon"
-                class="flex size-9 items-center justify-center rounded-lg bg-muted shrink-0"
+                class="flex size-9 items-center justify-center rounded-lg bg-primary/10 shrink-0"
               >
                 <LucideIcon
                   :name="row.icon"

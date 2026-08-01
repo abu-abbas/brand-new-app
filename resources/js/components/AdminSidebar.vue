@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
+import { useQuery } from '@tanstack/vue-query';
 import {
   Sidebar,
   SidebarContent,
@@ -28,14 +31,10 @@ import {
 import { useTheme } from '@/composables/useTheme';
 import { useDarkMode } from '@/composables/useDarkMode';
 import { useAuthStore } from '@/stores/auth';
-import { computed } from 'vue';
+import { LucideIcon } from '@/components/custom-ui/lucide-icon';
+import { FeaturesFacade } from '@/modules/features-management/api/features.facade';
 
 import {
-  Command,
-  SquareTerminal,
-  BookOpen,
-  Settings,
-  Map,
   ChevronRight,
   ChevronsUpDown,
   Sparkles,
@@ -47,11 +46,13 @@ import {
   Sun,
   Moon,
 } from '@lucide/vue';
-import type { Component } from 'vue';
 
 const { activeTheme, otherThemes, setTheme, activeThemeLabel, activeThemeColor } = useTheme();
 const { isDark, toggleDarkMode } = useDarkMode();
 const auth = useAuthStore();
+const route = useRoute();
+const router = useRouter();
+
 const initials = computed(
   () =>
     auth.user?.name
@@ -67,68 +68,96 @@ const handleLogout = async () => {
   window.location.assign('/login');
 };
 
-interface SubMenuItem {
+const { data: rawFeatures } = useQuery({
+  queryKey: ['features', 'sidebar-menu'],
+  queryFn: async ({ signal }) => {
+    const response = await FeaturesFacade.list(
+      { type: 'menu', per_page: 100, include_deleted: 'false' },
+      signal,
+    );
+    return response.data;
+  },
+  staleTime: Infinity,
+  gcTime: 1000 * 60 * 60,
+});
+
+interface DynamicSubMenuItem {
+  alias: string;
   title: string;
   url: string;
-  isSubActive?: boolean;
+  isSubActive: boolean;
 }
 
-interface PlatformMenuItem {
+interface DynamicMenuItem {
+  alias: string;
   title: string;
-  icon: Component;
-  isActive?: boolean;
-  items?: SubMenuItem[];
+  icon?: string | null;
+  url?: string;
+  isActive: boolean;
+  items: DynamicSubMenuItem[];
 }
 
-// Mock data untuk menu navigasi utama (Platform - collapsible)
-const platformMenu: PlatformMenuItem[] = [
-  {
-    title: 'Playground',
-    icon: SquareTerminal,
-    isActive: true,
-    items: [
-      { title: 'History', url: '#', isSubActive: true },
-      { title: 'Starred', url: '#' },
-      { title: 'Settings', url: '#' },
-    ],
-  },
-  {
-    title: 'Models',
-    icon: Command,
-    items: [
-      { title: 'Genesis', url: '#' },
-      { title: 'Explorer', url: '#' },
-      { title: 'Quantum', url: '#' },
-    ],
-  },
-  {
-    title: 'Documentation',
-    icon: BookOpen,
-    items: [
-      { title: 'Introduction', url: '#' },
-      { title: 'Get Started', url: '#' },
-      { title: 'Tutorials', url: '#' },
-      { title: 'Changelog', url: '#' },
-    ],
-  },
-  {
-    title: 'Settings',
-    icon: Settings,
-    items: [
-      { title: 'General', url: '#' },
-      { title: 'Team', url: '#' },
-      { title: 'Billing', url: '#' },
-      { title: 'Limits', url: '#' },
-    ],
-  },
-];
+function resolveUrl(routeName?: string | null): string {
+  if (!routeName) return '#';
+  if (router.hasRoute(routeName)) {
+    return router.resolve({ name: routeName }).href;
+  }
+  return '#';
+}
 
-// Mock data untuk menu proyek (Projects - bagian bawah sidebar)
-const projectsMenu = [
-  { title: 'Design Engineering', icon: SquareTerminal, url: '#' },
-  { title: 'Sales & Marketing', icon: SquareTerminal, url: '#' },
-  { title: 'Travel', icon: Map, url: '#' },
-];
+const dynamicMenu = computed<DynamicMenuItem[]>(() => {
+  const list = rawFeatures.value ?? [];
+  const sidebarFeatures = list.filter((item) => item.show_on_sidebar);
+
+  const parentMap = new Map<string, DynamicMenuItem>();
+  const childMap = new Map<string, DynamicSubMenuItem[]>();
+
+  sidebarFeatures.forEach((item) => {
+    const isRoot = !item.parent;
+    const url = resolveUrl(item.route);
+
+    if (isRoot) {
+      parentMap.set(item.alias, {
+        alias: item.alias,
+        title: item.name,
+        icon: item.icon,
+        url,
+        isActive: false,
+        items: [],
+      });
+    } else {
+      if (!childMap.has(item.parent!)) {
+        childMap.set(item.parent!, []);
+      }
+      const isSubActive =
+        Boolean(item.route && route.name === item.route) || (url !== '#' && route.path === url);
+
+      childMap.get(item.parent!)!.push({
+        alias: item.alias,
+        title: item.name,
+        url,
+        isSubActive,
+      });
+    }
+  });
+
+  const result: DynamicMenuItem[] = [];
+  parentMap.forEach((parent) => {
+    const children = childMap.get(parent.alias) || [];
+    parent.items = children;
+
+    const isAnySubActive = children.some((c) => c.isSubActive);
+    const isSelfActive =
+      Boolean(parent.url && parent.url !== '#' && route.path === parent.url) ||
+      (parent.alias === 'beranda' && route.path === '/');
+
+    parent.isActive = isAnySubActive || isSelfActive;
+
+    result.push(parent);
+  });
+
+  return result;
+});
 </script>
 
 <template>
@@ -161,17 +190,17 @@ const projectsMenu = [
       </SidebarMenu>
     </SidebarHeader>
 
-    <!-- Section 2: Menu Items (Platform & Projects) -->
+    <!-- Section 2: Menu Items (Platform / Dynamic Features) -->
     <SidebarContent class="p-2 gap-6">
-      <!-- Group 1: Platform -->
       <div>
-        <span
+        <!-- <span
           class="group-data-[collapsible=icon]:hidden text-[10px] font-bold text-muted-foreground tracking-wider uppercase block px-2 mb-2"
         >
           Platform
-        </span>
+        </span> -->
         <SidebarMenu>
-          <div v-for="item in platformMenu" :key="item.title">
+          <template v-for="item in dynamicMenu" :key="item.alias">
+            <!-- Collapsible Parent Menu if it has children -->
             <Collapsible
               v-if="item.items && item.items.length > 0"
               v-slot="{ open }"
@@ -189,8 +218,12 @@ const projectsMenu = [
                         : ''
                     "
                   >
-                    <component :is="item.icon" class="size-4 shrink-0" />
-                    <span class="group-data-[collapsible=icon]:hidden font-medium leading-none">
+                    <LucideIcon
+                      :name="item.icon"
+                      fallback="SquareTerminal"
+                      class="size-4 shrink-0"
+                    />
+                    <span class="group-data-[collapsible=icon]:hidden font-medium leading-normal">
                       {{ item.title }}
                     </span>
                     <ChevronRight
@@ -208,57 +241,41 @@ const projectsMenu = [
                   <SidebarMenuSub
                     class="mt-1 border-l border-border/80 pl-3 ml-3.5 flex flex-col gap-1"
                   >
-                    <SidebarMenuSubItem v-for="sub in item.items" :key="sub.title">
+                    <SidebarMenuSubItem v-for="sub in item.items" :key="sub.alias">
                       <SidebarMenuSubButton size="md" class="text-2sm!" as-child>
-                        <a
-                          :href="sub.url"
+                        <RouterLink
+                          :to="sub.url"
                           :class="sub.isSubActive ? 'text-primary! font-semibold' : ''"
                         >
                           {{ sub.title }}
-                        </a>
+                        </RouterLink>
                       </SidebarMenuSubButton>
                     </SidebarMenuSubItem>
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-          </div>
-        </SidebarMenu>
-      </div>
 
-      <!-- Group 2: Projects -->
-      <div>
-        <span
-          class="group-data-[collapsible=icon]:hidden text-[10px] font-bold text-muted-foreground tracking-wider uppercase block px-2 mb-2"
-        >
-          Projects
-        </span>
-        <SidebarMenu>
-          <SidebarMenuItem v-for="proj in projectsMenu" :key="proj.title">
-            <SidebarMenuButton :tooltip="proj.title" as-child>
-              <a :href="proj.url" class="flex items-center justify-between w-full">
-                <div class="flex items-center gap-2 overflow-hidden">
-                  <component :is="proj.icon" class="size-4 shrink-0 text-muted-foreground/70" />
-                  <span class="group-data-[collapsible=icon]:hidden text-foreground truncate">
-                    {{ proj.title }}
+            <!-- Single Direct Link Menu if no children -->
+            <SidebarMenuItem v-else>
+              <SidebarMenuButton
+                :tooltip="item.title"
+                as-child
+                :class="
+                  item.isActive
+                    ? 'bg-primary/75 dark:bg-primary/15 text-primary-foreground dark:text-primary! hover:bg-primary/85! dark:hover:bg-primary/25! hover:text-primary-foreground! dark:hover:text-primary!'
+                    : ''
+                "
+              >
+                <RouterLink :to="item.url || '#'" class="flex items-center gap-2 w-full">
+                  <LucideIcon :name="item.icon" fallback="SquareTerminal" class="size-4 shrink-0" />
+                  <span class="group-data-[collapsible=icon]:hidden font-medium leading-normal">
+                    {{ item.title }}
                   </span>
-                </div>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <!-- More Menu Button -->
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="More" as-child>
-              <a href="#" class="flex items-center gap-2">
-                <span class="size-4 text-muted-foreground/70 leading-none font-bold select-none">
-                  •••
-                </span>
-                <span class="group-data-[collapsible=icon]:hidden text-muted-foreground">
-                  More
-                </span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+                </RouterLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </template>
         </SidebarMenu>
       </div>
     </SidebarContent>
@@ -333,7 +350,7 @@ const projectsMenu = [
                   <span>Notifications</span>
                 </DropdownMenuItem>
 
-                <!-- Theme Settings & Dark Mode - Clean Native Dropdown Items -->
+                <!-- Theme Settings & Dark Mode -->
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
@@ -341,7 +358,6 @@ const projectsMenu = [
                     <span>Accent Color</span>
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent class="w-48 max-h-72 overflow-y-auto">
-                    <!-- Item aktif di paling atas -->
                     <DropdownMenuItem
                       class="flex items-center justify-between bg-accent/40 font-semibold"
                       @click="setTheme(activeTheme)"
