@@ -24,6 +24,7 @@ export interface RoleRow {
   id: string;
   code: string;
   name: string;
+  level?: number;
   need_region: boolean;
   need_unit: boolean;
   active_periode?: DateRangeValue | null;
@@ -37,6 +38,7 @@ export interface RoleRow {
 export interface StoreRolePayload {
   code: string;
   name: string;
+  level?: number;
   need_region?: boolean;
   need_unit?: boolean;
   active_periode?: DateRangeValue | null;
@@ -111,6 +113,7 @@ export class RolesFacade {
     const response = await rolesStore({
       code: payload.code,
       name: payload.name,
+      level: payload.level,
       need_region: payload.need_region ?? false,
       need_unit: payload.need_unit ?? false,
       active_periode: RolesFacade.serializeActivePeriode(payload.active_periode),
@@ -124,6 +127,7 @@ export class RolesFacade {
     const response = await rolesUpdate(id as unknown as number, {
       code: payload.code,
       name: payload.name,
+      level: payload.level,
       need_region: payload.need_region ?? false,
       need_unit: payload.need_unit ?? false,
       active_periode: RolesFacade.serializeActivePeriode(payload.active_periode),
@@ -190,6 +194,7 @@ export class RolesFacade {
       id: item.id,
       code: item.code,
       name: item.name,
+      level: item.level,
       need_region: item.need_region,
       need_unit: item.need_unit,
       active_periode: RolesFacade.parseActivePeriode(item.active_periode),

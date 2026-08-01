@@ -11,6 +11,7 @@ import { DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
 import { normalizeAppError } from '@/lib/axios';
+import { useAuthStore } from '@/stores/auth';
 import PermissionTree from './PermissionTree.vue';
 import {
   RolesFacade,
@@ -35,6 +36,9 @@ const emit = defineEmits<{
 
 const formRef = ref<FormInstance>();
 const confirmDialog = useConfirmDialog();
+const authStore = useAuthStore();
+
+const isRoot = computed(() => Boolean(authStore.user?.is_root));
 
 const isEdit = computed(() => Boolean(props.role));
 const isDeleted = computed(() => Boolean(props.role?.deleted_at));
@@ -51,6 +55,7 @@ const isTreeLoading = ref(false);
 const form = reactive<StoreRolePayload>({
   code: '',
   name: '',
+  level: 0,
   need_region: false,
   need_unit: false,
   features: [],
@@ -81,6 +86,7 @@ function resetForm(): void {
   Object.assign(form, {
     code: role?.code ?? '',
     name: role?.name ?? '',
+    level: role?.level ?? 0,
     need_region: Boolean(role?.need_region),
     need_unit: Boolean(role?.need_unit),
     features: role?.feature_aliases
@@ -154,6 +160,7 @@ async function submit(): Promise<void> {
   const payload: StoreRolePayload = {
     code: form.code.trim(),
     name: form.name.trim(),
+    level: isRoot.value ? Number(form.level ?? 0) : undefined,
     need_region: form.need_region,
     need_unit: form.need_unit,
     features: [...form.features],
@@ -309,13 +316,13 @@ watch(open, (isOpen) => {
             </p>
           </div>
 
-          <!-- Baris Kode Group (4/12) & Nama Group (8/12) -->
+          <!-- Baris Kode Group, Nama Group, & Level Group (Jika Root) -->
           <div class="grid gap-3 sm:grid-cols-12">
             <ElFormItem
               label="Kode Group"
               prop="code"
               :error="serverErrors.code"
-              class="sm:col-span-4"
+              :class="isRoot ? 'sm:col-span-4' : 'sm:col-span-4'"
             >
               <Input
                 v-model="form.code"
@@ -330,7 +337,7 @@ watch(open, (isOpen) => {
               label="Nama Group"
               prop="name"
               :error="serverErrors.name"
-              class="sm:col-span-8"
+              :class="isRoot ? 'sm:col-span-5' : 'sm:col-span-8'"
             >
               <Input
                 v-model="form.name"
@@ -338,6 +345,23 @@ watch(open, (isOpen) => {
                 maxlength="255"
                 placeholder="Administrator Utama"
                 @input="validateField('name')"
+              />
+            </ElFormItem>
+
+            <ElFormItem
+              v-if="isRoot"
+              label="Level Group"
+              prop="level"
+              :error="serverErrors.level"
+              class="sm:col-span-3"
+            >
+              <Input
+                v-model.number="form.level"
+                type="number"
+                min="0"
+                max="999"
+                :disabled="isDeleted"
+                placeholder="0"
               />
             </ElFormItem>
           </div>
