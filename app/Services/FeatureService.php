@@ -8,6 +8,7 @@ use App\Errors\FeatureError;
 use App\Models\Feature;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class FeatureService
 {
@@ -101,6 +102,7 @@ class FeatureService
             'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
             'si_order' => $data['order'] ?? 1,
             'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
+            'v_created_by' => Auth::user()?->username,
         ]);
     }
 
@@ -120,6 +122,7 @@ class FeatureService
             'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
             'si_order' => $data['order'] ?? 1,
             'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
+            'v_updated_by' => Auth::user()?->username,
         ]);
 
         return $feature->refresh();
@@ -127,6 +130,9 @@ class FeatureService
 
     public function delete(Feature $feature): void
     {
+        $feature->update([
+            'v_deleted_by' => Auth::user()?->username,
+        ]);
         $feature->delete();
     }
 
@@ -140,6 +146,10 @@ class FeatureService
         }
 
         $feature->restore();
+        $feature->update([
+            'v_deleted_by' => null,
+            'v_updated_by' => Auth::user()?->username,
+        ]);
 
         return $feature->refresh();
     }

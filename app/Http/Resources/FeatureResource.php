@@ -23,11 +23,8 @@ class FeatureResource extends JsonResource
      *     icon: string|null,
      *     order: int,
      *     show_on_sidebar: bool,
-     *     created_by: string|null,
      *     created_at: string|null,
-     *     updated_by: string|null,
      *     updated_at: string|null,
-     *     deleted_by: string|null,
      *     deleted_at: string|null
      * }
      */
@@ -44,11 +41,8 @@ class FeatureResource extends JsonResource
             'icon' => $this->v_icon,
             'order' => $this->si_order,
             'show_on_sidebar' => $this->b_show_on_sidebar,
-            'created_by' => $this->v_created_by,
             'created_at' => $this->dt_created_at?->toIso8601String(),
-            'updated_by' => $this->v_updated_by,
             'updated_at' => $this->dt_updated_at?->toIso8601String(),
-            'deleted_by' => $this->v_deleted_by,
             'deleted_at' => $this->dt_deleted_at?->toIso8601String(),
         ];
     }

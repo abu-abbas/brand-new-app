@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FeatureController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/users', [UserController::class, 'index'])->name('api.users.index');
     Route::get('/users/test-error', [UserController::class, 'testError'])->name('api.users.test-error');
+
     Route::get('/features', [FeatureController::class, 'index'])->name('api.features.index');
     Route::get('/features/options', [FeatureController::class, 'options'])->name('api.features.options');
     Route::post('/features', [FeatureController::class, 'store'])->name('api.features.store');
@@ -34,4 +36,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/features/{feature}/restore', [FeatureController::class, 'restore'])
         ->withTrashed()
         ->name('api.features.restore');
+
+    Route::get('/roles', [RoleController::class, 'index'])->name('api.roles.index');
+    Route::get('/roles/options', [RoleController::class, 'options'])->name('api.roles.options');
+    Route::get('/roles/{role}', [RoleController::class, 'show'])->name('api.roles.show');
+    Route::post('/roles', [RoleController::class, 'store'])->name('api.roles.store');
+    Route::put('/roles/{role}', [RoleController::class, 'update'])->name('api.roles.update');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('api.roles.destroy');
+    Route::post('/roles/{role}/restore', [RoleController::class, 'restore'])
+        ->withTrashed()
+        ->name('api.roles.restore');
 });

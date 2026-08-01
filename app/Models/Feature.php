@@ -44,6 +44,14 @@ class Feature extends Model
         return 'v_alias';
     }
 
+    /**
+     * Accessor untuk alias tanpa prefix database v_.
+     */
+    public function getAliasAttribute(): string
+    {
+        return $this->v_alias;
+    }
+
     /** @var string */
     const CREATED_AT = 'dt_created_at';
 

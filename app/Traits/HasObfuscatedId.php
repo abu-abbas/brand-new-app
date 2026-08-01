@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Support\Obfuscator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 trait HasObfuscatedId
@@ -32,27 +33,46 @@ trait HasObfuscatedId
      */
     public function resolveRouteBinding($value, $field = null)
     {
+        return $this->resolveRouteBindingQuery($this, $value, $field)->first();
+    }
+
+    /**
+     * Resolve soft-deleted model dari URL parameter jika route menggunakan withTrashed().
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Model|null
+     */
+    public function resolveSoftDeletableRouteBinding($value, $field = null)
+    {
+        return $this->resolveRouteBindingQuery($this, $value, $field)->withTrashed()->first();
+    }
+
+    /**
+     * Build query untuk Route Model Binding.
+     *
+     * @param  Builder  $query
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return Builder
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
         $keyName = $field ?? $this->getRouteKeyName();
 
-        // Jika route key name bukan primary key (misal v_alias atau slug)
         if ($keyName !== $this->getKeyName()) {
-            return $this->where($keyName, $value)->first();
+            return $query->where($keyName, $value);
         }
 
-        // Coba decode sebagai Hashid
         $decodedId = Obfuscator::decode((string) $value);
         if ($decodedId !== null) {
-            $model = $this->where($this->getKeyName(), $decodedId)->first();
-            if ($model) {
-                return $model;
-            }
+            return $query->where($this->getKeyName(), $decodedId);
         }
 
-        // Fallback jika berupa numeric ID langsung
         if (is_numeric($value)) {
-            return $this->where($this->getKeyName(), (int) $value)->first();
+            return $query->where($this->getKeyName(), (int) $value);
         }
 
-        return null;
+        return $query->whereRaw('1 = 0');
     }
 }
