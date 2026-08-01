@@ -19,15 +19,9 @@ export type FeatureResourceRoute = string | null;
 
 export type FeatureResourceIcon = string | null;
 
-export type FeatureResourceCreatedBy = string | null;
-
 export type FeatureResourceCreatedAt = string | null;
 
-export type FeatureResourceUpdatedBy = string | null;
-
 export type FeatureResourceUpdatedAt = string | null;
-
-export type FeatureResourceDeletedBy = string | null;
 
 export type FeatureResourceDeletedAt = string | null;
 
@@ -42,11 +36,8 @@ export interface FeatureResource {
   icon: FeatureResourceIcon;
   order: number;
   show_on_sidebar: boolean;
-  created_by: FeatureResourceCreatedBy;
   created_at: FeatureResourceCreatedAt;
-  updated_by: FeatureResourceUpdatedBy;
   updated_at: FeatureResourceUpdatedAt;
-  deleted_by: FeatureResourceDeletedBy;
   deleted_at: FeatureResourceDeletedAt;
 }
 
@@ -142,6 +133,37 @@ export interface PaginationMetaLinksItem {
   active: boolean;
 }
 
+export type RoleOptionResourceActivePeriode = unknown[] | null;
+
+export interface RoleOptionResource {
+  id: string;
+  code: string;
+  name: string;
+  need_region: boolean;
+  need_unit: boolean;
+  active_periode: RoleOptionResourceActivePeriode;
+  locked: boolean;
+}
+
+export type RoleResourceActivePeriode = unknown[] | null;
+
+export type RoleResourceUpdatedAt = string | null;
+
+export type RoleResourceDeletedAt = string | null;
+
+export interface RoleResource {
+  id: string;
+  code: string;
+  name: string;
+  need_region: boolean;
+  need_unit: boolean;
+  active_periode: RoleResourceActivePeriode;
+  locked: boolean;
+  features: unknown[];
+  updated_at: RoleResourceUpdatedAt;
+  deleted_at: RoleResourceDeletedAt;
+}
+
 export type StoreFeatureRequestType = typeof StoreFeatureRequestType[keyof typeof StoreFeatureRequestType];
 
 
@@ -201,6 +223,42 @@ export interface StoreFeatureRequest {
   show_on_sidebar?: boolean;
   /** @maxLength 100 */
   description?: StoreFeatureRequestDescription;
+}
+
+export type StoreRoleRequestActivePeriode = string[] | null;
+
+export type StoreRoleRequestFeatures = string[] | null;
+
+export interface StoreRoleRequest {
+  /**
+   * @maxLength 100
+   * @pattern ^[A-Za-z0-9_\-]+$
+   */
+  code: string;
+  /** @maxLength 255 */
+  name: string;
+  need_region?: boolean;
+  need_unit?: boolean;
+  active_periode?: StoreRoleRequestActivePeriode;
+  features?: StoreRoleRequestFeatures;
+}
+
+export type UpdateRoleRequestActivePeriode = string[] | null;
+
+export type UpdateRoleRequestFeatures = string[] | null;
+
+export interface UpdateRoleRequest {
+  /**
+   * @maxLength 100
+   * @pattern ^[A-Za-z0-9_\-]+$
+   */
+  code: string;
+  /** @maxLength 255 */
+  name: string;
+  need_region?: boolean;
+  need_unit?: boolean;
+  active_periode?: UpdateRoleRequestActivePeriode;
+  features?: UpdateRoleRequestFeatures;
 }
 
 export type UserResourceUnit = {
@@ -324,6 +382,69 @@ export type FeaturesUpdate200 = {
 
 export type FeaturesRestore200 = {
   data: FeatureResource;
+};
+
+export type RolesIndexParams = {
+/**
+ * @minimum 1
+ */
+page?: number | null;
+/**
+ * @minimum 1
+ * @maximum 100
+ */
+per_page?: number | null;
+/**
+ * @maxLength 100
+ */
+search?: string | null;
+'search_fields[]'?: RolesIndexSearchFieldsItem[];
+sort_by?: 'code' | 'name' | 'features' | 'need_region' | 'need_unit' | 'locked' | 'updated_at' | 'deleted_at' | null;
+sort_direction?: 'asc' | 'desc' | null;
+include_deleted?: 'true' | 'false' | '1' | '0' | null;
+updated_at_from?: string | null;
+updated_at_to?: string | null;
+};
+
+export type RolesIndexSearchFieldsItem = typeof RolesIndexSearchFieldsItem[keyof typeof RolesIndexSearchFieldsItem];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const RolesIndexSearchFieldsItem = {
+  code: 'code',
+  name: 'name',
+  features: 'features',
+  need_region: 'need_region',
+  need_unit: 'need_unit',
+  locked: 'locked',
+  updated_at: 'updated_at',
+  deleted_at: 'deleted_at',
+} as const;
+
+export type RolesIndex200 = {
+  data: RoleResource[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
+};
+
+export type RolesStore201 = {
+  data: RoleResource;
+};
+
+export type RolesOptions200 = {
+  data: RoleOptionResource[];
+};
+
+export type RolesShow200 = {
+  data: RoleResource;
+};
+
+export type RolesUpdate200 = {
+  data: RoleResource;
+};
+
+export type RolesRestore200 = {
+  data: RoleResource;
 };
 
 export type UsersIndexParams = {
@@ -499,6 +620,96 @@ export const featuresRestore = (
     }
   
 /**
+ * @summary Display a paginated list of roles
+ */
+export const rolesIndex = (
+    params?: RolesIndexParams,
+ options?: SecondParameter<typeof customAxiosInstance<RolesIndex200>>,) => {
+      return customAxiosInstance<RolesIndex200>(
+      {url: `/roles`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
+/**
+ * @summary Store a new role
+ */
+export const rolesStore = (
+    storeRoleRequest: StoreRoleRequest,
+ options?: SecondParameter<typeof customAxiosInstance<RolesStore201>>,) => {
+      return customAxiosInstance<RolesStore201>(
+      {url: `/roles`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: storeRoleRequest
+    },
+      options);
+    }
+  
+/**
+ * @summary Display active roles for selection
+ */
+export const rolesOptions = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<RolesOptions200>>,) => {
+      return customAxiosInstance<RolesOptions200>(
+      {url: `/roles/options`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Display the specified role detail
+ */
+export const rolesShow = (
+    role: number,
+ options?: SecondParameter<typeof customAxiosInstance<RolesShow200>>,) => {
+      return customAxiosInstance<RolesShow200>(
+      {url: `/roles/${role}`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Update an existing role
+ */
+export const rolesUpdate = (
+    role: number,
+    updateRoleRequest: UpdateRoleRequest,
+ options?: SecondParameter<typeof customAxiosInstance<RolesUpdate200>>,) => {
+      return customAxiosInstance<RolesUpdate200>(
+      {url: `/roles/${role}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateRoleRequest
+    },
+      options);
+    }
+  
+/**
+ * @summary Soft-delete an existing role
+ */
+export const rolesDestroy = (
+    role: number,
+ options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
+      return customAxiosInstance<void>(
+      {url: `/roles/${role}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+/**
+ * @summary Restore a soft-deleted role
+ */
+export const rolesRestore = (
+    role: number,
+ options?: SecondParameter<typeof customAxiosInstance<RolesRestore200>>,) => {
+      return customAxiosInstance<RolesRestore200>(
+      {url: `/roles/${role}/restore`, method: 'POST'
+    },
+      options);
+    }
+  
+/**
  * @summary Display a paginated list of users
  */
 export const usersIndex = (
@@ -534,5 +745,12 @@ export type FeaturesOptionsResult = NonNullable<Awaited<ReturnType<typeof featur
 export type FeaturesUpdateResult = NonNullable<Awaited<ReturnType<typeof featuresUpdate>>>
 export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featuresDestroy>>>
 export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>
+export type RolesIndexResult = NonNullable<Awaited<ReturnType<typeof rolesIndex>>>
+export type RolesStoreResult = NonNullable<Awaited<ReturnType<typeof rolesStore>>>
+export type RolesOptionsResult = NonNullable<Awaited<ReturnType<typeof rolesOptions>>>
+export type RolesShowResult = NonNullable<Awaited<ReturnType<typeof rolesShow>>>
+export type RolesUpdateResult = NonNullable<Awaited<ReturnType<typeof rolesUpdate>>>
+export type RolesDestroyResult = NonNullable<Awaited<ReturnType<typeof rolesDestroy>>>
+export type RolesRestoreResult = NonNullable<Awaited<ReturnType<typeof rolesRestore>>>
 export type UsersIndexResult = NonNullable<Awaited<ReturnType<typeof usersIndex>>>
 export type UsersTestErrorResult = NonNullable<Awaited<ReturnType<typeof usersTestError>>>
