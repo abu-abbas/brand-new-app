@@ -29,21 +29,43 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/test-error', [UserController::class, 'testError'])->name('api.users.test-error');
 
     Route::get('/features', [FeatureController::class, 'index'])->name('api.features.index');
-    Route::get('/features/options', [FeatureController::class, 'options'])->name('api.features.options');
-    Route::post('/features', [FeatureController::class, 'store'])->name('api.features.store');
-    Route::put('/features/{feature}', [FeatureController::class, 'update'])->name('api.features.update');
-    Route::delete('/features/{feature}', [FeatureController::class, 'destroy'])->name('api.features.destroy');
+    Route::get('/features/options', [FeatureController::class, 'options'])
+        ->middleware('can:features.view')
+        ->name('api.features.options');
+    Route::post('/features', [FeatureController::class, 'store'])
+        ->middleware('can:features.create')
+        ->name('api.features.store');
+    Route::put('/features/{feature}', [FeatureController::class, 'update'])
+        ->middleware('can:features.update')
+        ->name('api.features.update');
+    Route::delete('/features/{feature}', [FeatureController::class, 'destroy'])
+        ->middleware('can:features.delete')
+        ->name('api.features.destroy');
     Route::post('/features/{feature}/restore', [FeatureController::class, 'restore'])
         ->withTrashed()
+        ->middleware('can:features.update')
         ->name('api.features.restore');
 
-    Route::get('/roles', [RoleController::class, 'index'])->name('api.roles.index');
-    Route::get('/roles/options', [RoleController::class, 'options'])->name('api.roles.options');
-    Route::get('/roles/{role}', [RoleController::class, 'show'])->name('api.roles.show');
-    Route::post('/roles', [RoleController::class, 'store'])->name('api.roles.store');
-    Route::put('/roles/{role}', [RoleController::class, 'update'])->name('api.roles.update');
-    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('api.roles.destroy');
+    Route::get('/roles', [RoleController::class, 'index'])
+        ->middleware('can:roles.view')
+        ->name('api.roles.index');
+    Route::get('/roles/options', [RoleController::class, 'options'])
+        ->middleware('can:roles.view')
+        ->name('api.roles.options');
+    Route::get('/roles/{role}', [RoleController::class, 'show'])
+        ->middleware('can:roles.view')
+        ->name('api.roles.show');
+    Route::post('/roles', [RoleController::class, 'store'])
+        ->middleware('can:roles.create')
+        ->name('api.roles.store');
+    Route::put('/roles/{role}', [RoleController::class, 'update'])
+        ->middleware('can:roles.update')
+        ->name('api.roles.update');
+    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+        ->middleware('can:roles.delete')
+        ->name('api.roles.destroy');
     Route::post('/roles/{role}/restore', [RoleController::class, 'restore'])
         ->withTrashed()
+        ->middleware('can:roles.update')
         ->name('api.roles.restore');
 });

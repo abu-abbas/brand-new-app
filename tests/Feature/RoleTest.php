@@ -10,7 +10,13 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
-    $this->actingAs(User::factory()->create());
+    $admin = User::factory()->create();
+    Illuminate\Support\Facades\DB::table('tr_user_roles')->insert([
+        'v_userid' => $admin->v_userid,
+        'v_role_code' => 'ADM_SYS',
+        'v_created_by' => 'system',
+    ]);
+    $this->actingAs($admin);
 });
 
 it('lists active and soft-deleted roles when requested', function () {

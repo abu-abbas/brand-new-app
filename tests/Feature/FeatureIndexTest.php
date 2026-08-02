@@ -9,7 +9,49 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
-    $this->actingAs(User::factory()->create());
+    $admin = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $admin->v_userid,
+        'v_role_code' => 'ADM_SYS',
+        'v_created_by' => 'system',
+    ]);
+    $this->actingAs($admin);
+});
+
+it('filters menu items by user permissions for non-admin users', function () {
+    Feature::query()->create([
+        'v_name' => 'Menu Beranda',
+        'v_alias' => 'beranda',
+        'e_type' => 'menu',
+    ]);
+    Feature::query()->create([
+        'v_name' => 'Menu Rahasia Admin',
+        'v_alias' => 'manajemen-fitur',
+        'e_type' => 'menu',
+    ]);
+
+    $regularUser = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $regularUser->v_userid,
+        'v_role_code' => 'USER_ROLE',
+        'v_created_by' => 'system',
+    ]);
+    DB::table('tm_roles')->insert([
+        'v_code' => 'USER_ROLE',
+        'v_name' => 'User Role',
+        'i_level' => 1,
+        'v_created_by' => 'system',
+    ]);
+    DB::table('tr_role_features')->insert([
+        'v_code' => 'USER_ROLE',
+        'v_alias' => 'beranda',
+    ]);
+
+    $this->actingAs($regularUser)
+        ->getJson('/api/features?type=menu')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.alias', 'beranda');
 });
 
 it('lists active and soft-deleted features when requested', function () {

@@ -6,6 +6,8 @@ use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Support\Scramble\PaginationSchemaExtension;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +25,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::before(function (User $user, string $ability): ?bool {
+            if ($user->isRoot()) {
+                return true;
+            }
+
+            return in_array($ability, $user->getPermissionsList(), true) ? true : null;
+        });
+
         Scramble::afterOpenApiGenerated(function (OpenApi $openApi) {
             (new PaginationSchemaExtension)->handle($openApi);
         });

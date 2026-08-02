@@ -24,6 +24,10 @@ class FeatureController extends Controller
      */
     public function index(ListFeatureRequest $request): AnonymousResourceCollection
     {
+        if ($request->input('type') !== 'menu') {
+            $this->authorize('features.view');
+        }
+
         return FeatureResource::collection(
             $this->featureService->paginate($request->validated())
         );

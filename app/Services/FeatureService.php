@@ -39,6 +39,14 @@ class FeatureService
             $query->withTrashed();
         }
 
+        $user = Auth::user();
+        if ($user && ! $user->isRoot()) {
+            $userPermissions = $user->getPermissionsList();
+            if (($params['type'] ?? null) === 'menu' || ! in_array('features.view', $userPermissions, true)) {
+                $query->whereIn('v_alias', $userPermissions);
+            }
+        }
+
         if ($type = $params['type'] ?? null) {
             $query->where('e_type', $type);
         }
