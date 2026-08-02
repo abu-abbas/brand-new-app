@@ -284,11 +284,8 @@ export interface UserResource {
   username: string;
   email: string;
   unit: UserResourceUnit;
-  /**
-   * @minItems 1
-   * @maxItems 1
-   */
-  roles: [string];
+  roles: string[];
+  permissions: string[];
   is_root?: boolean;
   active: boolean;
   created_at: UserResourceCreatedAt;

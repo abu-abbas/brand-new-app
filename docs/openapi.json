@@ -1766,14 +1766,15 @@
                     },
                     "roles": {
                         "type": "array",
-                        "prefixItems": [
-                            {
-                                "type": "string"
-                            }
-                        ],
-                        "minItems": 1,
-                        "maxItems": 1,
-                        "additionalItems": false
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "permissions": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
                     },
                     "is_root": {
                         "type": "boolean"
@@ -1795,6 +1796,7 @@
                     "email",
                     "unit",
                     "roles",
+                    "permissions",
                     "active",
                     "created_at"
                 ],
