@@ -9,15 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tr_role_features', function (Blueprint $table) {
-            $table->foreignId('i_role_id')
-                ->constrained('tm_roles', 'i_id')
-                ->cascadeOnDelete();
+            $table->bigIncrements('i_id');
+            $table->string('v_code', 100)->index();
+            $table->string('v_alias', 100)->index();
 
-            $table->foreignId('i_feature_id')
-                ->constrained('tm_features', 'i_id')
-                ->cascadeOnDelete();
-
-            $table->primary(['i_role_id', 'i_feature_id']);
+            $table->unique(['v_code', 'v_alias']);
         });
     }
 

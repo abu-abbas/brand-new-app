@@ -31,7 +31,7 @@ class RoleService
      */
     public function paginate(array $params): LengthAwarePaginator
     {
-        $currentUserLevel = Auth::user()?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+        $currentUserLevel = Auth::user()?->role_level ?? 0;
 
         $query = Role::query()
             ->with('features')
@@ -71,8 +71,8 @@ class RoleService
                 if ($includeFeatures) {
                     $method = empty($columns) ? 'whereHas' : 'orWhereHas';
                     $query->{$method}('features', function ($fq) use ($search): void {
-                        $fq->where('v_name', 'like', "%{$search}%")
-                            ->orWhere('v_alias', 'like', "%{$search}%");
+                        $fq->where('tm_features.v_name', 'like', "%{$search}%")
+                            ->orWhere('tm_features.v_alias', 'like', "%{$search}%");
                     });
                 }
             });
@@ -92,7 +92,7 @@ class RoleService
      */
     public function options(): Collection
     {
-        $currentUserLevel = Auth::user()?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+        $currentUserLevel = Auth::user()?->role_level ?? 0;
 
         return Role::query()
             ->where('i_level', '<=', $currentUserLevel)
@@ -106,7 +106,7 @@ class RoleService
     public function create(array $data): Role
     {
         $currentUser = Auth::user();
-        $currentUserLevel = $currentUser?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+        $currentUserLevel = $currentUser?->role_level ?? 0;
 
         if ($currentUser?->isRoot() && isset($data['level'])) {
             $targetLevel = min((int) $data['level'], $currentUserLevel);
@@ -128,11 +128,11 @@ class RoleService
             ]);
 
             if (array_key_exists('features', $data) && is_array($data['features'])) {
-                $featureIds = Feature::query()
+                $featureAliases = Feature::query()
                     ->whereIn('v_alias', $data['features'])
-                    ->pluck('i_id')
+                    ->pluck('v_alias')
                     ->toArray();
-                $role->features()->sync($featureIds);
+                $role->features()->sync($featureAliases);
             }
 
             return $role->load('features');
@@ -145,7 +145,7 @@ class RoleService
     public function update(Role $role, array $data): Role
     {
         $currentUser = Auth::user();
-        $currentUserLevel = $currentUser?->role_level ?? \App\Constants\RoleConstant::ROOT_LEVEL;
+        $currentUserLevel = $currentUser?->role_level ?? 0;
 
         return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel) {
             $updateData = [
@@ -167,11 +167,11 @@ class RoleService
             $role->update($updateData);
 
             if (array_key_exists('features', $data) && is_array($data['features'])) {
-                $featureIds = Feature::query()
+                $featureAliases = Feature::query()
                     ->whereIn('v_alias', $data['features'])
-                    ->pluck('i_id')
+                    ->pluck('v_alias')
                     ->toArray();
-                $role->features()->sync($featureIds);
+                $role->features()->sync($featureAliases);
             }
 
             return $role->fresh(['features']);

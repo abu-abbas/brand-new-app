@@ -51,7 +51,7 @@ it('searches roles by feature name or alias', function () {
         'v_code' => 'admin',
         'v_name' => 'Administrator',
     ]);
-    $role1->features()->attach($feature->i_id);
+    $role1->features()->attach($feature->v_alias);
 
     Role::query()->create([
         'v_code' => 'operator',
@@ -95,7 +95,7 @@ it('shows single role detail with features', function () {
         'v_code' => 'manager',
         'v_name' => 'Manager',
     ]);
-    $role->features()->sync([$feature->i_id]);
+    $role->features()->sync([$feature->v_alias]);
 
     $this->getJson("/api/roles/{$role->hash_id}")
         ->assertOk()
@@ -165,7 +165,7 @@ it('updates role details and feature sync', function () {
         'v_name' => 'Editor',
         'b_need_region' => false,
     ]);
-    $role->features()->sync([$f1->i_id]);
+    $role->features()->sync([$f1->v_alias]);
 
     $this->putJson("/api/roles/{$role->hash_id}", [
         'code' => 'editor-v2',

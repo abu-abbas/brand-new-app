@@ -99,6 +99,15 @@ enum RoleError: string implements ErrorCode
     #[ErrorDefinition(message: 'Setiap fitur harus berupa alias teks.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
     case FEATURES_ITEM_STRING = 'ROLE-VAL-030';
 
+    #[ErrorDefinition(message: 'Level harus berupa angka.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
+    case LEVEL_INTEGER = 'ROLE-VAL-034';
+
+    #[ErrorDefinition(message: 'Level minimal bernilai 0.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
+    case LEVEL_MIN = 'ROLE-VAL-035';
+
+    #[ErrorDefinition(message: 'Level melebihi batas maksimal.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
+    case LEVEL_MAX = 'ROLE-VAL-036';
+
     #[ErrorDefinition(message: 'Tanggal awal pembaruan tidak valid.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
     case UPDATED_AT_FROM_FORMAT = 'ROLE-VAL-031';
 

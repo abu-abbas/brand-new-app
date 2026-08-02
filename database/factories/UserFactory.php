@@ -16,29 +16,17 @@ class UserFactory extends Factory
 
     public function definition(): array
     {
-        $units = ['Keuangan', 'Teknologi Informasi', 'Sumber Daya Manusia', 'Operasional', 'Pemasaran', 'Hukum & Kepatuhan'];
-        $roles = ['Admin', 'Manager', 'Supervisor', 'Staff'];
-
-        $name = fake()->name();
-        $username = Str::slug(fake()->unique()->userName(), '');
+        $userId = Str::lower(fake()->unique()->userName());
 
         return [
-            'name' => $name,
-            'username' => $username,
-            'email' => fake()->unique()->safeEmail(),
-            'unit_name' => fake()->randomElement($units),
-            'role' => fake()->randomElement($roles),
-            'is_active' => fake()->boolean(80),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'v_userid' => $userId,
+            'v_username' => fake()->name(),
+            'v_email' => fake()->unique()->safeEmail(),
+            'v_password' => static::$password ??= Hash::make('password'),
+            'b_is_active' => true,
+            'b_use_other' => false,
+            'v_remember_token' => Str::random(10),
+            'dt_created_at' => now(),
         ];
-    }
-
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
     }
 }

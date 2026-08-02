@@ -129,4 +129,12 @@ enum AuthError: string implements ErrorCode
         retryable: true,
     )]
     case TOO_MANY_ATTEMPTS = 'AUTH-LOGIN-002';
+
+    #[ErrorDefinition(
+        message: 'Anda belum memiliki group, silakan hubungi admin untuk informasi lebih lanjut.',
+        category: ErrorCategory::AUTHENTICATION,
+        httpStatus: 403,
+        severity: ErrorSeverity::LOW,
+    )]
+    case NO_ROLE_ASSIGNED = 'AUTH-LOGIN-003';
 }

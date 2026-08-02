@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Role;
 
+use App\Constants\RoleConstant;
 use App\Core\ErrorDefinition\Traits\HasErrorDefinitions;
 use App\Errors\RoleError;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +27,7 @@ class StoreRoleRequest extends FormRequest
                 'unique:tm_roles,v_code,NULL,i_id,dt_deleted_at,NULL',
             ],
             'name' => ['required', 'string', 'max:255'],
-            'level' => ['sometimes', 'integer', 'min:0', 'max:' . \App\Constants\RoleConstant::ROOT_LEVEL],
+            'level' => ['sometimes', 'integer', 'min:0', 'max:'.RoleConstant::ROOT_LEVEL],
             'need_region' => ['sometimes', 'boolean'],
             'need_unit' => ['sometimes', 'boolean'],
             'active_periode' => ['nullable', 'array'],
@@ -48,6 +49,9 @@ class StoreRoleRequest extends FormRequest
             'name.max' => RoleError::NAME_MAX,
             'need_region.boolean' => RoleError::NEED_REGION_BOOLEAN,
             'need_unit.boolean' => RoleError::NEED_UNIT_BOOLEAN,
+            'level.integer' => RoleError::LEVEL_INTEGER,
+            'level.min' => RoleError::LEVEL_MIN,
+            'level.max' => RoleError::LEVEL_MAX,
             'active_periode.array' => RoleError::ACTIVE_PERIODE_ARRAY,
             'features.array' => RoleError::FEATURES_ARRAY,
             'features.*.string' => RoleError::FEATURES_ITEM_STRING,

@@ -1,7 +1,11 @@
 <?php
 
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 uses(RefreshDatabase::class);
 
@@ -45,11 +49,16 @@ it('returns audio wav for a valid captcha key', function () {
     expect(strlen((string) $response->getContent()))->toBeGreaterThan(44);
 });
 
-it('logs in an active user and returns the current session user', function () {
+it('logs in an active user with role and returns the current session user', function () {
     $user = User::factory()->create([
-        'username' => 'pegawai',
-        'password' => 'rahasia',
-        'is_active' => true,
+        'v_userid' => 'pegawai',
+        'v_password' => Hash::make('rahasia'),
+        'b_is_active' => true,
+    ]);
+
+    UserRole::create([
+        'v_userid' => 'pegawai',
+        'v_role_code' => 'ADMIN',
     ]);
 
     $this->postJson('/api/auth/login', [
@@ -64,11 +73,74 @@ it('logs in an active user and returns the current session user', function () {
         ->assertJsonPath('data.username', 'pegawai');
 });
 
+it('rejects login when user has no role assigned', function () {
+    User::factory()->create([
+        'v_userid' => 'noroleuser',
+        'v_password' => Hash::make('rahasia'),
+        'b_is_active' => true,
+    ]);
+
+    $this->postJson('/api/auth/login', [
+        'username' => 'noroleuser',
+        'password' => 'rahasia',
+    ])
+        ->assertForbidden()
+        ->assertJsonPath('code', 'AUTH-LOGIN-003')
+        ->assertJsonPath('message', 'Anda belum memiliki group, silakan hubungi admin untuk informasi lebih lanjut.');
+});
+
+it('provisions user from vw_users on login but blocks if no role assigned', function () {
+    Schema::create('vw_users', function ($table) {
+        $table->string('v_userid', 100)->primary();
+        $table->string('v_username', 255);
+        $table->string('v_password', 255);
+        $table->string('v_klogad', 15)->nullable();
+        $table->string('v_kolok', 15)->nullable();
+        $table->string('v_kojab', 10)->nullable();
+        $table->string('v_koper', 10)->nullable();
+        $table->string('v_kopang', 10)->nullable();
+        $table->string('v_eselon', 4)->nullable();
+        $table->string('v_spmu', 10)->nullable();
+        $table->string('v_kd', 4)->nullable();
+    });
+
+    DB::table('vw_users')->insert([
+        'v_userid' => 'external_user',
+        'v_username' => 'EXTERNAL USER',
+        'v_password' => md5('password123'),
+    ]);
+
+    // Login attempt triggers JIT provisioning to tm_users, but fails role check
+    $this->postJson('/api/auth/login', [
+        'username' => 'external_user',
+        'password' => 'password123',
+    ])
+        ->assertForbidden()
+        ->assertJsonPath('code', 'AUTH-LOGIN-003');
+
+    // Confirm user was provisioned in tm_users
+    $this->assertDatabaseHas('tm_users', [
+        'v_userid' => 'external_user',
+        'b_use_other' => true,
+    ]);
+
+    // Now assign role to user and attempt login again
+    UserRole::create([
+        'v_userid' => 'external_user',
+        'v_role_code' => 'STAFF',
+    ]);
+
+    $this->postJson('/api/auth/login', [
+        'username' => 'external_user',
+        'password' => 'password123',
+    ])->assertOk();
+});
+
 it('rejects invalid credentials without revealing account status', function () {
     User::factory()->create([
-        'username' => 'nonaktif',
-        'password' => 'rahasia',
-        'is_active' => false,
+        'v_userid' => 'nonaktif',
+        'v_password' => Hash::make('rahasia'),
+        'b_is_active' => false,
     ]);
 
     $this->postJson('/api/auth/login', [
@@ -85,6 +157,12 @@ it('rejects invalid credentials without revealing account status', function () {
 
 it('rate limits repeated credential failures without counting captcha validation', function () {
     config(['captcha.disable' => false]);
+
+    User::factory()->create([
+        'v_userid' => 'dibatasi',
+        'v_password' => Hash::make('benar'),
+        'b_is_active' => true,
+    ]);
 
     foreach (range(1, 6) as $_) {
         $this->postJson('/api/auth/login', [
@@ -125,9 +203,14 @@ it('requires a captcha and protects authenticated endpoints', function () {
 
 it('logs out and invalidates the session', function () {
     User::factory()->create([
-        'username' => 'pegawai',
-        'password' => 'rahasia',
-        'is_active' => true,
+        'v_userid' => 'pegawai',
+        'v_password' => Hash::make('rahasia'),
+        'b_is_active' => true,
+    ]);
+
+    UserRole::create([
+        'v_userid' => 'pegawai',
+        'v_role_code' => 'ADMIN',
     ]);
 
     $this->postJson('/api/auth/login', [

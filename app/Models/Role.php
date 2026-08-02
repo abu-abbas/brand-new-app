@@ -76,8 +76,10 @@ class Role extends Model
         return $this->belongsToMany(
             Feature::class,
             'tr_role_features',
-            'i_role_id',
-            'i_feature_id'
+            'v_code',
+            'v_alias',
+            'v_code',
+            'v_alias'
         );
     }
 }

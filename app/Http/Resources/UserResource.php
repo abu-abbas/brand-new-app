@@ -21,6 +21,8 @@ class UserResource extends JsonResource
      *     email: string,
      *     unit: array{name: string},
      *     roles: array<string>,
+     *     permissions: array<string>,
+     *     is_root?: bool,
      *     active: bool,
      *     created_at: string|null
      * }
@@ -29,16 +31,17 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->hash_id,
-            'name' => $this->name,
-            'username' => $this->username ?? "user{$this->id}",
-            'email' => $this->email,
+            'name' => $this->v_username ?? $this->v_userid,
+            'username' => $this->v_userid,
+            'email' => $this->v_email ?? "{$this->v_userid}@domain.local",
             'unit' => [
-                'name' => $this->unit_name ?? 'Umum',
+                'name' => $this->v_kolok ?? 'Umum',
             ],
-            'roles' => [$this->role ?? 'Staff'],
+            'roles' => $this->getRolesList(),
+            'permissions' => $this->getPermissionsList(),
             'is_root' => $this->when($this->isRoot(), true),
-            'active' => (bool) $this->is_active,
-            'created_at' => $this->created_at?->toIso8601String(),
+            'active' => (bool) $this->b_is_active,
+            'created_at' => $this->dt_created_at?->toIso8601String(),
         ];
     }
 }

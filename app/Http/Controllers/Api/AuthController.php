@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Resources\UserResource;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,6 +30,7 @@ class AuthController extends Controller
             $request->safe()->only(['username', 'password']),
             $request->ip() ?? 'unknown',
         );
+        $user->load(['userRoles.roleModel.features']);
         $request->session()->regenerate();
 
         return new UserResource($user);
@@ -110,7 +112,11 @@ class AuthController extends Controller
      */
     public function me(Request $request): UserResource
     {
-        return new UserResource($request->user());
+        /** @var User $user */
+        $user = $request->user();
+        $user->load(['userRoles.roleModel.features']);
+
+        return new UserResource($user);
     }
 
     /**
