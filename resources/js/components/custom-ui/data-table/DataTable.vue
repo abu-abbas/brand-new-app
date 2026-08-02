@@ -955,6 +955,7 @@ defineExpose({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Edit"
+                  class="cursor-pointer"
                   @click.stop="emit('edit', row)"
                 >
                   <Pencil />
@@ -964,6 +965,7 @@ defineExpose({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Hapus"
+                  class="cursor-pointer"
                   @click.stop="emit('delete', row)"
                 >
                   <Trash2 />
@@ -1236,11 +1238,15 @@ defineExpose({
 :deep(.el-table) {
   --el-table-header-bg-color: var(--muted);
   --el-table-row-hover-bg-color: var(--accent);
+  --el-table-border-color: var(--border);
+  --el-table-tr-bg-color: transparent;
   color: var(--foreground);
 }
 
 :deep(.el-table__header th.el-table__cell) {
   height: 52px;
+  background-color: var(--muted) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 :deep(.el-table__body td.el-table__cell) {
@@ -1299,10 +1305,29 @@ defineExpose({
   height: 0 !important;
 }
 
-/* Inner cell column dividers */
+/* Inner cell column dividers & row borders */
 :deep(.el-table .el-table__cell) {
   border-right: 1px solid var(--border) !important;
+  border-bottom: 1px solid var(--border) !important;
   border-left: 0 !important;
+}
+
+/* Explicit high-contrast Dark Mode border & header styling */
+:global(.dark) :deep(.el-table) {
+  --el-table-header-bg-color: rgba(255, 255, 255, 0.07);
+  --el-table-border-color: rgba(255, 255, 255, 0.18);
+  --el-table-tr-bg-color: transparent;
+}
+
+:global(.dark) :deep(.el-table__header th.el-table__cell) {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
+}
+
+:global(.dark) :deep(.el-table .el-table__cell) {
+  border-right: 1px solid rgba(255, 255, 255, 0.18) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
 }
 
 /* Remove left border and inset shadows on first-column cells (including sticky fixed columns) */

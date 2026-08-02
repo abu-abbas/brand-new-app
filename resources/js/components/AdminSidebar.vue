@@ -31,6 +31,7 @@ import {
 import { useTheme } from '@/composables/useTheme';
 import { useDarkMode } from '@/composables/useDarkMode';
 import { useAuthStore } from '@/stores/auth';
+import { usePermissionStore } from '@/stores/permission';
 import { LucideIcon } from '@/components/custom-ui/lucide-icon';
 import { FeaturesFacade } from '@/modules/features-management/api/features.facade';
 
@@ -50,6 +51,7 @@ import {
 const { activeTheme, otherThemes, setTheme, activeThemeLabel, activeThemeColor } = useTheme();
 const { isDark, toggleDarkMode } = useDarkMode();
 const auth = useAuthStore();
+const permission = usePermissionStore();
 const route = useRoute();
 const router = useRouter();
 
@@ -107,7 +109,7 @@ function resolveUrl(routeName?: string | null): string {
 
 const dynamicMenu = computed<DynamicMenuItem[]>(() => {
   const list = rawFeatures.value ?? [];
-  const sidebarFeatures = list.filter((item) => item.show_on_sidebar);
+  const sidebarFeatures = list.filter((item) => item.show_on_sidebar && permission.can(item.alias));
 
   const parentMap = new Map<string, DynamicMenuItem>();
   const childMap = new Map<string, DynamicSubMenuItem[]>();
@@ -153,7 +155,10 @@ const dynamicMenu = computed<DynamicMenuItem[]>(() => {
 
     parent.isActive = isAnySubActive || isSelfActive;
 
-    result.push(parent);
+    // Tampilkan jika parent itu sendiri punya URL valid atau mempunyai setidaknya 1 child yang dapat diakses
+    if ((parent.url && parent.url !== '#') || children.length > 0) {
+      result.push(parent);
+    }
   });
 
   return result;

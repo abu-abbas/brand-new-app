@@ -6,6 +6,7 @@ import { announcementRoutes } from '@/modules/announcement/routes';
 import { blankPageRoutes } from '@/modules/blank-page/routes';
 import { featureRoutes } from '@/modules/features-management/routes';
 import { roleRoutes } from '@/modules/roles-management/routes';
+import { errorRoutes } from '@/modules/errors/routes';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -18,12 +19,17 @@ const router = createRouter({
     ...blankPageRoutes,
     ...featureRoutes,
     ...roleRoutes,
+    ...errorRoutes,
   ],
 });
 
 router.beforeEach(async (to) => {
   const auth = useAuthStore();
   await auth.restore();
+
+  if (to.meta.allowAnonymous) {
+    return true;
+  }
 
   if (to.meta.public) {
     return auth.isAuthenticated ? { name: 'home' } : true;

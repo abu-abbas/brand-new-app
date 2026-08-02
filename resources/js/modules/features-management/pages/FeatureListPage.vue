@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import { useAppBootstrapStore } from '@/stores/app-bootstrap';
 import { DataTable } from '@/components/custom-ui/data-table';
+import { highlightText } from '@/components/custom-ui/data-table/data-table.utils';
 import type {
   DataTableFetcher,
   DataTableField,
@@ -21,13 +22,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { FeatureResource, FeaturesIndexParams } from '@/api/generated/api';
+import { usePermissionStore } from '@/stores/permission';
 import { FeaturesFacade } from '../api/features.facade.ts';
+import { FEATURE_PERMISSIONS } from '../permissions';
 import FeatureFormModal from '../components/FeatureFormModal.vue';
 
 interface FeatureRow extends Record<string, unknown>, FeatureResource {
   level?: number;
 }
 
+const permission = usePermissionStore();
 const formOpen = ref(false);
 const selectedFeature = ref<FeatureRow | null>(null);
 const selectedType = ref<'all' | NonNullable<FeaturesIndexParams['type']>>('all');
@@ -36,14 +40,6 @@ const appBootstrap = useAppBootstrapStore();
 const permissionTypeOptions = computed(() => appBootstrap.config.references.permission_types);
 
 const fields: DataTableField<FeatureRow>[] = [
-  {
-    key: 'rownum',
-    label: 'No',
-    width: 50,
-    sortable: false,
-    filterColumn: false,
-    align: 'center',
-  },
   { key: 'name', label: 'Identitas Fitur', minWidth: 260 },
   { key: 'alias', label: 'Alias', minWidth: 180 },
   { key: 'type', label: 'Tipe', align: 'center', hidden: true },
@@ -62,10 +58,36 @@ const filters: DataTableFilter[] = [
   { key: 'updated_at', label: 'Tanggal diperbarui', type: 'date-range' },
 ];
 
-function buildFeatureTreeList(items: FeatureRow[]): FeatureRow[] {
+function buildFeatureTreeList(items: FeatureRow[], searchKeyword = ''): FeatureRow[] {
+  let targetItems = items;
+
+  if (searchKeyword) {
+    const lowerKeyword = searchKeyword.toLowerCase();
+    const matchingAliases = new Set<string>();
+
+    items.forEach((item) => {
+      const matchName = item.name?.toLowerCase().includes(lowerKeyword);
+      const matchAlias = item.alias?.toLowerCase().includes(lowerKeyword);
+      const matchDesc = item.description?.toLowerCase().includes(lowerKeyword);
+      const matchType = item.type_label?.toLowerCase().includes(lowerKeyword);
+
+      if (matchName || matchAlias || matchDesc || matchType) {
+        matchingAliases.add(item.alias);
+        let parentKey = item.parent;
+        while (parentKey) {
+          matchingAliases.add(parentKey);
+          const parentItem = items.find((i) => i.alias === parentKey);
+          parentKey = parentItem?.parent || null;
+        }
+      }
+    });
+
+    targetItems = items.filter((item) => matchingAliases.has(item.alias));
+  }
+
   const childrenMap = new Map<string | null, FeatureRow[]>();
 
-  items.forEach((item) => {
+  targetItems.forEach((item) => {
     const parentKey = item.parent || null;
     if (!childrenMap.has(parentKey)) {
       childrenMap.set(parentKey, []);
@@ -86,7 +108,7 @@ function buildFeatureTreeList(items: FeatureRow[]): FeatureRow[] {
 
   traverse(null, 0);
 
-  items.forEach((item) => {
+  targetItems.forEach((item) => {
     if (!result.some((r) => r.alias === item.alias)) {
       result.push({ ...item, level: 0 });
     }
@@ -95,14 +117,18 @@ function buildFeatureTreeList(items: FeatureRow[]): FeatureRow[] {
   return result;
 }
 
+const currentSearch = ref('');
+
 const fetcher: DataTableFetcher<FeatureRow> = async ({ params, signal }) => {
   const activeFilters = params.filters as Record<string, unknown> | undefined;
   const updatedAt = Array.isArray(activeFilters?.updated_at) ? activeFilters.updated_at : [];
+  const searchKeyword = params.search ? String(params.search).trim() : '';
+  currentSearch.value = searchKeyword;
+
   const response = await FeaturesFacade.list(
     {
       page: 1,
       per_page: 100,
-      search: params.search ? String(params.search) : undefined,
       'search_fields[]': params.search_fields as FeaturesIndexParams['search_fields[]'],
       sort_by: params.sort_by as FeaturesIndexParams['sort_by'],
       sort_direction: params.sort_direction,
@@ -114,10 +140,10 @@ const fetcher: DataTableFetcher<FeatureRow> = async ({ params, signal }) => {
     signal,
   );
 
-  const treeList = buildFeatureTreeList(response.data as FeatureRow[]);
+  const dataList = buildFeatureTreeList(response.data as FeatureRow[], searchKeyword);
 
   return {
-    data: treeList,
+    data: dataList,
     meta: {
       current_page: 1,
       from: 1,
@@ -151,7 +177,11 @@ function openEdit(feature: FeatureRow): void {
 <template>
   <AdminLayout>
     <template #header-actions>
-      <Button class="ml-auto gap-2" @click="openCreate">
+      <Button
+        v-if="permission.can(FEATURE_PERMISSIONS.CREATE)"
+        class="ml-auto gap-2"
+        @click="openCreate"
+      >
         <LucideIcon name="Plus" data-icon="inline-start" />
         Tambah Fitur
       </Button>
@@ -164,14 +194,22 @@ function openEdit(feature: FeatureRow): void {
         :fields="fields"
         :filters="filters"
         :extra-params="{ type: selectedType === 'all' ? undefined : selectedType }"
+        :paginated="false"
         row-key="alias"
         remember="features"
         actions
         :actions-width="60"
+        :can-edit="() => permission.can(FEATURE_PERMISSIONS.UPDATE)"
         :can-delete="() => false"
         @edit="openEdit"
         @create="openCreate"
       >
+        <template #title="{ title }">
+          <h2 v-if="title" class="text-lg font-semibold">
+            {{ title }}
+          </h2>
+        </template>
+
         <template #toolbar>
           <div class="flex justify-end">
             <Select v-model="selectedType">
@@ -198,37 +236,57 @@ function openEdit(feature: FeatureRow): void {
         <template #cell(name)="{ row }">
           <div
             class="flex items-center gap-2"
-            :style="{ paddingLeft: `${(row.level ?? 0) * 20}px` }"
+            :style="{ paddingLeft: `${(row.level ?? 0) * 36}px` }"
           >
             <div
               v-if="(row.level ?? 0) > 0"
-              class="flex items-center justify-center text-muted-foreground/45 shrink-0"
+              class="flex items-center justify-center size-6 rounded-md bg-muted/80 dark:bg-muted/40 text-primary shrink-0 border border-border/50 shadow-2xs"
             >
-              <LucideIcon name="CornerDownRight" class="size-3.5" />
+              <LucideIcon name="CornerDownRight" class="size-3.5 stroke-[2.5]" />
             </div>
 
-            <div class="flex gap-2" :class="{ 'items-center': !row.description }">
-              <div
-                v-if="row.type === 'menu' && !!row.icon"
-                class="flex size-9 items-center justify-center rounded-lg bg-primary/10 shrink-0"
-              >
-                <LucideIcon
-                  :name="row.icon"
-                  fallback="CircleDashed"
-                  class="size-4"
-                  fallback-class="text-muted-foreground/65"
-                />
-              </div>
+            <div
+              v-if="row.type === 'menu' && !!row.icon"
+              class="flex size-9 items-center justify-center rounded-lg bg-primary/10 shrink-0"
+            >
+              <LucideIcon
+                :name="row.icon"
+                fallback="CircleDashed"
+                class="size-4"
+                fallback-class="text-muted-foreground/65"
+              />
+            </div>
 
-              <div class="flex-1">
-                <div class="flex flex-col gap-0.5">
-                  <span class="leading-snug font-medium text-sm">
-                    {{ row.name }}
-                  </span>
-                  <span v-if="row.description" class="text-2sm text-muted-foreground leading-tight">
-                    {{ row.description }}
-                  </span>
-                </div>
+            <div class="flex-1">
+              <div class="flex flex-col gap-0.5">
+                <span class="leading-snug font-medium text-sm">
+                  <template
+                    v-for="(part, idx) in highlightText(row.name, currentSearch)"
+                    :key="idx"
+                  >
+                    <mark
+                      v-if="part.match"
+                      class="bg-muted-foreground/20 text-foreground px-0.5 rounded font-semibold"
+                    >
+                      {{ part.text }}
+                    </mark>
+                    <template v-else>{{ part.text }}</template>
+                  </template>
+                </span>
+                <span v-if="row.description" class="text-2sm text-muted-foreground leading-tight">
+                  <template
+                    v-for="(part, idx) in highlightText(row.description, currentSearch)"
+                    :key="idx"
+                  >
+                    <mark
+                      v-if="part.match"
+                      class="bg-muted-foreground/20 text-foreground px-0.5 rounded font-medium"
+                    >
+                      {{ part.text }}
+                    </mark>
+                    <template v-else>{{ part.text }}</template>
+                  </template>
+                </span>
               </div>
             </div>
           </div>

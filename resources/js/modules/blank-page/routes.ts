@@ -1,11 +1,14 @@
 import type { RouteRecordRaw } from 'vue-router';
 import { FileCode2 } from '@lucide/vue';
+import { userCan } from '@/shared/guards/user-can';
+import { BLANK_PAGE_PERMISSIONS } from './permissions';
 
 export const blankPageRoutes: RouteRecordRaw[] = [
   {
     path: '/blank-page',
     name: 'blank-page',
     component: () => import('./pages/BlankPage.vue'),
+    beforeEnter: userCan(BLANK_PAGE_PERMISSIONS.VIEW),
     meta: {
       title: 'Halaman Kosong',
       subtitle:
@@ -21,6 +24,7 @@ export const blankPageRoutes: RouteRecordRaw[] = [
     path: '/blank-page/detail',
     name: 'blank-page.detail',
     component: () => import('./pages/BlankDetailPage.vue'),
+    beforeEnter: userCan(BLANK_PAGE_PERMISSIONS.VIEW),
     meta: {
       title: 'Detail Halaman Kosong',
       subtitle: 'Halaman ini menggunakan rute meta backUrl dengan named route scope "blank-page".',

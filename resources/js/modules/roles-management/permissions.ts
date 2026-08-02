@@ -1,8 +1,6 @@
 export const ROLE_PERMISSIONS = {
-  VIEW: 'roles.view',
-  CREATE: 'roles.create',
-  EDIT: 'roles.edit',
-  DELETE: 'roles.delete',
+  VIEW: 'manajemen-group',
+  CREATE: 'tambah-group',
+  UPDATE: 'ubah-group',
+  DELETE: 'hapus-group',
 } as const;
-
-export type RolePermissionKey = (typeof ROLE_PERMISSIONS)[keyof typeof ROLE_PERMISSIONS];

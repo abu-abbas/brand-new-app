@@ -23,7 +23,9 @@ import { useConfirmDialog } from '@/composables/useConfirmDialog';
 import { normalizeAppError } from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import router from '@/router';
+import { usePermissionStore } from '@/stores/permission';
 import { FeaturesFacade } from '../api/features.facade';
+import { FEATURE_PERMISSIONS } from '../permissions';
 import {
   useCreateFeatureMutation,
   useDeleteFeatureMutation,
@@ -31,6 +33,8 @@ import {
   useUpdateFeatureMutation,
 } from '../mutations/use-feature-mutations';
 import { toKebabCase } from './feature-form.utils';
+
+const permissionStore = usePermissionStore();
 
 type FeatureForm = {
   name: string;
@@ -643,6 +647,7 @@ watch(open, (isOpen) => {
               tetap tersimpan sebagai data terhapus.
             </AlertDescription>
             <Button
+              v-if="permissionStore.can(FEATURE_PERMISSIONS.DELETE)"
               type="button"
               variant="destructive"
               size="sm"
@@ -669,6 +674,7 @@ watch(open, (isOpen) => {
               belum digunakan fitur aktif lain.
             </AlertDescription>
             <Button
+              v-if="permissionStore.can(FEATURE_PERMISSIONS.UPDATE)"
               type="button"
               size="sm"
               class="mt-3"

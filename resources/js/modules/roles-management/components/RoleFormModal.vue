@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
 import { normalizeAppError } from '@/lib/axios';
 import { useAuthStore } from '@/stores/auth';
+import { usePermissionStore } from '@/stores/permission';
 import PermissionTree from './PermissionTree.vue';
 import {
   RolesFacade,
@@ -19,6 +20,7 @@ import {
   type RoleRow,
   type StoreRolePayload,
 } from '../api/roles.facade';
+import { ROLE_PERMISSIONS } from '../permissions';
 
 interface Props {
   role?: RoleRow | null;
@@ -37,6 +39,7 @@ const emit = defineEmits<{
 const formRef = ref<FormInstance>();
 const confirmDialog = useConfirmDialog();
 const authStore = useAuthStore();
+const permissionStore = usePermissionStore();
 
 const isRoot = computed(() => Boolean(authStore.user?.is_root));
 
@@ -475,6 +478,7 @@ watch(open, (isOpen) => {
               dipulihkan kembali selama kodenya belum digunakan oleh group lain.
             </AlertDescription>
             <Button
+              v-if="permissionStore.can(ROLE_PERMISSIONS.DELETE)"
               type="button"
               variant="destructive"
               size="sm"
@@ -500,7 +504,14 @@ watch(open, (isOpen) => {
               Group akan dikembalikan ke daftar group aktif. Pemulihan hanya dapat dilakukan jika
               kode group belum digunakan oleh group aktif lain.
             </AlertDescription>
-            <Button type="button" size="sm" class="mt-3" :disabled="isPending" @click="restoreRole">
+            <Button
+              v-if="permissionStore.can(ROLE_PERMISSIONS.UPDATE)"
+              type="button"
+              size="sm"
+              class="mt-3"
+              :disabled="isPending"
+              @click="restoreRole"
+            >
               <RotateCcw data-icon="inline-start" />
               Pulihkan Group
             </Button>

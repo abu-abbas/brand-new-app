@@ -13,9 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LucideIcon } from '@/components/custom-ui/lucide-icon';
 import { CircleCheck, CircleX } from '@lucide/vue';
+import { usePermissionStore } from '@/stores/permission';
 import RoleFormModal from '../components/RoleFormModal.vue';
 import { RolesFacade, type RoleRow } from '../api/roles.facade';
+import { ROLE_PERMISSIONS } from '../permissions';
 
+const permission = usePermissionStore();
 const dataTableRef = ref();
 
 const modalOpen = ref(false);
@@ -30,9 +33,9 @@ const fields: DataTableField<RoleRow>[] = [
     filterColumn: false,
     align: 'center',
   },
-  { key: 'name', label: 'Group', minWidth: 200, sortable: true },
+  { key: 'name', label: 'Group', minWidth: 150, sortable: true },
   { key: 'code', label: 'Kode Group', hidden: true },
-  { key: 'features', label: 'Hak Akses', minWidth: 150 },
+  { key: 'features', label: 'Hak Akses', minWidth: 220 },
   {
     key: 'limitasi',
     label: 'Limitasi',
@@ -144,7 +147,11 @@ function onSubmitted(): void {
 <template>
   <AdminLayout parent-title="Manajemen Pengguna & Hak Akses" title="Manajemen Group">
     <template #header-actions>
-      <Button class="ml-auto gap-2" @click="openCreate">
+      <Button
+        v-if="permission.can(ROLE_PERMISSIONS.CREATE)"
+        class="ml-auto gap-2"
+        @click="openCreate"
+      >
         <LucideIcon name="Plus" data-icon="inline-start" />
         Tambah Group
       </Button>
@@ -163,25 +170,26 @@ function onSubmitted(): void {
         search-placeholder="Cari berdasarkan nama atau kode group..."
         actions
         :actions-width="60"
+        :can-edit="() => permission.can(ROLE_PERMISSIONS.UPDATE)"
         :can-delete="() => false"
         @edit="(row: unknown) => openEdit(row as RoleRow)"
         @create="openCreate"
       >
         <template #cell(name)="{ row, value }">
-          <div class="flex flex-col gap-0">
+          <div class="flex items-center gap-1.5">
             <p>{{ value }}</p>
-            <p class="text-sm text-muted-foreground">{{ row.code }}</p>
+            <Badge variant="outline" class="bg-primary/10 border-primary/40">{{ row.code }}</Badge>
           </div>
         </template>
 
         <template #cell(need_region)="{ value }">
           <CircleCheck v-if="value" class="mx-auto size-4 text-emerald-500" />
-          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+          <CircleX v-else class="mx-auto size-4 text-destructive/50" />
         </template>
 
         <template #cell(need_unit)="{ value }">
           <CircleCheck v-if="value" class="mx-auto size-4 text-emerald-500" />
-          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+          <CircleX v-else class="mx-auto size-4 text-destructive/50" />
         </template>
 
         <template #cell(active_periode)="{ value }">
@@ -189,7 +197,7 @@ function onSubmitted(): void {
             v-if="value && (value.start || value.end)"
             class="mx-auto size-4 text-emerald-500"
           />
-          <CircleX v-else class="mx-auto size-4 text-muted-foreground/40" />
+          <CircleX v-else class="mx-auto size-4 text-destructive/50" />
         </template>
 
         <template #cell(features)="{ value, search }">

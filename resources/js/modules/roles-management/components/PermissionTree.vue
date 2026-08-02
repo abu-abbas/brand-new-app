@@ -2,7 +2,7 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { ElTree } from 'element-plus';
 import 'element-plus/es/components/tree/style/css';
-import { CheckSquare, Square, Link2, Search, X, ShieldAlert } from '@lucide/vue';
+import { CheckSquare, Square, TagIcon, Search, X, ShieldAlert } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { PermissionTreeNode } from '../api/roles.facade';
 
@@ -282,7 +282,7 @@ watch(
     </div>
 
     <!-- Scrollable Tree Content dengan ScrollArea shadcn-vue -->
-    <ScrollArea v-else ref="treeContainerRef" class="max-h-72 min-h-28 p-3">
+    <ScrollArea ref="treeContainerRef" class="h-72 w-full p-3">
       <ElTree
         ref="treeRef"
         :data="treeData"
@@ -320,7 +320,7 @@ watch(
               v-if="data.code"
               class="flex items-center gap-1 rounded bg-muted/70 px-1.5 py-0.2 font-mono text-2xs text-muted-foreground/80"
             >
-              <Link2 class="size-3" />
+              <TagIcon class="size-3" />
               <template v-for="(part, idx) in getLabelParts(data.code, searchQuery)" :key="idx">
                 <mark
                   v-if="part.isMatch"
