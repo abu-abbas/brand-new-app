@@ -17,7 +17,14 @@ class ListFeatureRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user !== null && (
+            $user->isRoot()
+            || $user->can('manajemen-fitur')
+            || $user->can('manajemen-group')
+            || $this->input('type') === 'menu'
+        );
     }
 
     public function rules(): array

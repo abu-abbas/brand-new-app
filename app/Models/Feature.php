@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\HasNotFoundError;
 use App\Enums\PermissionType;
+use App\Errors\FeatureError;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -31,13 +33,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $dt_deleted_at
  * @property Collection<int, Role> $roles
  */
-class Feature extends Model
+class Feature extends Model implements HasNotFoundError
 {
     use SoftDeletes;
 
     protected $table = 'tm_features';
 
     protected $primaryKey = 'i_id';
+
+    public static function notFoundError(): FeatureError
+    {
+        return FeatureError::FEATURE_NOT_FOUND;
+    }
 
     public function getRouteKeyName(): string
     {

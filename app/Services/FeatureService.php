@@ -87,7 +87,16 @@ class FeatureService
      */
     public function options(): Collection
     {
-        return Feature::query()
+        $query = Feature::query();
+        $user = Auth::user();
+
+        if (! $user?->isRoot()) {
+            $query->where(fn ($query) => $query
+                ->where('b_is_restricted', false)
+                ->orWhereNull('b_is_restricted'));
+        }
+
+        return $query
             ->orderBy('si_order')
             ->orderBy('v_name')
             ->get();

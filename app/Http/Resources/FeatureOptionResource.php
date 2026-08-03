@@ -17,7 +17,7 @@ class FeatureOptionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'name' => $this->v_name,
+            'name' => toTitleCase($this->v_name),
             'alias' => $this->v_alias,
             'type' => $this->e_type->value,
         ];

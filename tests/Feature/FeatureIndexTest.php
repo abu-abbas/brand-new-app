@@ -1,5 +1,6 @@
 <?php
 
+use App\Constants\RoleConstant;
 use App\Models\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -9,6 +10,12 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
+    DB::table('tm_roles')->insert([
+        'v_code' => 'ADM_SYS',
+        'v_name' => 'ZZZ Root',
+        'i_level' => RoleConstant::ROOT_LEVEL,
+        'v_created_by' => 'system',
+    ]);
     $admin = User::factory()->create();
     DB::table('tr_user_roles')->insert([
         'v_userid' => $admin->v_userid,
@@ -53,6 +60,39 @@ it('filters menu items by user permissions for non-admin users', function () {
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.alias', 'beranda');
+});
+
+it('hides restricted feature options from non-root users', function () {
+    Feature::query()->create([
+        'v_name' => 'Publik',
+        'v_alias' => 'publik',
+        'e_type' => 'menu',
+        'b_is_restricted' => false,
+    ]);
+    Feature::query()->create([
+        'v_name' => 'Terbatas',
+        'v_alias' => 'terbatas',
+        'e_type' => 'menu',
+        'b_is_restricted' => true,
+    ]);
+    DB::table('tm_roles')->insert([
+        'v_code' => 'USER_ROLE',
+        'v_name' => 'User Role',
+        'i_level' => 10,
+        'v_created_by' => 'system',
+    ]);
+    $user = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => 'USER_ROLE',
+        'v_created_by' => 'system',
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/api/features/options')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.alias', 'publik');
 });
 
 it('lists active and soft-deleted features when requested', function () {

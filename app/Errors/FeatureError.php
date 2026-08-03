@@ -149,4 +149,7 @@ enum FeatureError: string implements ErrorCode
 
     #[ErrorDefinition(message: 'Pilihan pembatasan akses harus berupa boolean.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
     case IS_RESTRICTED_BOOLEAN = 'FEAT-VAL-046';
+
+    #[ErrorDefinition(message: 'Data fitur tidak ditemukan.', category: ErrorCategory::NOT_FOUND, httpStatus: 404, severity: ErrorSeverity::LOW)]
+    case FEATURE_NOT_FOUND = 'FEAT-NF-001';
 }
