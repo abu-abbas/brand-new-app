@@ -70,7 +70,7 @@ it('logs in an active user with role and returns the current session user', func
 
     $this->getJson('/api/auth/me')
         ->assertOk()
-        ->assertJsonPath('data.username', 'pegawai');
+        ->assertJsonPath('data.userid', 'pegawai');
 });
 
 it('rejects login when user has no role assigned', function () {

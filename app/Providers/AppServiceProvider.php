@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
+use App\Models\User;
 use App\Support\Scramble\PaginationSchemaExtension;
 use Dedoc\Scramble\Scramble;
 use Dedoc\Scramble\Support\Generator\OpenApi;
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 

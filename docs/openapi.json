@@ -424,6 +424,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -518,6 +521,9 @@
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -549,6 +555,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -595,6 +604,633 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/references/wilayah": {
+            "get": {
+                "operationId": "references.wilayah",
+                "summary": "Mengambil data mock Wilayah",
+                "tags": [
+                    "ReferenceMock"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "10"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Pusat"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "20"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Utara"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 1
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "11"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Kepulauan Seribu"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 1
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "30"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Barat"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 2
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "40"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Selatan 1"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 3
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "41"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Selatan 2"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 4
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "50"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Timur 1"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 5
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "code": {
+                                                                "type": "string",
+                                                                "const": "51"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "const": "Jakarta Timur 2"
+                                                            },
+                                                            "order": {
+                                                                "type": "integer",
+                                                                "const": 6
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "code",
+                                                            "name",
+                                                            "order"
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/references/perangkat-daerah": {
+            "get": {
+                "operationId": "references.perangkat-daerah",
+                "summary": "Mengambil data mock Perangkat Daerah (Unit)",
+                "tags": [
+                    "ReferenceMock"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "prefixItems": [
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001000"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003891"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "UNIT PENGELOLA LAYANAN PENGADAAN SECARA ELEKTRONIK"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001701"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003892"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SEKRETARIAT KOMISI PENYIARAN DAN KOMISI INFORMASI PROVINSI"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "11601702"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003893"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "UNIT PENGELOLA JAKARTA SMART CITY"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001703"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003894"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "PUSAT PELAYANAN STATISTIK"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001702"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003895"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "UNIT PENGELOLA STATISTIK"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003896"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "UNIT PENGELOLA LAYANAN TEKNOLOGI INFORMASI DAN KOMUNIKASI"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "000003897"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "UNIT PENGELOLA PERANGKAT DAN JARINGAN SISTEM ELEKTRONIK"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001704"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "100003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA PUSAT"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001101"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "110003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KAB ADM. KEPULAUAN SERIBU"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001601"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "200003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA UTARA"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001201"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "300003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA BARAT"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001301"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "400003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA SELATAN"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001401"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "code": {
+                                                            "type": "string",
+                                                            "const": "500003890"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "const": "SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA TIMUR"
+                                                        },
+                                                        "spmu": {
+                                                            "type": "string",
+                                                            "const": "C181"
+                                                        },
+                                                        "sipkd_code": {
+                                                            "type": "string",
+                                                            "const": "21001501"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "code",
+                                                        "name",
+                                                        "spmu",
+                                                        "sipkd_code"
+                                                    ]
+                                                }
+                                            ],
+                                            "minItems": 14,
+                                            "maxItems": 14,
+                                            "additionalItems": false
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -780,6 +1416,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -822,6 +1461,9 @@
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -907,6 +1549,9 @@
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -961,6 +1606,9 @@
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -992,6 +1640,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1038,6 +1689,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1107,8 +1761,9 @@
                             ],
                             "enum": [
                                 "id",
-                                "name",
+                                "userid",
                                 "username",
+                                "name",
                                 "email",
                                 "unit_name",
                                 "role",
@@ -1181,6 +1836,60 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "users.store",
+                "summary": "Create a new user",
+                "tags": [
+                    "User"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreUserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Pengguna berhasil dibuat."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
@@ -1207,6 +1916,222 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/users/{user}": {
+            "get": {
+                "operationId": "users.show",
+                "summary": "Display detail of a user",
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "users.update",
+                "summary": "Update an existing user",
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateUserRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Data pengguna berhasil diperbarui."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "users.destroy",
+                "summary": "Soft delete a user",
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Pengguna berhasil dihapus."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/users/{user}/toggle-status": {
+            "patch": {
+                "operationId": "users.toggle-status",
+                "summary": "Toggle active status of a user",
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Status pengguna berhasil diperbarui."
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1282,6 +2207,9 @@
                     "show_on_sidebar": {
                         "type": "boolean"
                     },
+                    "is_restricted": {
+                        "type": "boolean"
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -1312,6 +2240,7 @@
                     "icon",
                     "order",
                     "show_on_sidebar",
+                    "is_restricted",
                     "created_at",
                     "updated_at",
                     "deleted_at"
@@ -1544,6 +2473,12 @@
                     "locked": {
                         "type": "boolean"
                     },
+                    "can_edit": {
+                        "type": "string"
+                    },
+                    "can_delete": {
+                        "type": "string"
+                    },
                     "features": {
                         "type": "array",
                         "items": {}
@@ -1569,6 +2504,8 @@
                     "need_unit",
                     "active_periode",
                     "locked",
+                    "can_edit",
+                    "can_delete",
                     "features",
                     "updated_at",
                     "deleted_at"
@@ -1625,6 +2562,9 @@
                         "maximum": 32767
                     },
                     "show_on_sidebar": {
+                        "type": "boolean"
+                    },
+                    "is_restricted": {
                         "type": "boolean"
                     },
                     "description": {
@@ -1690,6 +2630,110 @@
                 ],
                 "title": "StoreRoleRequest"
             },
+            "StoreUserRequest": {
+                "type": "object",
+                "properties": {
+                    "userid": {
+                        "type": "string",
+                        "maxLength": 100
+                    },
+                    "username": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "unit_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 50
+                    },
+                    "password": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minLength": 6
+                    },
+                    "is_active": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "is_external": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "roles": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "role_code": {
+                                    "type": "string"
+                                },
+                                "wilayah": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 50
+                                },
+                                "unit": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 50
+                                },
+                                "pelaksana": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 10
+                                },
+                                "valid_from": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "date-time"
+                                },
+                                "valid_until": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "date-time"
+                                }
+                            },
+                            "required": [
+                                "role_code"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "userid",
+                    "username"
+                ],
+                "title": "StoreUserRequest"
+            },
             "UpdateRoleRequest": {
                 "type": "object",
                 "properties": {
@@ -1738,36 +2782,160 @@
                 ],
                 "title": "UpdateRoleRequest"
             },
+            "UpdateUserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "maxLength": 255
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "unit_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 50
+                    },
+                    "password": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "minLength": 6
+                    },
+                    "is_active": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "is_external": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    },
+                    "roles": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "role_code": {
+                                    "type": "string"
+                                },
+                                "wilayah": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 50
+                                },
+                                "unit": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 50
+                                },
+                                "pelaksana": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "maxLength": 10
+                                },
+                                "valid_from": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "date-time"
+                                },
+                                "valid_until": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ],
+                                    "format": "date-time"
+                                }
+                            },
+                            "required": [
+                                "role_code"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "username"
+                ],
+                "title": "UpdateUserRequest"
+            },
             "UserResource": {
                 "type": "object",
                 "properties": {
                     "id": {
                         "type": "string"
                     },
-                    "name": {
+                    "userid": {
                         "type": "string"
                     },
                     "username": {
                         "type": "string"
                     },
-                    "email": {
+                    "name": {
                         "type": "string"
+                    },
+                    "email": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "unit": {
                         "type": "object",
                         "properties": {
+                            "code": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
                             "name": {
                                 "type": "string"
                             }
                         },
                         "required": [
+                            "code",
                             "name"
                         ]
+                    },
+                    "is_active": {
+                        "type": "boolean"
+                    },
+                    "is_external": {
+                        "type": "boolean"
                     },
                     "roles": {
                         "type": "array",
                         "items": {
                             "type": "string"
+                        }
+                    },
+                    "user_roles": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/UserRoleResource"
                         }
                     },
                     "permissions": {
@@ -1779,9 +2947,6 @@
                     "is_root": {
                         "type": "boolean"
                     },
-                    "active": {
-                        "type": "boolean"
-                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -1791,16 +2956,85 @@
                 },
                 "required": [
                     "id",
-                    "name",
+                    "userid",
                     "username",
+                    "name",
                     "email",
                     "unit",
+                    "is_active",
+                    "is_external",
                     "roles",
                     "permissions",
-                    "active",
                     "created_at"
                 ],
                 "title": "UserResource"
+            },
+            "UserRoleResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "userid": {
+                        "type": "string"
+                    },
+                    "role_code": {
+                        "type": "string"
+                    },
+                    "role_name": {
+                        "type": "string"
+                    },
+                    "wilayah": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "unit": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "pelaksana": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "valid_from": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "valid_until": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "need_region": {
+                        "type": "boolean"
+                    },
+                    "need_unit": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "id",
+                    "userid",
+                    "role_code",
+                    "role_name",
+                    "wilayah",
+                    "unit",
+                    "pelaksana",
+                    "valid_from",
+                    "valid_until",
+                    "need_region",
+                    "need_unit"
+                ],
+                "title": "UserRoleResource"
             }
         },
         "responses": {
@@ -1836,6 +3070,25 @@
             },
             "AuthenticationException": {
                 "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "AuthorizationException": {
+                "description": "Authorization error",
                 "content": {
                     "application/json": {
                         "schema": {

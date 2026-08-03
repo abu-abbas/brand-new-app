@@ -137,4 +137,12 @@ enum AuthError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case NO_ROLE_ASSIGNED = 'AUTH-LOGIN-003';
+
+    #[ErrorDefinition(
+        message: 'Anda tidak memiliki hak akses untuk melakukan tindakan ini.',
+        category: ErrorCategory::AUTHORIZATION,
+        httpStatus: 403,
+        severity: ErrorSeverity::LOW,
+    )]
+    case UNAUTHORIZED_ACTION = 'AUTH-ACC-001';
 }

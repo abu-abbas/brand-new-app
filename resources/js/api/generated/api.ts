@@ -36,6 +36,7 @@ export interface FeatureResource {
   icon: FeatureResourceIcon;
   order: number;
   show_on_sidebar: boolean;
+  is_restricted: boolean;
   created_at: FeatureResourceCreatedAt;
   updated_at: FeatureResourceUpdatedAt;
   deleted_at: FeatureResourceDeletedAt;
@@ -160,6 +161,8 @@ export interface RoleResource {
   need_unit: boolean;
   active_periode: RoleResourceActivePeriode;
   locked: boolean;
+  can_edit: string;
+  can_delete: string;
   features: unknown[];
   updated_at: RoleResourceUpdatedAt;
   deleted_at: RoleResourceDeletedAt;
@@ -222,6 +225,7 @@ export interface StoreFeatureRequest {
    */
   order?: StoreFeatureRequestOrder;
   show_on_sidebar?: boolean;
+  is_restricted?: boolean;
   /** @maxLength 100 */
   description?: StoreFeatureRequestDescription;
 }
@@ -249,6 +253,74 @@ export interface StoreRoleRequest {
   features?: StoreRoleRequestFeatures;
 }
 
+/**
+ * @maxLength 255
+ */
+export type StoreUserRequestEmail = string | null;
+
+/**
+ * @maxLength 50
+ */
+export type StoreUserRequestUnitCode = string | null;
+
+/**
+ * @minLength 6
+ */
+export type StoreUserRequestPassword = string | null;
+
+export type StoreUserRequestIsActive = boolean | null;
+
+export type StoreUserRequestIsExternal = boolean | null;
+
+/**
+ * @maxLength 50
+ */
+export type StoreUserRequestRolesAnyOfItemWilayah = string | null;
+
+/**
+ * @maxLength 50
+ */
+export type StoreUserRequestRolesAnyOfItemUnit = string | null;
+
+/**
+ * @maxLength 10
+ */
+export type StoreUserRequestRolesAnyOfItemPelaksana = string | null;
+
+export type StoreUserRequestRolesAnyOfItemValidFrom = string | null;
+
+export type StoreUserRequestRolesAnyOfItemValidUntil = string | null;
+
+export type StoreUserRequestRolesAnyOfItem = {
+  role_code: string;
+  /** @maxLength 50 */
+  wilayah?: StoreUserRequestRolesAnyOfItemWilayah;
+  /** @maxLength 50 */
+  unit?: StoreUserRequestRolesAnyOfItemUnit;
+  /** @maxLength 10 */
+  pelaksana?: StoreUserRequestRolesAnyOfItemPelaksana;
+  valid_from?: StoreUserRequestRolesAnyOfItemValidFrom;
+  valid_until?: StoreUserRequestRolesAnyOfItemValidUntil;
+};
+
+export type StoreUserRequestRoles = StoreUserRequestRolesAnyOfItem[] | null;
+
+export interface StoreUserRequest {
+  /** @maxLength 100 */
+  userid: string;
+  /** @maxLength 255 */
+  username: string;
+  /** @maxLength 255 */
+  email?: StoreUserRequestEmail;
+  /** @maxLength 50 */
+  unit_code?: StoreUserRequestUnitCode;
+  /** @minLength 6 */
+  password?: StoreUserRequestPassword;
+  is_active?: StoreUserRequestIsActive;
+  is_external?: StoreUserRequestIsExternal;
+  roles?: StoreUserRequestRoles;
+}
+
 export type UpdateRoleRequestActivePeriode = string[] | null;
 
 export type UpdateRoleRequestFeatures = string[] | null;
@@ -272,7 +344,78 @@ export interface UpdateRoleRequest {
   features?: UpdateRoleRequestFeatures;
 }
 
+/**
+ * @maxLength 255
+ */
+export type UpdateUserRequestEmail = string | null;
+
+/**
+ * @maxLength 50
+ */
+export type UpdateUserRequestUnitCode = string | null;
+
+/**
+ * @minLength 6
+ */
+export type UpdateUserRequestPassword = string | null;
+
+export type UpdateUserRequestIsActive = boolean | null;
+
+export type UpdateUserRequestIsExternal = boolean | null;
+
+/**
+ * @maxLength 50
+ */
+export type UpdateUserRequestRolesAnyOfItemWilayah = string | null;
+
+/**
+ * @maxLength 50
+ */
+export type UpdateUserRequestRolesAnyOfItemUnit = string | null;
+
+/**
+ * @maxLength 10
+ */
+export type UpdateUserRequestRolesAnyOfItemPelaksana = string | null;
+
+export type UpdateUserRequestRolesAnyOfItemValidFrom = string | null;
+
+export type UpdateUserRequestRolesAnyOfItemValidUntil = string | null;
+
+export type UpdateUserRequestRolesAnyOfItem = {
+  role_code: string;
+  /** @maxLength 50 */
+  wilayah?: UpdateUserRequestRolesAnyOfItemWilayah;
+  /** @maxLength 50 */
+  unit?: UpdateUserRequestRolesAnyOfItemUnit;
+  /** @maxLength 10 */
+  pelaksana?: UpdateUserRequestRolesAnyOfItemPelaksana;
+  valid_from?: UpdateUserRequestRolesAnyOfItemValidFrom;
+  valid_until?: UpdateUserRequestRolesAnyOfItemValidUntil;
+};
+
+export type UpdateUserRequestRoles = UpdateUserRequestRolesAnyOfItem[] | null;
+
+export interface UpdateUserRequest {
+  /** @maxLength 255 */
+  username: string;
+  /** @maxLength 255 */
+  email?: UpdateUserRequestEmail;
+  /** @maxLength 50 */
+  unit_code?: UpdateUserRequestUnitCode;
+  /** @minLength 6 */
+  password?: UpdateUserRequestPassword;
+  is_active?: UpdateUserRequestIsActive;
+  is_external?: UpdateUserRequestIsExternal;
+  roles?: UpdateUserRequestRoles;
+}
+
+export type UserResourceEmail = string | null;
+
+export type UserResourceUnitCode = string | null;
+
 export type UserResourceUnit = {
+  code: UserResourceUnitCode;
   name: string;
 };
 
@@ -280,15 +423,42 @@ export type UserResourceCreatedAt = string | null;
 
 export interface UserResource {
   id: string;
-  name: string;
+  userid: string;
   username: string;
-  email: string;
+  name: string;
+  email: UserResourceEmail;
   unit: UserResourceUnit;
+  is_active: boolean;
+  is_external: boolean;
   roles: string[];
+  user_roles?: UserRoleResource[];
   permissions: string[];
   is_root?: boolean;
-  active: boolean;
   created_at: UserResourceCreatedAt;
+}
+
+export type UserRoleResourceWilayah = string | null;
+
+export type UserRoleResourceUnit = string | null;
+
+export type UserRoleResourcePelaksana = string | null;
+
+export type UserRoleResourceValidFrom = string | null;
+
+export type UserRoleResourceValidUntil = string | null;
+
+export interface UserRoleResource {
+  id: number;
+  userid: string;
+  role_code: string;
+  role_name: string;
+  wilayah: UserRoleResourceWilayah;
+  unit: UserRoleResourceUnit;
+  pelaksana: UserRoleResourcePelaksana;
+  valid_from: UserRoleResourceValidFrom;
+  valid_until: UserRoleResourceValidUntil;
+  need_region: boolean;
+  need_unit: boolean;
 }
 
 /**
@@ -304,6 +474,11 @@ export type ValidationExceptionResponse = {
 };
 
 export type AuthenticationExceptionResponse = {
+  /** Error overview. */
+  message: string;
+};
+
+export type AuthorizationExceptionResponse = {
   /** Error overview. */
   message: string;
 };
@@ -393,6 +568,166 @@ export type FeaturesRestore200 = {
   data: FeatureResource;
 };
 
+export type ReferencesWilayah200DataItemAnyOf = {
+  code: '10';
+  name: 'Jakarta Pusat';
+  order: number;
+};
+
+export type ReferencesWilayah200DataItemAnyOfTwo = {
+  code: '20';
+  name: 'Jakarta Utara';
+  order: 1;
+};
+
+export type ReferencesWilayah200DataItemAnyOfThree = {
+  code: '11';
+  name: 'Kepulauan Seribu';
+  order: 1;
+};
+
+export type ReferencesWilayah200DataItemAnyOfFour = {
+  code: '30';
+  name: 'Jakarta Barat';
+  order: 2;
+};
+
+export type ReferencesWilayah200DataItemAnyOfFive = {
+  code: '40';
+  name: 'Jakarta Selatan 1';
+  order: 3;
+};
+
+export type ReferencesWilayah200DataItemAnyOfSix = {
+  code: '41';
+  name: 'Jakarta Selatan 2';
+  order: 4;
+};
+
+export type ReferencesWilayah200DataItemAnyOfSeven = {
+  code: '50';
+  name: 'Jakarta Timur 1';
+  order: 5;
+};
+
+export type ReferencesWilayah200DataItemAnyOfEight = {
+  code: '51';
+  name: 'Jakarta Timur 2';
+  order: 6;
+};
+
+export type ReferencesWilayah200DataItem = ReferencesWilayah200DataItemAnyOf | ReferencesWilayah200DataItemAnyOfTwo | ReferencesWilayah200DataItemAnyOfThree | ReferencesWilayah200DataItemAnyOfFour | ReferencesWilayah200DataItemAnyOfFive | ReferencesWilayah200DataItemAnyOfSix | ReferencesWilayah200DataItemAnyOfSeven | ReferencesWilayah200DataItemAnyOfEight;
+
+export type ReferencesWilayah200 = {
+  data: ReferencesWilayah200DataItem[];
+};
+
+export type ReferencesPerangkatDaerah200DataItem0 = {
+  code: '000003890';
+  name: 'DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK';
+  spmu: 'C181';
+  sipkd_code: '21001000';
+};
+
+export type ReferencesPerangkatDaerah200DataItem1 = {
+  code: '000003891';
+  name: 'UNIT PENGELOLA LAYANAN PENGADAAN SECARA ELEKTRONIK';
+  spmu: 'C181';
+  sipkd_code: '21001701';
+};
+
+export type ReferencesPerangkatDaerah200DataItem2 = {
+  code: '000003892';
+  name: 'SEKRETARIAT KOMISI PENYIARAN DAN KOMISI INFORMASI PROVINSI';
+  spmu: 'C181';
+  sipkd_code: '11601702';
+};
+
+export type ReferencesPerangkatDaerah200DataItem3 = {
+  code: '000003893';
+  name: 'UNIT PENGELOLA JAKARTA SMART CITY';
+  spmu: 'C181';
+  sipkd_code: '21001703';
+};
+
+export type ReferencesPerangkatDaerah200DataItem4 = {
+  code: '000003894';
+  name: 'PUSAT PELAYANAN STATISTIK';
+  spmu: 'C181';
+  sipkd_code: '21001702';
+};
+
+export type ReferencesPerangkatDaerah200DataItem5 = {
+  code: '000003895';
+  name: 'UNIT PENGELOLA STATISTIK';
+  spmu: 'C181';
+  sipkd_code: string;
+};
+
+export type ReferencesPerangkatDaerah200DataItem6 = {
+  code: '000003896';
+  name: 'UNIT PENGELOLA LAYANAN TEKNOLOGI INFORMASI DAN KOMUNIKASI';
+  spmu: 'C181';
+  sipkd_code: string;
+};
+
+export type ReferencesPerangkatDaerah200DataItem7 = {
+  code: '000003897';
+  name: 'UNIT PENGELOLA PERANGKAT DAN JARINGAN SISTEM ELEKTRONIK';
+  spmu: 'C181';
+  sipkd_code: '21001704';
+};
+
+export type ReferencesPerangkatDaerah200DataItem8 = {
+  code: '100003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA PUSAT';
+  spmu: 'C181';
+  sipkd_code: '21001101';
+};
+
+export type ReferencesPerangkatDaerah200DataItem9 = {
+  code: '110003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KAB ADM. KEPULAUAN SERIBU';
+  spmu: 'C181';
+  sipkd_code: '21001601';
+};
+
+export type ReferencesPerangkatDaerah200DataItem10 = {
+  code: '200003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA UTARA';
+  spmu: 'C181';
+  sipkd_code: '21001201';
+};
+
+export type ReferencesPerangkatDaerah200DataItem11 = {
+  code: '300003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA BARAT';
+  spmu: 'C181';
+  sipkd_code: '21001301';
+};
+
+export type ReferencesPerangkatDaerah200DataItem12 = {
+  code: '400003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA SELATAN';
+  spmu: 'C181';
+  sipkd_code: '21001401';
+};
+
+export type ReferencesPerangkatDaerah200DataItem13 = {
+  code: '500003890';
+  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA TIMUR';
+  spmu: 'C181';
+  sipkd_code: '21001501';
+};
+
+export type ReferencesPerangkatDaerah200 = {
+  /**
+   * @minItems 14
+   * @maxItems 14
+   */
+  data: [ReferencesPerangkatDaerah200DataItem0, ReferencesPerangkatDaerah200DataItem1, ReferencesPerangkatDaerah200DataItem2, ReferencesPerangkatDaerah200DataItem3, ReferencesPerangkatDaerah200DataItem4, ReferencesPerangkatDaerah200DataItem5, ReferencesPerangkatDaerah200DataItem6, ReferencesPerangkatDaerah200DataItem7, ReferencesPerangkatDaerah200DataItem8, ReferencesPerangkatDaerah200DataItem9, ReferencesPerangkatDaerah200DataItem10, ReferencesPerangkatDaerah200DataItem11, ReferencesPerangkatDaerah200DataItem12, ReferencesPerangkatDaerah200DataItem13];
+};
+
 export type RolesIndexParams = {
 /**
  * @minimum 1
@@ -471,7 +806,7 @@ per_page?: number | null;
  */
 search?: string | null;
 'search_fields[]'?: string[];
-sort_by?: 'id' | 'name' | 'username' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
+sort_by?: 'id' | 'userid' | 'username' | 'name' | 'email' | 'unit_name' | 'role' | 'is_active' | 'created_at' | null;
 sort_direction?: 'asc' | 'desc' | null;
 active?: 'true' | 'false' | '1' | '0' | null;
 };
@@ -482,7 +817,30 @@ export type UsersIndex200 = {
   meta: PaginationMeta;
 };
 
+export type UsersStore201 = {
+  message: 'Pengguna berhasil dibuat.';
+  data: UserResource;
+};
+
 export type UsersTestError200 = { [key: string]: unknown };
+
+export type UsersShow200 = {
+  data: UserResource;
+};
+
+export type UsersUpdate200 = {
+  message: 'Data pengguna berhasil diperbarui.';
+  data: UserResource;
+};
+
+export type UsersDestroy200 = {
+  message: 'Pengguna berhasil dihapus.';
+};
+
+export type UsersToggleStatus200 = {
+  message: 'Status pengguna berhasil diperbarui.';
+  data: UserResource;
+};
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -629,6 +987,30 @@ export const featuresRestore = (
     }
   
 /**
+ * @summary Mengambil data mock Wilayah
+ */
+export const referencesWilayah = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<ReferencesWilayah200>>,) => {
+      return customAxiosInstance<ReferencesWilayah200>(
+      {url: `/references/wilayah`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Mengambil data mock Perangkat Daerah (Unit)
+ */
+export const referencesPerangkatDaerah = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<ReferencesPerangkatDaerah200>>,) => {
+      return customAxiosInstance<ReferencesPerangkatDaerah200>(
+      {url: `/references/perangkat-daerah`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
  * @summary Display a paginated list of roles
  */
 export const rolesIndex = (
@@ -732,6 +1114,20 @@ export const usersIndex = (
     }
   
 /**
+ * @summary Create a new user
+ */
+export const usersStore = (
+    storeUserRequest: StoreUserRequest,
+ options?: SecondParameter<typeof customAxiosInstance<UsersStore201>>,) => {
+      return customAxiosInstance<UsersStore201>(
+      {url: `/users`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: storeUserRequest
+    },
+      options);
+    }
+  
+/**
  * @summary Endpoint demonstrasi EDF ApplicationException
  */
 export const usersTestError = (
@@ -739,6 +1135,57 @@ export const usersTestError = (
  options?: SecondParameter<typeof customAxiosInstance<UsersTestError200>>,) => {
       return customAxiosInstance<UsersTestError200>(
       {url: `/users/test-error`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Display detail of a user
+ */
+export const usersShow = (
+    user: number,
+ options?: SecondParameter<typeof customAxiosInstance<UsersShow200>>,) => {
+      return customAxiosInstance<UsersShow200>(
+      {url: `/users/${user}`, method: 'GET'
+    },
+      options);
+    }
+  
+/**
+ * @summary Update an existing user
+ */
+export const usersUpdate = (
+    user: number,
+    updateUserRequest: UpdateUserRequest,
+ options?: SecondParameter<typeof customAxiosInstance<UsersUpdate200>>,) => {
+      return customAxiosInstance<UsersUpdate200>(
+      {url: `/users/${user}`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: updateUserRequest
+    },
+      options);
+    }
+  
+/**
+ * @summary Soft delete a user
+ */
+export const usersDestroy = (
+    user: number,
+ options?: SecondParameter<typeof customAxiosInstance<UsersDestroy200>>,) => {
+      return customAxiosInstance<UsersDestroy200>(
+      {url: `/users/${user}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+/**
+ * @summary Toggle active status of a user
+ */
+export const usersToggleStatus = (
+    user: number,
+ options?: SecondParameter<typeof customAxiosInstance<UsersToggleStatus200>>,) => {
+      return customAxiosInstance<UsersToggleStatus200>(
+      {url: `/users/${user}/toggle-status`, method: 'PATCH'
     },
       options);
     }
@@ -754,6 +1201,8 @@ export type FeaturesOptionsResult = NonNullable<Awaited<ReturnType<typeof featur
 export type FeaturesUpdateResult = NonNullable<Awaited<ReturnType<typeof featuresUpdate>>>
 export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featuresDestroy>>>
 export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>
+export type ReferencesWilayahResult = NonNullable<Awaited<ReturnType<typeof referencesWilayah>>>
+export type ReferencesPerangkatDaerahResult = NonNullable<Awaited<ReturnType<typeof referencesPerangkatDaerah>>>
 export type RolesIndexResult = NonNullable<Awaited<ReturnType<typeof rolesIndex>>>
 export type RolesStoreResult = NonNullable<Awaited<ReturnType<typeof rolesStore>>>
 export type RolesOptionsResult = NonNullable<Awaited<ReturnType<typeof rolesOptions>>>
@@ -762,4 +1211,9 @@ export type RolesUpdateResult = NonNullable<Awaited<ReturnType<typeof rolesUpdat
 export type RolesDestroyResult = NonNullable<Awaited<ReturnType<typeof rolesDestroy>>>
 export type RolesRestoreResult = NonNullable<Awaited<ReturnType<typeof rolesRestore>>>
 export type UsersIndexResult = NonNullable<Awaited<ReturnType<typeof usersIndex>>>
+export type UsersStoreResult = NonNullable<Awaited<ReturnType<typeof usersStore>>>
 export type UsersTestErrorResult = NonNullable<Awaited<ReturnType<typeof usersTestError>>>
+export type UsersShowResult = NonNullable<Awaited<ReturnType<typeof usersShow>>>
+export type UsersUpdateResult = NonNullable<Awaited<ReturnType<typeof usersUpdate>>>
+export type UsersDestroyResult = NonNullable<Awaited<ReturnType<typeof usersDestroy>>>
+export type UsersToggleStatusResult = NonNullable<Awaited<ReturnType<typeof usersToggleStatus>>>

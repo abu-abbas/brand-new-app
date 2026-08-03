@@ -2,15 +2,19 @@
 
 use App\Core\ErrorDefinition\ApplicationExceptionReporter;
 use App\Core\ErrorDefinition\ContextSanitizer;
+use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\ErrorResponseRenderer;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
 use App\Core\ErrorDefinition\Exceptions\ErrorValidationException;
+use App\Errors\AuthError;
 use App\Http\Middleware\AssignRequestId;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -38,6 +42,24 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $renderer = new ErrorResponseRenderer;
+        $reader = new ErrorDefinitionReader;
+
+        // Rendering sentral — AuthorizationException & AccessDeniedHttpException (EDF 403)
+        $exceptions->renderable(function (AuthorizationException $e, Request $request) use ($renderer, $reader) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                $def = $reader->read(AuthError::UNAUTHORIZED_ACTION);
+
+                return $renderer->application(new ApplicationException($def, previous: $e));
+            }
+        });
+
+        $exceptions->renderable(function (AccessDeniedHttpException $e, Request $request) use ($renderer, $reader) {
+            if ($request->is('api/*') || $request->wantsJson()) {
+                $def = $reader->read(AuthError::UNAUTHORIZED_ACTION);
+
+                return $renderer->application(new ApplicationException($def, previous: $e));
+            }
+        });
 
         // Rendering sentral — ApplicationException
         $exceptions->renderable(function (ApplicationException $e, Request $request) use ($renderer) {
