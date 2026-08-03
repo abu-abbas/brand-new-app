@@ -4,7 +4,9 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Constants\RoleConstant;
+use App\Contracts\ScopedResource;
 use App\Traits\HasObfuscatedId;
+use App\Traits\HasOrganizationScope;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -48,6 +50,7 @@ use Illuminate\Support\Facades\DB;
     'v_password',
     'b_is_active',
     'b_use_other',
+    'v_default_group_id',
     'v_klogad',
     'v_kolok',
     'v_kojab',
@@ -154,20 +157,83 @@ class User extends Authenticatable implements ScopedResource
     }
 
     /**
+     * Mengambil ID / Code dari Group (Role) yang sedang aktif.
+     */
+    public function getActiveGroupId(): ?string
+    {
+        $sessionActiveGroup = session('active_group_id');
+        $userRoles = $this->getRolesList();
+
+        if (empty($userRoles)) {
+            return null;
+        }
+
+        if ($sessionActiveGroup && in_array($sessionActiveGroup, $userRoles, true)) {
+            return $sessionActiveGroup;
+        }
+
+        if ($this->v_default_group_id && in_array($this->v_default_group_id, $userRoles, true)) {
+            return $this->v_default_group_id;
+        }
+
+        if (count($userRoles) === 1) {
+            return $userRoles[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * Memeriksa apakah user memiliki lebih dari 1 group/role.
+     */
+    public function hasMultipleGroups(): bool
+    {
+        return count($this->getRolesList()) > 1;
+    }
+
+    /**
+     * Mengambil model UserRole yang sedang aktif.
+     */
+    public function getActiveUserRole(): ?UserRole
+    {
+        $activeCode = $this->getActiveGroupId();
+        if (! $activeCode) {
+            return null;
+        }
+
+        if ($this->relationLoaded('userRoles')) {
+            return $this->userRoles->firstWhere('v_role_code', $activeCode);
+        }
+
+        return $this->userRoles()->where('v_role_code', $activeCode)->first();
+    }
+
+    /**
      * Mengambil daftar alias permission (v_alias) milik user.
      * Memanfaatkan eager-loaded relation bila sudah di-load.
+     * jika active group diset, hanya mengambil permission dari active group tersebut.
      *
      * @return array<string>
      */
     public function getPermissionsList(): array
     {
         if ($this->isRoot()) {
-            return Feature::whereNull('dt_deleted_at')->pluck('v_alias')->unique()->values()->toArray();
+            static $rootFeatures = null;
+            if ($rootFeatures === null) {
+                $rootFeatures = Feature::whereNull('dt_deleted_at')->pluck('v_alias')->unique()->values()->toArray();
+            }
+
+            return $rootFeatures;
         }
 
+        $activeGroupId = $this->getActiveGroupId();
         $aliases = [];
+
         if ($this->relationLoaded('userRoles')) {
             foreach ($this->userRoles as $userRole) {
+                if ($activeGroupId && $userRole->v_role_code !== $activeGroupId) {
+                    continue;
+                }
                 $role = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : $userRole->roleModel()->first();
                 if ($role) {
                     $featureAliases = $role->relationLoaded('features')
@@ -178,6 +244,9 @@ class User extends Authenticatable implements ScopedResource
             }
         } else {
             $roleCodes = $this->userRoles()->pluck('v_role_code')->filter()->toArray();
+            if ($activeGroupId && in_array($activeGroupId, $roleCodes, true)) {
+                $roleCodes = [$activeGroupId];
+            }
             if (! empty($roleCodes)) {
                 $aliases = DB::table('tr_role_features')
                     ->whereIn('v_code', $roleCodes)
@@ -239,10 +308,36 @@ class User extends Authenticatable implements ScopedResource
     }
 
     /**
-     * Mengambil level role tertinggi dari user yang sedang login.
+     * Mengambil level role dari group yang sedang aktif, atau fallback ke level role tertinggi.
      */
     public function getRoleLevelAttribute(): int
     {
+        $activeGroupId = $this->getActiveGroupId();
+        if ($activeGroupId) {
+            if ($this->relationLoaded('userRoles')) {
+                $userRole = $this->userRoles->firstWhere('v_role_code', $activeGroupId);
+                if ($userRole) {
+                    $roleModel = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : $userRole->roleModel()->first();
+                    if ($roleModel) {
+                        return (int) $roleModel->i_level;
+                    }
+                }
+            } else {
+                $userRole = $this->userRoles()->where('v_role_code', $activeGroupId)->first();
+                if ($userRole) {
+                    $roleModel = $userRole->roleModel()->first();
+                    if ($roleModel) {
+                        return (int) $roleModel->i_level;
+                    }
+                }
+            }
+
+            $roleObj = Role::where('v_code', $activeGroupId)->first();
+            if ($roleObj) {
+                return (int) $roleObj->i_level;
+            }
+        }
+
         if ($this->relationLoaded('userRoles')) {
             $highestLevel = 0;
             foreach ($this->userRoles as $userRole) {
@@ -281,11 +376,16 @@ class User extends Authenticatable implements ScopedResource
     }
 
     /**
-     * Cek apakah user adalah Root Admin.
+     * Cek apakah user berstatus Root Admin dalam konteks group aktif saat ini.
      */
     public function isRoot(): bool
     {
-        if (in_array(strtolower((string) $this->v_userid), ['root', 'adm_sys', 'sysadmin', 'admin'], true)) {
+        $activeGroupId = $this->getActiveGroupId();
+        if ($activeGroupId) {
+            return in_array(strtoupper($activeGroupId), ['ROOT', 'ADM_SYS', 'SYSADMIN'], true);
+        }
+
+        if (in_array(strtolower((string) $this->v_userid), ['root', 'adm_sys', 'sysadmin'], true)) {
             return true;
         }
 

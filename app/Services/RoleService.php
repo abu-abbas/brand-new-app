@@ -28,9 +28,10 @@ class RoleService
             return true;
         }
 
-        $firstRole = $user->relationLoaded('userRoles')
-            ? $user->userRoles->pluck('v_role_code')->first()
-            : $user->userRoles()->pluck('v_role_code')->first();
+        $firstRole = $user->getActiveGroupId()
+            ?? ($user->relationLoaded('userRoles')
+                ? $user->userRoles->pluck('v_role_code')->first()
+                : $user->userRoles()->pluck('v_role_code')->first());
 
         if (! $firstRole) {
             return false;

@@ -145,4 +145,28 @@ enum AuthError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case UNAUTHORIZED_ACTION = 'AUTH-ACC-001';
+
+    #[ErrorDefinition(
+        message: 'Group wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case GROUP_REQUIRED = 'AUTH-VAL-014';
+
+    #[ErrorDefinition(
+        message: 'Group harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case GROUP_STRING = 'AUTH-VAL-015';
+
+    #[ErrorDefinition(
+        message: 'Group yang dipilih tidak valid atau Anda tidak memiliki akses ke group tersebut.',
+        category: ErrorCategory::AUTHORIZATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case INVALID_GROUP = 'AUTH-ACC-002';
 }

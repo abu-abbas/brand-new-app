@@ -120,6 +120,58 @@ class AuthService
         /** @var User $user */
         Auth::guard('web')->login($user);
 
+        // Auto-set active group jika hanya punya 1 group atau punya default_group_id
+        $roles = $user->getRolesList();
+        if (count($roles) === 1) {
+            session(['active_group_id' => $roles[0]]);
+        } elseif ($user->v_default_group_id && in_array($user->v_default_group_id, $roles, true)) {
+            session(['active_group_id' => $user->v_default_group_id]);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Memilih / mengubah group aktif dalam session dan opsional menyimpan preferensi default.
+     */
+    public function setActiveGroup(User $user, string $groupId, bool $remember = false): User
+    {
+        $userRoles = $user->getRolesList();
+
+        if (! $user->isRoot() && ! in_array($groupId, $userRoles, true)) {
+            throw new ApplicationException(
+                definition: $this->reader->read(AuthError::INVALID_GROUP),
+                context: ['userid' => $user->v_userid, 'group_id' => $groupId],
+            );
+        }
+
+        session(['active_group_id' => $groupId]);
+
+        if ($remember) {
+            $user->v_default_group_id = $groupId;
+            User::where('v_userid', $user->v_userid)->update([
+                'v_default_group_id' => $groupId,
+            ]);
+        } else {
+            $user->v_default_group_id = null;
+            User::where('v_userid', $user->v_userid)->update([
+                'v_default_group_id' => null,
+            ]);
+        }
+
+        return $user;
+    }
+
+    /**
+     * Mengapus / me-reset preferensi default group milik pengguna.
+     */
+    public function resetDefaultGroup(User $user): User
+    {
+        $user->v_default_group_id = null;
+        User::where('v_userid', $user->v_userid)->update([
+            'v_default_group_id' => null,
+        ]);
+
         return $user;
     }
 

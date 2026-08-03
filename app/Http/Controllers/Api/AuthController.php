@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\SetActiveGroupRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
@@ -117,6 +118,39 @@ class AuthController extends Controller
         $user->load(['userRoles.roleModel.features']);
 
         return new UserResource($user);
+    }
+
+    /**
+     * Set the active group/role for the current session.
+     *
+     * @summary Set active group
+     */
+    public function setActiveGroup(SetActiveGroupRequest $request): UserResource
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $groupId = (string) $request->input('group_id');
+        $remember = filter_var($request->input('remember'), FILTER_VALIDATE_BOOLEAN);
+
+        $updatedUser = $this->authService->setActiveGroup($user, $groupId, $remember);
+        $updatedUser->load(['userRoles.roleModel.features']);
+
+        return new UserResource($updatedUser);
+    }
+
+    /**
+     * Reset the default group preference for the current user.
+     *
+     * @summary Reset default group preference
+     */
+    public function resetDefaultGroup(Request $request): UserResource
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $updatedUser = $this->authService->resetDefaultGroup($user);
+        $updatedUser->load(['userRoles.roleModel.features']);
+
+        return new UserResource($updatedUser);
     }
 
     /**

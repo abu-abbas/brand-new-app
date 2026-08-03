@@ -24,6 +24,8 @@ Route::get('/auth/captcha/audio', [AuthController::class, 'captchaAudio'])
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
+    Route::post('/auth/active-group', [AuthController::class, 'setActiveGroup'])->name('api.auth.active-group');
+    Route::post('/auth/reset-default-group', [AuthController::class, 'resetDefaultGroup'])->name('api.auth.reset-default-group');
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');
 
     // Users

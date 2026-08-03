@@ -2,7 +2,6 @@
 
 namespace App\Traits;
 
-use App\Constants\RoleConstant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -34,8 +33,14 @@ trait HasOrganizationScope
             });
         }
 
+        $activeGroupId = $user->getActiveGroupId();
+        $relevantUserRoles = $user->userRoles;
+        if ($activeGroupId) {
+            $relevantUserRoles = $relevantUserRoles->where('v_role_code', $activeGroupId);
+        }
+
         // Filter 2: Unit Spesifik (jika user memiliki v_unit khusus)
-        $userUnits = $user->userRoles
+        $userUnits = $relevantUserRoles
             ->pluck('v_unit')
             ->filter()
             ->unique()
@@ -47,7 +52,7 @@ trait HasOrganizationScope
         }
 
         // Filter 3: Wilayah Scope (2 Digit Prefix Kode Wilayah)
-        $userWilayahs = $user->userRoles
+        $userWilayahs = $relevantUserRoles
             ->pluck('v_wilayah')
             ->filter()
             ->map(fn ($w) => substr((string) $w, 0, 2))

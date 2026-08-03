@@ -6,6 +6,7 @@ use App\Constants\RoleConstant;
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
 use App\Errors\UserManagementError;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -38,17 +39,14 @@ class UserService
         $currentUser = Auth::user();
 
         $query = User::query()
-            ->with(['userRoles.roleModel'])
+            ->with(['userRoles.roleModel.features'])
             ->whereNull('dt_deleted_at')
             ->forUserScope($currentUser);
 
-        if (! $currentUser || ! $currentUser->isRoot()) {
-            // Filter 1: Sembunyikan user tingkat Root dari daftar pengguna biasa jika bukan Root
-            $query->whereDoesntHave('userRoles.roleModel', function ($q) {
-                $q->where('i_level', '>=', RoleConstant::ROOT_LEVEL);
-            });
-        }
-
+        // Sembunyikan user tingkat Root (i_level >= ROOT_LEVEL) dari daftar pengguna
+        $query->whereDoesntHave('userRoles.roleModel', function ($q) {
+            $q->where('i_level', '>=', RoleConstant::ROOT_LEVEL);
+        });
 
         // Search multi-kolom
         if (! empty($params['search'])) {
@@ -85,7 +83,7 @@ class UserService
             'created_at' => 'dt_created_at',
         ];
 
-            $orderColumn = $columnMap[$sortBy] ?? 'dt_created_at';
+        $orderColumn = $columnMap[$sortBy] ?? 'dt_created_at';
 
         return $query->orderBy($orderColumn, $sortDir)
             ->paginate((int) ($params['per_page'] ?? 15), ['*'], 'page', (int) ($params['page'] ?? 1));
@@ -93,7 +91,7 @@ class UserService
 
     public function getUserDetail(User $user): User
     {
-        return $user->load(['userRoles.roleModel']);
+        return $user->load(['userRoles.roleModel.features']);
     }
 
     private function validateRoleAssignments(array $rolesData, ?User $actor = null): void
@@ -121,7 +119,7 @@ class UserService
             return;
         }
 
-        $assignedRoles = \App\Models\Role::whereIn('v_code', $roleCodes)->get();
+        $assignedRoles = Role::whereIn('v_code', $roleCodes)->get();
         foreach ($assignedRoles as $assignedRole) {
             if ((int) $assignedRole->i_level >= $actorLevel) {
                 throw new ApplicationException(

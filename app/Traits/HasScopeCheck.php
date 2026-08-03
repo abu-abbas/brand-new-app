@@ -27,13 +27,19 @@ trait HasScopeCheck
             return false;
         }
 
+        $activeGroupId = $actor->getActiveGroupId();
+        $relevantUserRoles = $actor->userRoles;
+        if ($activeGroupId) {
+            $relevantUserRoles = $relevantUserRoles->where('v_role_code', $activeGroupId);
+        }
+
         // 2. Pengecekan Unit Spesifik
         $resourceUnit = $resource instanceof ScopedResource
             ? $resource->getResourceUnit()
             : ($resource->v_kolok ?? null);
 
         if (! empty($resourceUnit)) {
-            $actorUnits = $actor->userRoles
+            $actorUnits = $relevantUserRoles
                 ->pluck('v_unit')
                 ->filter()
                 ->unique()
@@ -51,7 +57,7 @@ trait HasScopeCheck
             : ($resource->v_kolok ?? null);
 
         if (! empty($resourceWilayah)) {
-            $actorWilayahs = $actor->userRoles
+            $actorWilayahs = $relevantUserRoles
                 ->pluck('v_wilayah')
                 ->filter()
                 ->map(fn ($w) => substr((string) $w, 0, 2))

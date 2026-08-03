@@ -173,8 +173,8 @@ it('prevents non-root user from assigning role with level equal or higher than s
     ]);
 
     DB::table('tr_role_features')->insert([
-        'v_role_code' => 'ADMIN_STAFF',
-        'v_feature_alias' => 'ubah-pengguna',
+        'v_code' => 'ADMIN_STAFF',
+        'v_alias' => 'ubah-pengguna',
     ]);
 
     $this->actingAs($staffUser);
@@ -193,6 +193,11 @@ it('prevents non-root user from assigning role with level equal or higher than s
 
 it('prevents user from deactivating self', function () {
     $user = User::factory()->create(['b_is_active' => true]);
+    UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ADMIN_STAFF']);
+    DB::table('tr_role_features')->insert([
+        'v_code' => 'ADMIN_STAFF',
+        'v_alias' => 'ubah-pengguna',
+    ]);
     $this->actingAs($user);
 
     $response = $this->patchJson("/api/users/{$user->hash_id}/toggle-status");
@@ -203,6 +208,11 @@ it('prevents user from deactivating self', function () {
 
 it('prevents user from deleting self', function () {
     $user = User::factory()->create();
+    UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ADMIN_STAFF']);
+    DB::table('tr_role_features')->insert([
+        'v_code' => 'ADMIN_STAFF',
+        'v_alias' => 'hapus-pengguna',
+    ]);
     $this->actingAs($user);
 
     $response = $this->deleteJson("/api/users/{$user->hash_id}");
@@ -210,4 +220,3 @@ it('prevents user from deleting self', function () {
 
     expect($user->fresh()->dt_deleted_at)->toBeNull();
 });
-
