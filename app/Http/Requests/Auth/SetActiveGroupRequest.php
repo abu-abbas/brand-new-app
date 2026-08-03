@@ -28,6 +28,7 @@ class SetActiveGroupRequest extends FormRequest
         return [
             'group_id.required' => AuthError::GROUP_REQUIRED,
             'group_id.string' => AuthError::GROUP_STRING,
+            'remember.boolean' => AuthError::REMEMBER_BOOLEAN,
         ];
     }
 }

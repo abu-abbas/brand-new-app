@@ -169,4 +169,12 @@ enum AuthError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case INVALID_GROUP = 'AUTH-ACC-002';
+
+    #[ErrorDefinition(
+        message: 'Format field ingat pilihan tidak valid.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case REMEMBER_BOOLEAN = 'AUTH-VAL-016';
 }
