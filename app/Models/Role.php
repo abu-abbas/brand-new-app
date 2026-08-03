@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\HasNotFoundError;
+use App\Errors\RoleError;
 use App\Traits\HasObfuscatedId;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -27,13 +29,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $dt_deleted_at
  * @property Collection<int, Feature> $features
  */
-class Role extends Model
+class Role extends Model implements HasNotFoundError
 {
     use HasObfuscatedId, SoftDeletes;
 
     protected $table = 'tm_roles';
 
     protected $primaryKey = 'i_id';
+
+    public static function notFoundError(): RoleError
+    {
+        return RoleError::ROLE_NOT_FOUND;
+    }
 
     /** @var string */
     const CREATED_AT = 'dt_created_at';

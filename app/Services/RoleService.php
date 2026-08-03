@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
-use App\Errors\AuthError;
 use App\Errors\RoleError;
 use App\Models\Feature;
 use App\Models\Role;
@@ -17,30 +16,6 @@ use Illuminate\Support\Facades\DB;
 class RoleService
 {
     public function __construct(private readonly ErrorDefinitionReader $errorDefinitionReader) {}
-
-    public function canUserManageRole(?User $user, Role $role): bool
-    {
-        if (! $user) {
-            return false;
-        }
-
-        if ($user->isRoot()) {
-            return true;
-        }
-
-        $firstRole = $user->getActiveGroupId()
-            ?? ($user->relationLoaded('userRoles')
-                ? $user->userRoles->pluck('v_role_code')->first()
-                : $user->userRoles()->pluck('v_role_code')->first());
-
-        if (! $firstRole) {
-            return false;
-        }
-
-        $prefix = strtoupper((string) $firstRole).'_';
-
-        return str_starts_with(strtoupper($role->v_code), $prefix);
-    }
 
     private const COLUMNS = [
         'code' => 'v_code',
@@ -138,21 +113,28 @@ class RoleService
     {
         $currentUser = Auth::user();
         $currentUserLevel = $currentUser?->role_level ?? 0;
+        $this->assertCanAssignFeatures($currentUser, $data['features'] ?? []);
 
         $code = trim((string) ($data['code'] ?? ''));
 
         if (! $currentUser?->isRoot()) {
-            $userRoleCode = '';
-            if ($currentUser) {
-                $firstRole = $currentUser->userRoles->pluck('v_role_code')->first();
-                if ($firstRole) {
-                    $userRoleCode = strtoupper((string) $firstRole);
-                }
-            }
+            $userRoleCode = strtoupper((string) $currentUser?->getActiveGroupId());
             $prefix = $userRoleCode ? $userRoleCode.'_' : '';
 
-            if ($prefix && ! str_starts_with(strtoupper($code), $prefix)) {
-                $code = $prefix.$code;
+            $ownedPrefixes = array_map(
+                fn (string $roleCode) => strtoupper($roleCode).'_',
+                $currentUser?->getRolesList() ?? [],
+            );
+            usort($ownedPrefixes, fn (string $a, string $b) => strlen($b) <=> strlen($a));
+            foreach ($ownedPrefixes as $ownedPrefix) {
+                if (str_starts_with(strtoupper($code), $ownedPrefix)) {
+                    $code = substr($code, strlen($ownedPrefix));
+                    break;
+                }
+            }
+
+            if ($prefix) {
+                $code = $prefix.ltrim($code, '_');
             }
 
             // Batasi panjang v_code agar tidak melebihi 100 karakter
@@ -198,14 +180,8 @@ class RoleService
     public function update(Role $role, array $data): Role
     {
         $currentUser = Auth::user();
-        if (! $this->canUserManageRole($currentUser, $role)) {
-            throw new ApplicationException(
-                definition: $this->errorDefinitionReader->read(AuthError::UNAUTHORIZED_ACTION),
-                context: ['role_code' => $role->v_code]
-            );
-        }
-
         $currentUserLevel = $currentUser?->role_level ?? 0;
+        $this->assertCanAssignFeatures($currentUser, $data['features'] ?? []);
 
         return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel) {
             $updateData = [
@@ -240,14 +216,6 @@ class RoleService
 
     public function delete(Role $role): void
     {
-        $currentUser = Auth::user();
-        if (! $this->canUserManageRole($currentUser, $role)) {
-            throw new ApplicationException(
-                definition: $this->errorDefinitionReader->read(AuthError::UNAUTHORIZED_ACTION),
-                context: ['role_code' => $role->v_code]
-            );
-        }
-
         if ($role->b_locked) {
             throw new ApplicationException(
                 definition: $this->errorDefinitionReader->read(RoleError::ROLE_LOCKED_CANNOT_DELETE),
@@ -276,5 +244,23 @@ class RoleService
         ]);
 
         return $role->refresh()->load('features');
+    }
+
+    /**
+     * @param  list<string>  $featureAliases
+     */
+    private function assertCanAssignFeatures(?User $user, array $featureAliases): void
+    {
+        if ($user?->isRoot() || $featureAliases === []) {
+            return;
+        }
+
+        $forbidden = array_values(array_diff($featureAliases, $user?->getPermissionsList() ?? []));
+        if ($forbidden !== []) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(RoleError::FEATURE_ASSIGNMENT_FORBIDDEN),
+                context: ['feature_aliases' => $forbidden],
+            );
+        }
     }
 }

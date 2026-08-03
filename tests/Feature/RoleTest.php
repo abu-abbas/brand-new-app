@@ -1,5 +1,6 @@
 <?php
 
+use App\Constants\RoleConstant;
 use App\Enums\PermissionType;
 use App\Models\Feature;
 use App\Models\Role;
@@ -11,6 +12,12 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
+    DB::table('tm_roles')->insert([
+        'v_code' => 'ADM_SYS',
+        'v_name' => 'ZZZ Root',
+        'i_level' => RoleConstant::ROOT_LEVEL,
+        'v_created_by' => 'system',
+    ]);
     $admin = User::factory()->create();
     DB::table('tr_user_roles')->insert([
         'v_userid' => $admin->v_userid,
@@ -39,12 +46,12 @@ it('lists active and soft-deleted roles when requested', function () {
 
     $this->getJson('/api/roles?include_deleted=true')
         ->assertOk()
-        ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.1.deleted_at', fn ($val) => $val !== null);
+        ->assertJsonCount(3, 'data')
+        ->assertJsonPath('data.2.deleted_at', fn ($val) => $val !== null);
 
     $this->getJson('/api/roles?include_deleted=false')
         ->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertJsonCount(2, 'data');
 });
 
 it('searches roles by feature name or alias', function () {
@@ -83,12 +90,120 @@ it('returns options list of active roles', function () {
 
     $this->getJson('/api/roles/options')
         ->assertOk()
-        ->assertJsonCount(1, 'data')
+        ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.code', 'superadmin')
         ->assertJsonPath('data.0.need_region', false)
         ->assertJsonPath('data.0.need_unit', false)
         ->assertJsonPath('data.0.active_periode.start', '2026-01-01')
         ->assertJsonPath('data.0.locked', true);
+});
+
+it('returns only lower-level role options for non-root users', function () {
+    Role::query()->create(['v_code' => 'MANAGER', 'v_name' => 'Manager', 'i_level' => 50]);
+    Role::query()->create(['v_code' => 'STAFF', 'v_name' => 'Staff', 'i_level' => 10]);
+    Role::query()->create(['v_code' => 'PEER', 'v_name' => 'Peer', 'i_level' => 50]);
+    $user = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => 'MANAGER',
+        'v_created_by' => 'system',
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/api/roles/options')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.code', 'STAFF');
+});
+
+it('does not let a permission alias bypass a model policy', function () {
+    $permission = Feature::query()->create([
+        'v_name' => 'Generic Update',
+        'v_alias' => 'update',
+        'e_type' => PermissionType::CRUD,
+    ]);
+    $manager = Role::query()->create(['v_code' => 'MANAGER', 'v_name' => 'Manager', 'i_level' => 50]);
+    $manager->features()->attach($permission->v_alias);
+    $target = Role::query()->create(['v_code' => 'MANAGER_STAFF', 'v_name' => 'Staff', 'i_level' => 10]);
+    $user = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => $manager->v_code,
+        'v_created_by' => 'system',
+    ]);
+
+    expect($user->can('update', $target))->toBeFalse();
+});
+
+it('prevents non-root users from assigning features they do not own', function () {
+    $createPermission = Feature::query()->create([
+        'v_name' => 'Tambah Group',
+        'v_alias' => 'tambah-group',
+        'e_type' => PermissionType::CRUD,
+    ]);
+    Feature::query()->create([
+        'v_name' => 'Restricted Action',
+        'v_alias' => 'restricted-action',
+        'e_type' => PermissionType::CRUD,
+    ]);
+    $manager = Role::query()->create(['v_code' => 'MANAGER', 'v_name' => 'Manager', 'i_level' => 50]);
+    $manager->features()->attach($createPermission->v_alias);
+    $user = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => $manager->v_code,
+        'v_created_by' => 'system',
+    ]);
+
+    $this->actingAs($user)
+        ->postJson('/api/roles', [
+            'code' => 'STAFF',
+            'name' => 'Staff',
+            'features' => ['restricted-action'],
+        ])
+        ->assertForbidden()
+        ->assertJsonPath('code', 'ROLE-AUTH-001');
+});
+
+it('uses the current active group when replacing a stale role prefix', function () {
+    $createPermission = Feature::query()->create([
+        'v_name' => 'Tambah Group',
+        'v_alias' => 'tambah-group',
+        'e_type' => PermissionType::CRUD,
+    ]);
+    $suban = Role::query()->create(['v_code' => 'SUBAN', 'v_name' => 'Suban', 'i_level' => 50]);
+    $adminOpd = Role::query()->create(['v_code' => 'ADM_OPD', 'v_name' => 'Admin OPD', 'i_level' => 50]);
+    $suban->features()->attach($createPermission->v_alias);
+    $adminOpd->features()->attach($createPermission->v_alias);
+    $user = User::factory()->create();
+    DB::table('tr_user_roles')->insert([
+        [
+            'v_userid' => $user->v_userid,
+            'v_role_code' => $suban->v_code,
+            'v_created_by' => 'system',
+        ],
+        [
+            'v_userid' => $user->v_userid,
+            'v_role_code' => $adminOpd->v_code,
+            'v_created_by' => 'system',
+        ],
+    ]);
+    $this->actingAs($user);
+
+    $this->postJson('/api/auth/active-group', ['group_id' => 'SUBAN'])->assertOk();
+    $this->postJson('/api/auth/active-group', ['group_id' => 'ADM_OPD'])
+        ->assertOk()
+        ->assertJsonPath('data.active_group_id', 'ADM_OPD');
+
+    $this->postJson('/api/roles', [
+        'code' => 'SUBAN_OPERATOR',
+        'name' => 'Operator',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('data.code', 'ADM_OPD_OPERATOR');
+
+    $this->assertDatabaseHas('tm_roles', ['v_code' => 'ADM_OPD_OPERATOR']);
+    $this->assertDatabaseMissing('tm_roles', ['v_code' => 'ADM_OPD_SUBAN_OPERATOR']);
 });
 
 it('shows single role detail with features', function () {
@@ -260,4 +375,10 @@ it('rejects restore when code conflict exists', function () {
         ->assertJsonPath('code', 'ROLE-BIZ-001');
 
     expect($deleted->fresh()->trashed())->toBeTrue();
+});
+
+it('returns an EDF not-found response for an unknown role', function () {
+    $this->getJson('/api/roles/999999')
+        ->assertNotFound()
+        ->assertJsonPath('code', 'ROLE-NF-001');
 });

@@ -27,7 +27,7 @@ class RoleOptionResource extends JsonResource
         return [
             'id' => $this->hash_id,
             'code' => $this->v_code,
-            'name' => $this->v_name,
+            'name' => toTitleCase($this->v_name),
             'need_region' => (bool) $this->b_need_region,
             'need_unit' => (bool) $this->b_need_unit,
             'active_periode' => $this->v_active_periode,

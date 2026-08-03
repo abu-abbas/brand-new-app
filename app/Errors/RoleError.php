@@ -125,4 +125,10 @@ enum RoleError: string implements ErrorCode
 
     #[ErrorDefinition(message: 'Kode group yang terkunci tidak dapat diubah.', category: ErrorCategory::BUSINESS_RULE, httpStatus: 422, severity: ErrorSeverity::LOW)]
     case ROLE_LOCKED_CANNOT_CHANGE_CODE = 'ROLE-BIZ-003';
+
+    #[ErrorDefinition(message: 'Anda tidak dapat memberikan hak akses yang tidak Anda miliki.', category: ErrorCategory::AUTHORIZATION, httpStatus: 403, severity: ErrorSeverity::HIGH)]
+    case FEATURE_ASSIGNMENT_FORBIDDEN = 'ROLE-AUTH-001';
+
+    #[ErrorDefinition(message: 'Data group tidak ditemukan.', category: ErrorCategory::NOT_FOUND, httpStatus: 404, severity: ErrorSeverity::LOW)]
+    case ROLE_NOT_FOUND = 'ROLE-NF-001';
 }

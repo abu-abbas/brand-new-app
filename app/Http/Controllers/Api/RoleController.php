@@ -47,6 +47,8 @@ class RoleController extends Controller
      */
     public function show(Role $role): RoleResource
     {
+        $this->authorize('view', $role);
+
         return RoleResource::make($role->load('features'));
     }
 
@@ -69,6 +71,8 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role): RoleResource
     {
+        $this->authorize('update', $role);
+
         return RoleResource::make(
             $this->roleService->update($role, $request->validated())
         );
@@ -81,6 +85,8 @@ class RoleController extends Controller
      */
     public function destroy(Role $role): Response
     {
+        $this->authorize('delete', $role);
+
         $this->roleService->delete($role);
 
         return response()->noContent();
@@ -93,6 +99,8 @@ class RoleController extends Controller
      */
     public function restore(Role $role): RoleResource
     {
+        $this->authorize('restore', $role);
+
         return RoleResource::make($this->roleService->restore($role));
     }
 }

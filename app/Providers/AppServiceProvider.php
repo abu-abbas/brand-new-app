@@ -25,9 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::before(function (User $user, string $ability): ?bool {
+        Gate::before(function (User $user, string $ability, array $arguments = []): ?bool {
             if ($user->isRoot()) {
                 return true;
+            }
+
+            if ($arguments !== []) {
+                return null;
             }
 
             return in_array($ability, $user->getPermissionsList(), true) ? true : null;
