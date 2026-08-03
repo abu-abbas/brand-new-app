@@ -17,8 +17,22 @@ class UserPolicy
             return false;
         }
 
-        // Wilayah check jika target user mempunyai kolok / unit
+        // Check unit spesifik jika actor terikat pada v_unit tertentu
         if (! empty($target->v_kolok)) {
+            $actorUnits = $actor->userRoles
+                ->pluck('v_unit')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            if (! empty($actorUnits)) {
+                if (! in_array($target->v_kolok, $actorUnits, true)) {
+                    return false;
+                }
+            }
+
+            // Wilayah check jika actor terikat pada v_wilayah tertentu
             $actorWilayahs = $actor->userRoles
                 ->pluck('v_wilayah')
                 ->filter()
@@ -35,6 +49,7 @@ class UserPolicy
                 }
             }
         }
+
 
         return true;
     }

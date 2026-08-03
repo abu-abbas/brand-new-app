@@ -49,7 +49,19 @@ class UserService
                 $q->where('i_level', '>=', $currentUserLevel);
             });
 
-            // Filter 2: Wilayah (substring 2 digit awal v_kolok)
+            // Filter 2: Unit spesifik (v_unit -> match v_kolok)
+            $userUnitCodes = $currentUser->userRoles
+                ->pluck('v_unit')
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+
+            if (! empty($userUnitCodes)) {
+                $query->whereIn('v_kolok', $userUnitCodes);
+            }
+
+            // Filter 3: Wilayah (substring 2 digit awal v_kolok)
             $userWilayahCodes = $currentUser->userRoles
                 ->pluck('v_wilayah')
                 ->filter()
