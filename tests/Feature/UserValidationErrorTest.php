@@ -7,7 +7,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(User::factory()->create(['v_userid' => 'root']));
 });
 
 it('returns structured EDF errors for invalid search fields', function () {

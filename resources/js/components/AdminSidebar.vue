@@ -109,7 +109,17 @@ function resolveUrl(routeName?: string | null): string {
 
 const dynamicMenu = computed<DynamicMenuItem[]>(() => {
   const list = rawFeatures.value ?? [];
-  const sidebarFeatures = list.filter((item) => item.show_on_sidebar && permission.can(item.alias));
+  const sidebarFeatures = list.filter((item) => {
+    if (!item.show_on_sidebar) return false;
+    if (permission.can(item.alias)) return true;
+    if (!item.parent) {
+      return list.some(
+        (child) =>
+          child.parent === item.alias && child.show_on_sidebar && permission.can(child.alias),
+      );
+    }
+    return false;
+  });
 
   const parentMap = new Map<string, DynamicMenuItem>();
   const childMap = new Map<string, DynamicSubMenuItem[]>();

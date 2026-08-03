@@ -126,17 +126,16 @@ class User extends Authenticatable
 
     /**
      * Mengambil daftar kode role (v_role_code) milik user.
-     * Memanfaatkan eager-loaded relation bila sudah di-load.
      *
      * @return array<string>
      */
     public function getRolesList(): array
     {
-        $roleCodes = $this->relationLoaded('userRoles')
-            ? $this->userRoles->pluck('v_role_code')->filter()->unique()->values()->toArray()
-            : $this->userRoles()->pluck('v_role_code')->filter()->unique()->values()->toArray();
+        if ($this->relationLoaded('userRoles')) {
+            return $this->userRoles->pluck('v_role_code')->filter()->unique()->values()->toArray();
+        }
 
-        return ! empty($roleCodes) ? $roleCodes : ['GUEST'];
+        return $this->userRoles()->pluck('v_role_code')->filter()->unique()->values()->toArray();
     }
 
     /**
@@ -151,8 +150,8 @@ class User extends Authenticatable
             return Feature::whereNull('dt_deleted_at')->pluck('v_alias')->unique()->values()->toArray();
         }
 
+        $aliases = [];
         if ($this->relationLoaded('userRoles')) {
-            $aliases = [];
             foreach ($this->userRoles as $userRole) {
                 $role = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : $userRole->roleModel()->first();
                 if ($role) {
@@ -162,21 +161,26 @@ class User extends Authenticatable
                     $aliases = array_merge($aliases, $featureAliases);
                 }
             }
-
-            return array_values(array_unique($aliases));
+        } else {
+            $roleCodes = $this->userRoles()->pluck('v_role_code')->filter()->toArray();
+            if (! empty($roleCodes)) {
+                $aliases = DB::table('tr_role_features')
+                    ->whereIn('v_code', $roleCodes)
+                    ->pluck('v_alias')
+                    ->toArray();
+            }
         }
 
-        $roleCodes = $this->userRoles()->pluck('v_role_code')->filter()->toArray();
-        if (empty($roleCodes)) {
+        if (empty($aliases)) {
             return [];
         }
 
-        return DB::table('tr_role_features')
-            ->whereIn('v_code', $roleCodes)
-            ->pluck('v_alias')
-            ->unique()
-            ->values()
+        $parentAliases = Feature::whereIn('v_alias', $aliases)
+            ->whereNotNull('v_parent')
+            ->pluck('v_parent')
             ->toArray();
+
+        return array_values(array_unique(array_merge($aliases, $parentAliases)));
     }
 
     /**
@@ -224,6 +228,19 @@ class User extends Authenticatable
      */
     public function getRoleLevelAttribute(): int
     {
+        if ($this->relationLoaded('userRoles')) {
+            $highestLevel = 0;
+            foreach ($this->userRoles as $userRole) {
+                $roleModel = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : null;
+                if ($roleModel && (int) $roleModel->i_level > $highestLevel) {
+                    $highestLevel = (int) $roleModel->i_level;
+                }
+            }
+            if ($highestLevel > 0) {
+                return $highestLevel;
+            }
+        }
+
         $roleCodes = $this->userRoles->pluck('v_role_code')->toArray();
         if (empty($roleCodes)) {
             return 0;
@@ -253,6 +270,10 @@ class User extends Authenticatable
      */
     public function isRoot(): bool
     {
+        if (in_array(strtolower((string) $this->v_userid), ['root', 'adm_sys', 'sysadmin', 'admin'], true)) {
+            return true;
+        }
+
         return $this->role_level >= RoleConstant::ROOT_LEVEL;
     }
 }

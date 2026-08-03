@@ -23,7 +23,7 @@ class ListUserRequest extends FormRequest
             'search' => ['nullable', 'string', 'max:100'],
             'search_fields' => ['nullable', 'array'],
             'search_fields.*' => ['string'],
-            'sort_by' => ['nullable', 'string', 'in:id,name,username,email,unit_name,role,is_active,created_at'],
+            'sort_by' => ['nullable', 'string', 'in:id,userid,username,name,email,unit_name,role,is_active,created_at'],
             'sort_direction' => ['nullable', 'string', 'in:asc,desc'],
             'active' => ['nullable', 'string', 'in:true,false,1,0'],
         ];

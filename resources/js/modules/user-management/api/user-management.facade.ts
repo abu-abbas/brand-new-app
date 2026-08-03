@@ -1,19 +1,31 @@
 import {
+  referencesPerangkatDaerah,
+  referencesWilayah,
+  usersDestroy,
   usersIndex,
+  usersShow,
+  usersStore,
   usersTestError,
-  type UsersIndex200,
+  usersToggleStatus,
+  usersUpdate,
+  type StoreUserRequest,
+  type UpdateUserRequest,
   type UsersIndexParams,
-} from '@/api/generated/api';
+} from '../../../api/generated/api';
 
-export class UserManagementFacade {
-  public static async getUsers(
-    params?: UsersIndexParams,
-    signal?: AbortSignal,
-  ): Promise<UsersIndex200> {
-    return usersIndex(params, { signal });
-  }
+export const userManagementFacade = {
+  getUsers: (params?: UsersIndexParams, signal?: AbortSignal) =>
+    usersIndex(params, signal ? { signal } : undefined),
+  getUserDetail: (id: string, signal?: AbortSignal) =>
+    usersShow(id as unknown as number, signal ? { signal } : undefined),
+  createUser: (data: StoreUserRequest) => usersStore(data),
+  updateUser: (id: string, data: UpdateUserRequest) => usersUpdate(id as unknown as number, data),
+  deleteUser: (id: string) => usersDestroy(id as unknown as number),
+  toggleUserStatus: (id: string) => usersToggleStatus(id as unknown as number),
+  triggerTestError: (signal?: AbortSignal) => usersTestError(signal ? { signal } : undefined),
 
-  public static async triggerTestError(signal?: AbortSignal): Promise<unknown> {
-    return usersTestError({ signal });
-  }
-}
+  getWilayahMock: () => referencesWilayah(),
+  getPerangkatDaerahMock: () => referencesPerangkatDaerah(),
+};
+
+export const UserManagementFacade = userManagementFacade;

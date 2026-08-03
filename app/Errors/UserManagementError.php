@@ -131,6 +131,222 @@ enum UserManagementError: string implements ErrorCode
     )]
     case INVALID_SEARCH_FIELD_TYPE = 'UM-VAL-015';
 
+    #[ErrorDefinition(
+        message: 'User ID wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USER_ID_REQUIRED = 'UM-VAL-016';
+
+    #[ErrorDefinition(
+        message: 'User ID sudah terdaftar.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USER_ID_ALREADY_EXISTS = 'UM-VAL-017';
+
+    #[ErrorDefinition(
+        message: 'Nama pengguna wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USERNAME_REQUIRED = 'UM-VAL-018';
+
+    #[ErrorDefinition(
+        message: 'Password wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PASSWORD_REQUIRED = 'UM-VAL-019';
+
+    #[ErrorDefinition(
+        message: 'User ID harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USER_ID_STRING = 'UM-VAL-020';
+
+    #[ErrorDefinition(
+        message: 'User ID maksimal 100 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USER_ID_MAX = 'UM-VAL-021';
+
+    #[ErrorDefinition(
+        message: 'Nama pengguna harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USERNAME_STRING = 'UM-VAL-022';
+
+    #[ErrorDefinition(
+        message: 'Nama pengguna maksimal 255 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USERNAME_MAX = 'UM-VAL-023';
+
+    #[ErrorDefinition(
+        message: 'Format email tidak valid.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case EMAIL_INVALID = 'UM-VAL-024';
+
+    #[ErrorDefinition(
+        message: 'Email maksimal 255 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case EMAIL_MAX = 'UM-VAL-025';
+
+    #[ErrorDefinition(
+        message: 'Password harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PASSWORD_STRING = 'UM-VAL-026';
+
+    #[ErrorDefinition(
+        message: 'Password minimal 6 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PASSWORD_MIN = 'UM-VAL-027';
+
+    #[ErrorDefinition(
+        message: 'Status aktif harus berupa boolean.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case IS_ACTIVE_BOOLEAN = 'UM-VAL-028';
+
+    #[ErrorDefinition(
+        message: 'Auth eksternal harus berupa boolean.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USE_OTHER_BOOLEAN = 'UM-VAL-029';
+
+    #[ErrorDefinition(
+        message: 'Roles harus berupa daftar.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case ROLES_ARRAY = 'UM-VAL-030';
+
+    #[ErrorDefinition(
+        message: 'Kode role wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case ROLE_CODE_REQUIRED = 'UM-VAL-031';
+
+    #[ErrorDefinition(
+        message: 'Kode role harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case ROLE_CODE_STRING = 'UM-VAL-032';
+
+    #[ErrorDefinition(
+        message: 'Role yang dipilih tidak ditemukan.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case ROLE_CODE_EXISTS = 'UM-VAL-033';
+
+    #[ErrorDefinition(
+        message: 'Wilayah harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case WILAYAH_STRING = 'UM-VAL-034';
+
+    #[ErrorDefinition(
+        message: 'Wilayah maksimal 50 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case WILAYAH_MAX = 'UM-VAL-035';
+
+    #[ErrorDefinition(
+        message: 'Unit harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case UNIT_STRING = 'UM-VAL-036';
+
+    #[ErrorDefinition(
+        message: 'Unit maksimal 50 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case UNIT_MAX = 'UM-VAL-037';
+
+    #[ErrorDefinition(
+        message: 'Pelaksana harus berupa teks.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PELAKSANA_STRING = 'UM-VAL-038';
+
+    #[ErrorDefinition(
+        message: 'Pelaksana maksimal 10 karakter.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PELAKSANA_MAX = 'UM-VAL-039';
+
+    #[ErrorDefinition(
+        message: 'Tanggal berlaku dari harus berupa tanggal valid.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case VALID_FROM_DATE = 'UM-VAL-040';
+
+    #[ErrorDefinition(
+        message: 'Tanggal berlaku sampai harus berupa tanggal valid.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case VALID_UNTIL_DATE = 'UM-VAL-041';
+
+    #[ErrorDefinition(
+        message: 'Tanggal berlaku sampai harus sama atau setelah tanggal berlaku dari.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case VALID_UNTIL_AFTER_OR_EQUAL = 'UM-VAL-042';
+
     // --- Business / Workflow Errors ---
 
     #[ErrorDefinition(
@@ -151,4 +367,13 @@ enum UserManagementError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case USER_NOT_FOUND = 'UM-NF-001';
+
+    #[ErrorDefinition(
+        message: 'Pengguna integrasi tidak dapat dihapus.',
+        category: ErrorCategory::WORKFLOW,
+        httpStatus: 422,
+        severity: ErrorSeverity::MEDIUM,
+        retryable: false
+    )]
+    case CANNOT_DELETE_EXTERNAL_USER = 'UM-BUS-002';
 }
