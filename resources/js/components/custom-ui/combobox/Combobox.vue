@@ -324,10 +324,11 @@ function handleViewportScroll(event: { currentTarget: HTMLElement | null }) {
     :ignore-filter="true"
     :reset-search-term-on-blur="false"
     :reset-search-term-on-select="false"
+    class="w-full"
     @update:model-value="updateSelection"
     @update:open="open = $event"
   >
-    <ComboboxAnchor as-child>
+    <ComboboxAnchor as-child class="w-full">
       <ComboboxTrigger as-child>
         <Button
           type="button"
