@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Core\ErrorDefinition\ErrorDefinitionReader;
+use App\Core\ErrorDefinition\Exceptions\ApplicationException;
+use App\Errors\AuthError;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Feature\ListFeatureRequest;
 use App\Http\Requests\Feature\StoreFeatureRequest;
@@ -24,8 +27,10 @@ class FeatureController extends Controller
      */
     public function index(ListFeatureRequest $request): AnonymousResourceCollection
     {
-        if ($request->input('type') !== 'menu') {
-            $this->authorize('features.view');
+        $user = $request->user();
+        if ($user && ! $user->isRoot() && ! $user->can('manajemen-fitur') && ! $user->can('manajemen-group') && $request->input('type') !== 'menu') {
+            $reader = new ErrorDefinitionReader;
+            throw new ApplicationException($reader->read(AuthError::UNAUTHORIZED_ACTION));
         }
 
         return FeatureResource::collection(

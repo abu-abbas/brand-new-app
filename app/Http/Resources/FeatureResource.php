@@ -41,6 +41,7 @@ class FeatureResource extends JsonResource
             'icon' => $this->v_icon,
             'order' => $this->si_order,
             'show_on_sidebar' => $this->b_show_on_sidebar,
+            'is_restricted' => (bool) $this->b_is_restricted,
             'created_at' => $this->dt_created_at?->toIso8601String(),
             'updated_at' => $this->dt_updated_at?->toIso8601String(),
             'deleted_at' => $this->dt_deleted_at?->toIso8601String(),

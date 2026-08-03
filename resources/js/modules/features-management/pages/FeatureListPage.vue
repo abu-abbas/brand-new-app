@@ -40,17 +40,17 @@ const appBootstrap = useAppBootstrapStore();
 const permissionTypeOptions = computed(() => appBootstrap.config.references.permission_types);
 
 const fields: DataTableField<FeatureRow>[] = [
-  { key: 'name', label: 'Identitas Fitur', minWidth: 260 },
-  { key: 'alias', label: 'Alias', minWidth: 180 },
-  { key: 'type', label: 'Tipe', align: 'center', hidden: true },
-  { key: 'parent', label: 'Parent', hidden: true },
-  { key: 'description', label: 'Deskripsi', hidden: true },
-  { key: 'route', label: 'Route', hidden: true },
-  { key: 'icon', label: 'Icon', hidden: true },
-  { key: 'order', label: 'Urutan', align: 'center', hidden: true },
-  { key: 'show_on_sidebar', label: 'Sidebar', width: 70, align: 'center' },
-  { key: 'deleted_at', label: 'Status', width: 80, align: 'center' },
-  { key: 'updated_at', label: 'Diperbarui', minWidth: 110 },
+  { key: 'name', label: 'Identitas Fitur', minWidth: 260, sortable: false },
+  { key: 'alias', label: 'Alias', minWidth: 180, sortable: false },
+  { key: 'type', label: 'Tipe', align: 'center', hidden: true, sortable: false },
+  { key: 'parent', label: 'Parent', hidden: true, sortable: false },
+  { key: 'description', label: 'Deskripsi', hidden: true, sortable: false },
+  { key: 'route', label: 'Route', hidden: true, sortable: false },
+  { key: 'icon', label: 'Icon', hidden: true, sortable: false },
+  { key: 'order', label: 'Urutan', align: 'center', hidden: true, sortable: false },
+  { key: 'show_on_sidebar', label: 'Sidebar', width: 70, align: 'center', sortable: false },
+  { key: 'deleted_at', label: 'Status', width: 80, align: 'center', sortable: false },
+  { key: 'updated_at', label: 'Diperbarui', minWidth: 110, sortable: false },
 ];
 
 const filters: DataTableFilter[] = [
@@ -293,12 +293,22 @@ function openEdit(feature: FeatureRow): void {
         </template>
 
         <template #cell(alias)="{ value, row }">
-          <div class="flex flex-col">
-            <span class="text-2sm">{{ value }}</span>
+          <div class="flex flex-col gap-x-1 gap-y-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-2sm">{{ value }}</span>
+              <Badge
+                v-if="row.is_restricted"
+                variant="outline"
+                class="bg-amber-500/10 text-amber-600 border-amber-500/30 text-2xs px-1.5 py-0"
+              >
+                Restricted
+              </Badge>
+            </div>
+
             <div class="flex flex-wrap items-center gap-1.5">
               <div class="flex items-center text-xs gap-1.5">
                 <span
-                  class="size-1.5 rounded-full"
+                  class="size-1.5 rounded-full shrink-0"
                   :class="{
                     'bg-blue-500': row.type === 'menu',
                     'bg-emerald-500': row.type === 'crud',
@@ -310,16 +320,16 @@ function openEdit(feature: FeatureRow): void {
 
               <div
                 v-if="!!row.route"
-                class="flex-1 flex items-center gap-1 text-xs text-muted-foreground leading-tight"
+                class="w-full flex items-center gap-1 text-xs text-muted-foreground leading-tight min-w-0 break-all"
               >
                 <LucideIcon
                   name="Link2"
                   fallback="CircleDashed"
-                  class="size-3"
+                  class="size-3 shrink-0"
                   fallback-class="text-muted-foreground/65"
                 />
 
-                <span class="font-mono text-2xs">{{ row.route }}</span>
+                <span class="font-mono text-2xs break-all">{{ row.route }}</span>
               </div>
             </div>
           </div>

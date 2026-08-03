@@ -71,6 +71,7 @@ class Feature extends Model
         'v_icon',
         'si_order',
         'b_show_on_sidebar',
+        'b_is_restricted',
         'v_created_by',
         'v_updated_by',
         'v_deleted_by',
@@ -79,6 +80,7 @@ class Feature extends Model
     protected $casts = [
         'e_type' => PermissionType::class,
         'b_show_on_sidebar' => 'boolean',
+        'b_is_restricted' => 'boolean',
         'si_order' => 'integer',
         'dt_created_at' => 'datetime',
         'dt_updated_at' => 'datetime',

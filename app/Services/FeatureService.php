@@ -41,10 +41,10 @@ class FeatureService
 
         $user = Auth::user();
         if ($user && ! $user->isRoot()) {
-            $userPermissions = $user->getPermissionsList();
-            if (($params['type'] ?? null) === 'menu' || ! in_array('features.view', $userPermissions, true)) {
-                $query->whereIn('v_alias', $userPermissions);
-            }
+            $query->where(function ($q) {
+                $q->where('b_is_restricted', false)
+                    ->orWhereNull('b_is_restricted');
+            });
         }
 
         if ($type = $params['type'] ?? null) {
@@ -110,6 +110,7 @@ class FeatureService
             'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
             'si_order' => $data['order'] ?? 1,
             'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
+            'b_is_restricted' => (bool) ($data['is_restricted'] ?? false),
             'v_created_by' => Auth::user()?->username,
         ]);
     }
@@ -130,6 +131,7 @@ class FeatureService
             'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
             'si_order' => $data['order'] ?? 1,
             'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
+            'b_is_restricted' => (bool) ($data['is_restricted'] ?? $feature->b_is_restricted),
             'v_updated_by' => Auth::user()?->username,
         ]);
 

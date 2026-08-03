@@ -45,6 +45,7 @@ type FeatureForm = {
   icon: string;
   order: number;
   show_on_sidebar: boolean;
+  is_restricted: boolean;
   description: string;
 };
 
@@ -92,6 +93,7 @@ const form = reactive<FeatureForm>({
   icon: '',
   order: 1,
   show_on_sidebar: true,
+  is_restricted: false,
   description: '',
 });
 
@@ -187,6 +189,9 @@ const rules: FormRules<FeatureForm> = {
   show_on_sidebar: [
     { type: 'boolean', message: 'Pilihan sidebar tidak valid.', trigger: 'change' },
   ],
+  is_restricted: [
+    { type: 'boolean', message: 'Pilihan restricted tidak valid.', trigger: 'change' },
+  ],
   description: [{ max: 100, message: 'Deskripsi maksimal 100 karakter.', trigger: 'blur' }],
 };
 
@@ -206,6 +211,7 @@ function resetForm(): void {
     icon: feature?.icon ?? '',
     order: feature?.order ?? 1,
     show_on_sidebar: feature?.show_on_sidebar ?? true,
+    is_restricted: (feature as unknown as { is_restricted?: boolean })?.is_restricted ?? false,
     description: feature?.description ?? '',
   });
   hydratingForm = false;
@@ -268,6 +274,7 @@ async function submit(): Promise<void> {
     icon: form.type === 'menu' ? form.icon || null : null,
     order: form.order,
     show_on_sidebar: form.type === 'menu' ? form.show_on_sidebar : false,
+    is_restricted: form.is_restricted,
     description: form.description.trim() || null,
   };
 
@@ -634,6 +641,30 @@ watch(open, (isOpen) => {
           </ElFormItem>
         </section>
       </template>
+
+      <ElFormItem prop="is_restricted" :error="serverErrors.is_restricted" class="mb-0 mt-4">
+        <div
+          class="flex w-full items-center justify-between gap-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3"
+          :class="{ 'border-amber-500/60 bg-amber-500/15': form.is_restricted }"
+        >
+          <div class="flex min-w-0 flex-col gap-1">
+            <Label for="is-restricted" class="font-semibold text-foreground"
+              >Fitur Khusus Admin (Restricted)</Label
+            >
+            <p class="text-xs text-muted-foreground">
+              Aktifkan untuk menyembunyikan fitur sensitif/admin dari pohon hak akses pengelola
+              group biasa.
+            </p>
+          </div>
+          <Switch
+            id="is-restricted"
+            v-model="form.is_restricted"
+            :disabled="isDeleted"
+            :aria-invalid="Boolean(serverErrors.is_restricted)"
+            @update:model-value="validateField('is_restricted')"
+          />
+        </div>
+      </ElFormItem>
     </ElForm>
 
     <template v-if="isEdit && !isDeleted">
@@ -641,7 +672,7 @@ watch(open, (isOpen) => {
         <Alert variant="destructive" class="bg-destructive/5 border-dashed border-destructive/20">
           <CircleAlert />
           <div class="ml-2">
-            <AlertTitle>Danger zone</AlertTitle>
+            <AlertTitle>Hapus Fitur</AlertTitle>
             <AlertDescription class="text-2sm leading-snug">
               Tindakan ini memengaruhi status fitur. Fitur akan disembunyikan dari data aktif dan
               tetap tersimpan sebagai data terhapus.
@@ -656,7 +687,7 @@ watch(open, (isOpen) => {
               @click="deleteFeature"
             >
               <Trash2 data-icon="inline-start" />
-              Hapus Fitur
+              Hapus
             </Button>
           </div>
         </Alert>

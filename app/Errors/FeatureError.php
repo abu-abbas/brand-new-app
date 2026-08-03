@@ -146,4 +146,7 @@ enum FeatureError: string implements ErrorCode
 
     #[ErrorDefinition(message: 'Fitur tidak dapat dipulihkan karena alias sudah digunakan oleh fitur aktif.', category: ErrorCategory::BUSINESS_RULE, httpStatus: 409, severity: ErrorSeverity::LOW)]
     case RESTORE_ALIAS_CONFLICT = 'FEAT-BIZ-001';
+
+    #[ErrorDefinition(message: 'Pilihan pembatasan akses harus berupa boolean.', category: ErrorCategory::VALIDATION, httpStatus: 422, severity: ErrorSeverity::LOW)]
+    case IS_RESTRICTED_BOOLEAN = 'FEAT-VAL-046';
 }

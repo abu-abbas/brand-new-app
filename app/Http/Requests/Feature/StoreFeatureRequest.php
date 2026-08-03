@@ -52,6 +52,7 @@ class StoreFeatureRequest extends FormRequest
             'icon' => ['nullable', 'string', 'max:50'],
             'order' => ['nullable', 'integer', 'min:1', 'max:32767'],
             'show_on_sidebar' => ['sometimes', 'boolean'],
+            'is_restricted' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string', 'max:100'],
         ];
     }
@@ -82,6 +83,7 @@ class StoreFeatureRequest extends FormRequest
             'order.min' => FeatureError::ORDER_MIN,
             'order.max' => FeatureError::ORDER_MAX,
             'show_on_sidebar.boolean' => FeatureError::SHOW_ON_SIDEBAR_BOOLEAN,
+            'is_restricted.boolean' => FeatureError::IS_RESTRICTED_BOOLEAN,
             'description.string' => FeatureError::DESCRIPTION_STRING,
             'description.max' => FeatureError::DESCRIPTION_MAX,
         ];

@@ -28,6 +28,7 @@ it('filters menu items by user permissions for non-admin users', function () {
         'v_name' => 'Menu Rahasia Admin',
         'v_alias' => 'manajemen-fitur',
         'e_type' => 'menu',
+        'b_is_restricted' => true,
     ]);
 
     $regularUser = User::factory()->create();
