@@ -65,10 +65,25 @@ use Illuminate\Support\Facades\DB;
     'dt_deleted_at',
 ])]
 #[Hidden(['v_password', 'v_remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements ScopedResource
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasObfuscatedId, Notifiable;
+    use HasFactory, HasObfuscatedId, HasOrganizationScope, Notifiable;
+
+    public function getResourceWilayah(): ?string
+    {
+        return $this->v_kolok;
+    }
+
+    public function getResourceUnit(): ?string
+    {
+        return $this->v_kolok;
+    }
+
+    public function getResourceLevel(): ?int
+    {
+        return $this->role_level;
+    }
 
     protected $table = 'tm_users';
 

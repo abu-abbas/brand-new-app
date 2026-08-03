@@ -34,60 +34,21 @@ class UserService
      */
     public function getPaginatedUsers(array $params): LengthAwarePaginator
     {
-        $query = User::query()
-            ->with(['userRoles.roleModel'])
-            ->whereNull('dt_deleted_at');
-
         /** @var User|null $currentUser */
         $currentUser = Auth::user();
 
-        if ($currentUser && ! $currentUser->isRoot()) {
-            $currentUserLevel = $currentUser->role_level;
+        $query = User::query()
+            ->with(['userRoles.roleModel'])
+            ->whereNull('dt_deleted_at')
+            ->forUserScope($currentUser);
 
-            // Filter 1: Level role harus dibawah currentUser (< currentUserLevel)
-            $query->whereDoesntHave('userRoles.roleModel', function ($q) use ($currentUserLevel) {
-                $q->where('i_level', '>=', $currentUserLevel);
-            });
-
-            // Filter 2: Unit spesifik (v_unit -> match v_kolok)
-            $userUnitCodes = $currentUser->userRoles
-                ->pluck('v_unit')
-                ->filter()
-                ->unique()
-                ->values()
-                ->toArray();
-
-            if (! empty($userUnitCodes)) {
-                $query->whereIn('v_kolok', $userUnitCodes);
-            }
-
-            // Filter 3: Wilayah (substring 2 digit awal v_kolok)
-            $userWilayahCodes = $currentUser->userRoles
-                ->pluck('v_wilayah')
-                ->filter()
-                ->map(fn ($w) => substr((string) $w, 0, 2))
-                ->filter()
-                ->unique()
-                ->values()
-                ->toArray();
-
-            if (! empty($userWilayahCodes)) {
-                $query->where(function ($q) use ($userWilayahCodes) {
-                    foreach ($userWilayahCodes as $index => $wCode) {
-                        if ($index === 0) {
-                            $q->where(DB::raw('SUBSTRING(v_kolok, 1, 2)'), '=', $wCode);
-                        } else {
-                            $q->orWhere(DB::raw('SUBSTRING(v_kolok, 1, 2)'), '=', $wCode);
-                        }
-                    }
-                });
-            }
-        } else {
-            // Sembunyikan user tingkat Root dari daftar pengguna biasa
+        if (! $currentUser || ! $currentUser->isRoot()) {
+            // Filter 1: Sembunyikan user tingkat Root dari daftar pengguna biasa jika bukan Root
             $query->whereDoesntHave('userRoles.roleModel', function ($q) {
                 $q->where('i_level', '>=', RoleConstant::ROOT_LEVEL);
             });
         }
+
 
         // Search multi-kolom
         if (! empty($params['search'])) {

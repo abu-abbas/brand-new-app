@@ -3,56 +3,11 @@
 namespace App\Policies;
 
 use App\Models\User;
+use App\Traits\HasScopeCheck;
 
 class UserPolicy
 {
-    private function canManageTargetUser(User $actor, User $target): bool
-    {
-        if ($actor->isRoot()) {
-            return true;
-        }
-
-        // Tidak boleh mengelola user yang levelnya >= level actor
-        if ($target->role_level >= $actor->role_level) {
-            return false;
-        }
-
-        // Check unit spesifik jika actor terikat pada v_unit tertentu
-        if (! empty($target->v_kolok)) {
-            $actorUnits = $actor->userRoles
-                ->pluck('v_unit')
-                ->filter()
-                ->unique()
-                ->values()
-                ->toArray();
-
-            if (! empty($actorUnits)) {
-                if (! in_array($target->v_kolok, $actorUnits, true)) {
-                    return false;
-                }
-            }
-
-            // Wilayah check jika actor terikat pada v_wilayah tertentu
-            $actorWilayahs = $actor->userRoles
-                ->pluck('v_wilayah')
-                ->filter()
-                ->map(fn ($w) => substr((string) $w, 0, 2))
-                ->filter()
-                ->unique()
-                ->values()
-                ->toArray();
-
-            if (! empty($actorWilayahs)) {
-                $targetWilayah = substr((string) $target->v_kolok, 0, 2);
-                if (! in_array($targetWilayah, $actorWilayahs, true)) {
-                    return false;
-                }
-            }
-        }
-
-
-        return true;
-    }
+    use HasScopeCheck;
 
     public function viewAny(User $user): bool
     {
@@ -69,7 +24,7 @@ class UserPolicy
             return true;
         }
 
-        return $this->canManageTargetUser($user, $model);
+        return $this->canAccessScope($user, $model);
     }
 
     public function create(User $user): bool
@@ -87,7 +42,7 @@ class UserPolicy
             return true;
         }
 
-        return $this->canManageTargetUser($user, $model);
+        return $this->canAccessScope($user, $model);
     }
 
     public function delete(User $user, User $model): bool
@@ -104,7 +59,6 @@ class UserPolicy
             return false;
         }
 
-        return $this->canManageTargetUser($user, $model);
+        return $this->canAccessScope($user, $model);
     }
 }
-
