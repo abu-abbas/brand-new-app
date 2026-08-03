@@ -62,7 +62,9 @@ export function useUserScope() {
    * - If need_unit -> filter to user's unit code only
    * - If need_region -> filter to PDs matching user's assigned wilayah code prefix
    */
-  const filterPdList = <T extends PerangkatDaerahOption>(allPd: T[]): T[] => {
+  const filterPdList = <T extends { code: string; name?: string; [key: string]: unknown }>(
+    allPd: T[] = [],
+  ): T[] => {
     if (isRootUser.value) return allPd;
 
     if (isNeedUnit.value && currentUserUnitCode.value) {
@@ -71,7 +73,7 @@ export function useUserScope() {
 
     if (isNeedRegion.value && currentUserWilayahList.value.length > 0) {
       const wilList = currentUserWilayahList.value;
-      return allPd.filter((pd) => wilList.some((wCode) => pd.code.startsWith(wCode)));
+      return allPd.filter((pd) => pd.code && wilList.some((wCode) => pd.code.startsWith(wCode)));
     }
 
     return allPd;
@@ -80,12 +82,14 @@ export function useUserScope() {
   /**
    * Filter Wilayah options list based on active user's role scope
    */
-  const filterWilayahList = <T extends WilayahOption>(allWilayah: T[]): T[] => {
+  const filterWilayahList = <T extends { code: string; name?: string; [key: string]: unknown }>(
+    allWilayah: T[] = [],
+  ): T[] => {
     if (isRootUser.value) return allWilayah;
 
     if (isNeedRegion.value && currentUserWilayahList.value.length > 0) {
       const wilList = currentUserWilayahList.value;
-      return allWilayah.filter((w) => wilList.includes(w.code));
+      return allWilayah.filter((w) => w.code && wilList.includes(w.code));
     }
 
     return allWilayah;

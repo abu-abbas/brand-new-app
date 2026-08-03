@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
-import { useUserScope } from '@/composables/useUserScope';
+import { useUserScope, type PerangkatDaerahOption } from '@/composables/useUserScope';
 import { usePermissionStore } from '@/stores/permission';
 import { Trash2, User as UserIcon } from '@lucide/vue';
 import { ElForm, ElFormItem, type FormInstance, type FormRules } from 'element-plus';
@@ -47,7 +47,16 @@ const isEdit = computed(() => !!props.userId);
 const { data: userDetailRes, isLoading: isFetchingDetail } = useUserDetailQuery(targetId);
 const { data: pdRes } = usePerangkatDaerahListQuery();
 
-const pdOptions = computed(() => filterPdList(pdRes.value?.data ?? []));
+const pdOptions = computed(() =>
+  filterPdList(
+    ((pdRes.value?.data ?? []) as PerangkatDaerahOption[]).map((pd) => ({
+      code: pd.code || '',
+      name: pd.name || '',
+      spmu: pd.spmu,
+      sipkd_code: pd.sipkd_code,
+    })),
+  ),
+);
 
 const form = reactive<{
   userid: string;
@@ -98,11 +107,27 @@ const resetForm = () => {
   formRef.value?.resetFields();
 };
 
+const syncFormDataFromDetail = () => {
+  const u = userDetailRes.value?.data;
+  if (!u || !props.userId) return;
+
+  form.userid = u.userid || '';
+  form.username = u.username || u.name || '';
+  form.email = u.email || '';
+  form.unit_code = u.unit?.code || undefined;
+  form.is_active = u.is_active ?? true;
+  form.is_external = Boolean(u.is_external);
+};
+
 watch(
   () => props.open,
   (val) => {
-    if (val && !props.userId) {
-      resetForm();
+    if (val) {
+      if (!props.userId) {
+        resetForm();
+      } else if (userDetailRes.value) {
+        syncFormDataFromDetail();
+      }
     }
   },
   { immediate: true },
@@ -110,17 +135,12 @@ watch(
 
 watch(
   () => userDetailRes.value,
-  (res) => {
-    if (res?.data && props.userId) {
-      const u = res.data;
-      form.userid = u.userid || '';
-      form.username = u.username || u.name || '';
-      form.email = u.email || '';
-      form.unit_code = u.unit?.code || undefined;
-      form.is_active = u.is_active ?? true;
-      form.is_external = Boolean(u.is_external);
+  () => {
+    if (props.open && props.userId) {
+      syncFormDataFromDetail();
     }
   },
+  { immediate: true },
 );
 
 const createUserMutation = useCreateUserMutation();

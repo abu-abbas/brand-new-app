@@ -421,6 +421,9 @@ export type UserResourceUnit = {
 
 export type UserResourceCreatedAt = string | null;
 
+export type UserResourceActiveGroupId = string | null;
+export type UserResourceDefaultGroupId = string | null;
+
 export interface UserResource {
   id: string;
   userid: string;
@@ -432,6 +435,9 @@ export interface UserResource {
   is_external: boolean;
   roles: string[];
   user_roles?: UserRoleResource[];
+  active_group_id?: UserResourceActiveGroupId;
+  default_group_id?: UserResourceDefaultGroupId;
+  has_multiple_groups?: boolean;
   permissions: string[];
   is_root?: boolean;
   created_at: UserResourceCreatedAt;
@@ -1038,7 +1044,46 @@ export const usersToggleStatus = (
       options);
     }
   
+export interface SetActiveGroupRequest {
+  group_id: string;
+  remember?: boolean;
+}
+
+export type AuthSetActiveGroup200Data = UserResource;
+
+export interface AuthSetActiveGroup200 {
+  data: AuthSetActiveGroup200Data;
+}
+
+export const authSetActiveGroup = (
+  setActiveGroupRequest: SetActiveGroupRequest,
+  options?: SecondParameter<typeof customAxiosInstance<AuthSetActiveGroup200>>,
+) => {
+  return customAxiosInstance<AuthSetActiveGroup200>(
+    {
+      url: `/auth/active-group`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: setActiveGroupRequest,
+    },
+    options,
+  );
+};
+
+export const authResetDefaultGroup = (
+  options?: SecondParameter<typeof customAxiosInstance<AuthSetActiveGroup200>>,
+) => {
+  return customAxiosInstance<AuthSetActiveGroup200>(
+    {
+      url: `/auth/reset-default-group`,
+      method: 'POST',
+    },
+    options,
+  );
+};
+
 export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>
+export type AuthSetActiveGroupResult = NonNullable<Awaited<ReturnType<typeof authSetActiveGroup>>>
 export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>
 export type AuthCaptchaAudioResult = NonNullable<Awaited<ReturnType<typeof authCaptchaAudio>>>
 export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>

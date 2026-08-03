@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useConfirmDialog } from '@/composables/useConfirmDialog';
+import {
+  useUserScope,
+  type PerangkatDaerahOption,
+  type WilayahOption,
+} from '@/composables/useUserScope';
 import { normalizeAppError } from '@/lib/axios';
 import { Plus, ShieldCheck, Trash } from '@lucide/vue';
 import { ElForm, ElFormItem, type FormInstance } from 'element-plus';
@@ -23,8 +28,6 @@ import { useUpdateUserMutation } from '../mutations/useUpdateUserMutation';
 import { usePerangkatDaerahListQuery } from '../queries/usePerangkatDaerahListQuery';
 import { useUserDetailQuery } from '../queries/useUserDetailQuery';
 import { useWilayahListQuery } from '../queries/useWilayahListQuery';
-
-import { useUserScope } from '@/composables/useUserScope';
 
 const props = defineProps<{
   open: boolean;
@@ -45,12 +48,26 @@ const { data: wilayahRes } = useWilayahListQuery();
 const { data: pdRes } = usePerangkatDaerahListQuery();
 
 const formattedWilayahOptions = computed(() =>
-  filterWilayahList(wilayahRes.value?.data ?? []).map((w) => ({
+  filterWilayahList(
+    ((wilayahRes.value?.data ?? []) as WilayahOption[]).map((w) => ({
+      code: w.code || '',
+      name: w.name || '',
+    })),
+  ).map((w) => ({
     label: w.name,
     value: w.code,
   })),
 );
-const pdOptions = computed(() => filterPdList(pdRes.value?.data ?? []));
+const pdOptions = computed(() =>
+  filterPdList(
+    ((pdRes.value?.data ?? []) as PerangkatDaerahOption[]).map((pd) => ({
+      code: pd.code || '',
+      name: pd.name || '',
+      spmu: pd.spmu,
+      sipkd_code: pd.sipkd_code,
+    })),
+  ),
+);
 
 const availableRoles = ref<
   { code: string; name: string; need_region: boolean; need_unit: boolean }[]
@@ -108,6 +125,42 @@ const isAddGroupDisabled = computed(() => {
   });
 });
 
+const syncFormDataFromDetail = () => {
+  const u = userDetailRes.value?.data;
+  if (!u || !props.userId) return;
+
+  userName.value = u.username || u.name || '';
+  userIdCode.value = u.userid || '';
+
+  if (u.user_roles && Array.isArray(u.user_roles)) {
+    roles.value = (u.user_roles as unknown as UserRoleResource[]).map((r: UserRoleResource) => {
+      let wilayahArr: string[] = [];
+      if (r.wilayah) {
+        if (Array.isArray(r.wilayah)) {
+          wilayahArr = r.wilayah;
+        } else if (typeof r.wilayah === 'string') {
+          wilayahArr = r.wilayah
+            .split(',')
+            .map((w) => w.trim())
+            .filter(Boolean);
+        }
+      }
+      return {
+        role_code: r.role_code || '',
+        wilayah: wilayahArr,
+        unit: r.unit || undefined,
+        pelaksana: r.pelaksana || undefined,
+        _hasPelaksana: !!r.pelaksana,
+        valid_from: r.valid_from || undefined,
+        valid_until: r.valid_until || undefined,
+        _hasPeriod: !!(r.valid_from || r.valid_until),
+      };
+    });
+  } else {
+    roles.value = [];
+  }
+};
+
 watch(
   () => props.open,
   (val) => {
@@ -115,6 +168,9 @@ watch(
       submitError.value = '';
       formRef.value?.clearValidate();
       fetchRoles();
+      if (props.userId && userDetailRes.value) {
+        syncFormDataFromDetail();
+      }
     }
   },
   { immediate: true },
@@ -122,41 +178,12 @@ watch(
 
 watch(
   () => userDetailRes.value,
-  (res) => {
-    if (res?.data && props.userId) {
-      const u = res.data;
-      userName.value = u.username || u.name || '';
-      userIdCode.value = u.userid || '';
-
-      if (u.user_roles && Array.isArray(u.user_roles)) {
-        roles.value = (u.user_roles as unknown as UserRoleResource[]).map((r: UserRoleResource) => {
-          let wilayahArr: string[] = [];
-          if (r.wilayah) {
-            if (Array.isArray(r.wilayah)) {
-              wilayahArr = r.wilayah;
-            } else if (typeof r.wilayah === 'string') {
-              wilayahArr = r.wilayah
-                .split(',')
-                .map((w) => w.trim())
-                .filter(Boolean);
-            }
-          }
-          return {
-            role_code: r.role_code || '',
-            wilayah: wilayahArr,
-            unit: r.unit || undefined,
-            pelaksana: r.pelaksana || undefined,
-            _hasPelaksana: !!r.pelaksana,
-            valid_from: r.valid_from || undefined,
-            valid_until: r.valid_until || undefined,
-            _hasPeriod: !!(r.valid_from || r.valid_until),
-          };
-        });
-      } else {
-        roles.value = [];
-      }
+  () => {
+    if (props.open && props.userId) {
+      syncFormDataFromDetail();
     }
   },
+  { immediate: true },
 );
 
 const addRoleItem = async () => {

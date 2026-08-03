@@ -34,11 +34,39 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.public) {
-    return auth.isAuthenticated ? { name: 'home' } : true;
+    if (!auth.isAuthenticated) {
+      return true;
+    }
+    if (auth.requiresGroupSelection) {
+      return { name: 'auth.select-group' };
+    }
+    return { name: 'home' };
   }
 
   if (!auth.isAuthenticated) {
     return { name: 'auth.login', query: { redirect: to.fullPath } };
+  }
+
+  // Pengguna terautentikasi:
+  if (auth.requiresGroupSelection) {
+    // KUNCI ANTI-LOOP: Jika halaman tujuan adalah 'auth.select-group', biarkan lewat!
+    if (to.name === 'auth.select-group') {
+      return true;
+    }
+    return {
+      name: 'auth.select-group',
+      query: to.fullPath !== '/home' && to.fullPath !== '/' ? { redirect: to.fullPath } : undefined,
+    };
+  }
+
+  // 2. Jika pengguna SUDAH memiliki active_group_id (requiresGroupSelection === false)
+  // dan mencoba membuka halaman /select-group secara langsung (bukan mode switch)
+  if (
+    to.name === 'auth.select-group' &&
+    !auth.requiresGroupSelection &&
+    to.query.switch !== 'true'
+  ) {
+    return { name: 'home' };
   }
 
   return true;

@@ -3,10 +3,14 @@ import {
   authLogin,
   authLogout,
   authMe,
+  authResetDefaultGroup,
+  authSetActiveGroup,
   type AuthCaptcha200,
   type AuthLogin200,
   type AuthMe200,
+  type AuthSetActiveGroup200,
   type LoginRequest,
+  type SetActiveGroupRequest,
 } from '@/api/generated/api';
 import { axiosInstance } from '@/lib/axios';
 
@@ -19,6 +23,14 @@ export class AuthFacade {
 
   public static me(): Promise<AuthMe200> {
     return authMe();
+  }
+
+  public static setActiveGroup(data: SetActiveGroupRequest): Promise<AuthSetActiveGroup200> {
+    return authSetActiveGroup(data);
+  }
+
+  public static resetDefaultGroup(): Promise<AuthSetActiveGroup200> {
+    return authResetDefaultGroup();
   }
 
   public static logout(): Promise<void> {

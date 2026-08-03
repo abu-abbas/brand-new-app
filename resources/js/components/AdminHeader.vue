@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import GroupSwitcher from '@/components/custom-ui/group-switcher/GroupSwitcher.vue';
 import { cn } from '@/lib/utils';
 import { PanelLeft, Bell } from '@lucide/vue';
 
@@ -59,16 +60,17 @@ function navigateBreadcrumb(target: string) {
       </div>
     </div>
 
-    <!-- Right Side Header (Notification Button Only) -->
+    <!-- Right Side Header (Notification Button + Group Switcher) -->
     <div class="flex items-center gap-2">
       <Button
         variant="ghost"
         size="icon"
-        class="size-8 rounded-lg bg-primary/15 text-primary border border-primary/30 hover:bg-primary/20 hover:text-primary cursor-pointer"
+        class="size-8 rounded-lg bg-primary/5 text-primary/65 border border-primary/10 hover:bg-primary/10 hover:text-primary/85 cursor-pointer"
         aria-label="Notifications"
       >
         <Bell class="size-4" />
       </Button>
+      <GroupSwitcher />
     </div>
   </header>
 </template>

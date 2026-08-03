@@ -408,7 +408,7 @@ const dynamicMenu = computed<DynamicMenuItem[]>(() => {
               <DropdownMenuSeparator />
               <DropdownMenuItem @click="handleLogout">
                 <LogOut class="size-4 mr-2 text-destructive" />
-                <span class="text-destructive">Log out</span>
+                <span class="text-destructive">Keluar</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
