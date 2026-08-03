@@ -217,7 +217,7 @@ it('prevents user from deleting self', function () {
     $this->actingAs($user);
 
     $response = $this->deleteJson("/api/users/{$user->hash_id}");
-    $response->assertStatus(422);
+    $response->assertStatus(403);
 
     expect($user->fresh()->dt_deleted_at)->toBeNull();
 });

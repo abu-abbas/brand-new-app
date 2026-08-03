@@ -6,6 +6,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->withHeader('Referer', config('app.url'));
+});
+
 test('user dengan 1 role otomatis mendapatkan active group di session saat login', function () {
     $user = User::factory()->create([
         'v_password' => bcrypt('password123'),
@@ -17,7 +21,7 @@ test('user dengan 1 role otomatis mendapatkan active group di session saat login
         'v_role_code' => 'ROLE_OPERATOR',
     ]);
 
-    $response = $this->withSession([])->postJson('/api/auth/login', [
+    $response = $this->postJson('/api/auth/login', [
         'username' => $user->v_userid,
         'password' => 'password123',
     ]);
@@ -36,7 +40,7 @@ test('user dengan multiple roles dan tanpa default group belum memiliki active g
     UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ROLE_ADMIN']);
     UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ROLE_OPERATOR']);
 
-    $response = $this->withSession([])->postJson('/api/auth/login', [
+    $response = $this->postJson('/api/auth/login', [
         'username' => $user->v_userid,
         'password' => 'password123',
     ]);
@@ -57,7 +61,7 @@ test('user dapat memilih active group via POST /api/auth/active-group', function
 
     $this->actingAs($user, 'web');
 
-    $response = $this->withSession([])->postJson('/api/auth/active-group', [
+    $response = $this->postJson('/api/auth/active-group', [
         'group_id' => 'ROLE_ADMIN',
         'remember' => true,
     ]);
@@ -82,7 +86,7 @@ test('gagal memilih group yang tidak dimiliki user', function () {
 
     $this->actingAs($user, 'web');
 
-    $response = $this->withSession([])->postJson('/api/auth/active-group', [
+    $response = $this->postJson('/api/auth/active-group', [
         'group_id' => 'ROLE_SUPER_ADMIN',
     ]);
 
