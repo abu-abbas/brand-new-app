@@ -41,6 +41,38 @@ const confirmDialog = useConfirmDialog();
 const authStore = useAuthStore();
 const permissionStore = usePermissionStore();
 
+const userRoleCode = computed(() => {
+  const roles = authStore.user?.roles;
+  if (Array.isArray(roles) && roles.length > 0) {
+    return String(roles[0]).toUpperCase();
+  }
+  return '';
+});
+
+const userRolePrefix = computed(() => {
+  if (isRoot.value) return '';
+  return `${userRoleCode.value}_`;
+});
+
+const codeSuffix = ref('');
+
+function updateCodeFromSuffix(value: string): void {
+  const formatted = value.replace(/\s+/g, '_').toUpperCase();
+  codeSuffix.value = formatted;
+  if (isEdit.value) {
+    const prefix = userRolePrefix.value;
+    const rawCode = props.role?.code ?? '';
+    if (prefix && rawCode.toUpperCase().startsWith(prefix)) {
+      form.code = formatted.trim() ? `${prefix}${formatted}` : '';
+    } else {
+      form.code = formatted;
+    }
+  } else {
+    form.code = formatted.trim() ? `${userRolePrefix.value}${formatted}` : '';
+  }
+  validateField('code');
+}
+
 const isRoot = computed(() => Boolean(authStore.user?.is_root));
 
 const isEdit = computed(() => Boolean(props.role));
@@ -66,19 +98,25 @@ const form = reactive<StoreRolePayload>({
 });
 
 // Rules validasi Element Plus Form
-const rules: FormRules<StoreRolePayload> = {
+const rules: FormRules = {
   code: [
     { required: true, message: 'Kode Group wajib diisi.', trigger: 'blur' },
-    { min: 2, max: 100, message: 'Kode Group antara 2-100 karakter.', trigger: 'blur' },
     {
-      pattern: /^[A-Za-z0-9_-]+$/,
-      message: 'Kode Group hanya boleh berupa huruf, angka, strip, atau garis bawah.',
+      validator: (_rule, value, callback) => {
+        if (!value) return callback();
+        if (!/^[A-Z0-9_]+$/.test(value)) {
+          return callback(
+            new Error('Kode Group hanya boleh berisi huruf kapital, angka, dan underscore (_).'),
+          );
+        }
+        callback();
+      },
       trigger: 'blur',
     },
   ],
   name: [
     { required: true, message: 'Nama Group wajib diisi.', trigger: 'blur' },
-    { min: 2, max: 255, message: 'Nama Group antara 2-255 karakter.', trigger: 'blur' },
+    { min: 3, max: 150, message: 'Nama Group antara 3 - 150 karakter.', trigger: 'blur' },
   ],
 };
 
@@ -86,8 +124,21 @@ function resetForm(): void {
   const role = props.role;
   isLocked.value = Boolean(role?.locked);
   hasTimeLimit.value = Boolean(role?.active_periode?.start || role?.active_periode?.end);
+
+  const rawCode = role?.code ?? '';
+  if (!isRoot.value) {
+    const prefix = userRolePrefix.value;
+    if (prefix && rawCode.toUpperCase().startsWith(prefix)) {
+      codeSuffix.value = rawCode.substring(prefix.length);
+    } else {
+      codeSuffix.value = rawCode;
+    }
+  } else {
+    codeSuffix.value = rawCode;
+  }
+
   Object.assign(form, {
-    code: role?.code ?? '',
+    code: rawCode,
     name: role?.name ?? '',
     level: role?.level ?? 0,
     need_region: Boolean(role?.need_region),
@@ -97,6 +148,13 @@ function resetForm(): void {
       : (role?.features?.map((f) => (typeof f === 'string' ? f : f.alias)) ?? []),
     active_periode: role?.active_periode ? { ...role.active_periode } : { start: null, end: null },
   });
+
+  if (!isEdit.value && !isRoot.value) {
+    form.need_region = false;
+    form.need_unit = true;
+    form.code = codeSuffix.value.trim() ? `${userRolePrefix.value}${codeSuffix.value}` : '';
+  }
+
   submitError.value = '';
   Object.keys(serverErrors).forEach((key) => delete serverErrors[key]);
   formRef.value?.clearValidate();
@@ -325,13 +383,32 @@ watch(open, (isOpen) => {
               label="Kode Group"
               prop="code"
               :error="serverErrors.code"
-              :class="isRoot ? 'sm:col-span-4' : 'sm:col-span-4'"
+              class="sm:col-span-4"
             >
+              <div
+                v-if="!isRoot && !isEdit"
+                class="flex h-9 w-full items-center rounded-md border border-input bg-background px-3 text-xs shadow-2xs transition-colors focus-within:ring-2 focus-within:ring-ring focus-within:border-primary"
+              >
+                <span
+                  v-if="userRolePrefix"
+                  class="font-mono font-semibold text-muted-foreground select-none shrink-0 pr-0.5"
+                >
+                  {{ userRolePrefix }}
+                </span>
+                <input
+                  :value="codeSuffix"
+                  class="flex-1 bg-transparent border-0 p-0 h-full text-xs font-mono uppercase text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-0"
+                  maxlength="100"
+                  placeholder="OPERATOR"
+                  @input="(e) => updateCodeFromSuffix((e.target as HTMLInputElement).value)"
+                />
+              </div>
               <Input
+                v-else
                 v-model="form.code"
-                :disabled="isDeleted || (isEdit && Boolean(role?.locked))"
+                :disabled="isEdit || isDeleted || Boolean(role?.locked)"
                 maxlength="100"
-                placeholder="adm_sys"
+                placeholder="ADM_OPD"
                 @input="validateField('code')"
               />
             </ElFormItem>
@@ -391,8 +468,9 @@ watch(open, (isOpen) => {
             </p>
           </div>
 
-          <!-- limit berdasarkan wilayah -->
+          <!-- limit berdasarkan wilayah (Tampil untuk ROOT atau saat edit role) -->
           <div
+            v-if="isRoot || isEdit"
             class="rounded-lg border border-muted/60 bg-muted/60 p-3 space-y-3"
             :class="{ 'border-primary/10': form.need_region }"
           >
@@ -404,7 +482,7 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="form.need_region" :disabled="isDeleted" />
+              <Switch v-model="form.need_region" :disabled="isDeleted || !isRoot" />
             </div>
           </div>
 
@@ -423,7 +501,7 @@ watch(open, (isOpen) => {
                 </span>
               </div>
 
-              <Switch v-model="form.need_unit" :disabled="isDeleted" />
+              <Switch v-model="form.need_unit" :disabled="isDeleted || !isRoot" />
             </div>
           </div>
 
@@ -472,7 +550,7 @@ watch(open, (isOpen) => {
         <Alert variant="destructive" class="bg-destructive/5 border-dashed border-destructive/20">
           <CircleAlert />
           <div class="ml-2">
-            <AlertTitle>Danger zone</AlertTitle>
+            <AlertTitle>Hapus Group</AlertTitle>
             <AlertDescription class="text-2sm leading-snug">
               Tindakan ini akan menghapus group dari daftar aktif. Group yang dihapus dapat
               dipulihkan kembali selama kodenya belum digunakan oleh group lain.
@@ -487,7 +565,7 @@ watch(open, (isOpen) => {
               @click="deleteRole"
             >
               <Trash2 data-icon="inline-start" />
-              Hapus Group
+              Hapus
             </Button>
           </div>
         </Alert>

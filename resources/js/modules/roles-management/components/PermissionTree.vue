@@ -255,12 +255,6 @@ watch(
           <span>Bersihkan</span>
         </button>
       </div>
-
-      <span
-        class="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
-      >
-        {{ modelValue.length }} Terpilih
-      </span>
     </div>
 
     <!-- Empty State jika data dari backend kosong -->

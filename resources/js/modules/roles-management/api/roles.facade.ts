@@ -29,6 +29,8 @@ export interface RoleRow {
   need_unit: boolean;
   active_periode?: DateRangeValue | null;
   locked: boolean;
+  can_edit?: boolean;
+  can_delete?: boolean;
   features: RoleFeatureItem[];
   feature_aliases: string[];
   updated_at?: string | null;
@@ -199,6 +201,8 @@ export class RolesFacade {
       need_unit: item.need_unit,
       active_periode: RolesFacade.parseActivePeriode(item.active_periode),
       locked: item.locked,
+      can_edit: (item as unknown as { can_edit?: boolean }).can_edit ?? true,
+      can_delete: (item as unknown as { can_delete?: boolean }).can_delete ?? false,
       features: featureItems,
       feature_aliases: featureItems.map((f) => f.alias),
       updated_at: item.updated_at,

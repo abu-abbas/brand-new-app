@@ -33,9 +33,9 @@ const fields: DataTableField<RoleRow>[] = [
     filterColumn: false,
     align: 'center',
   },
-  { key: 'name', label: 'Group', minWidth: 150, sortable: true },
+  { key: 'name', label: 'Group', minWidth: 100, sortable: true },
   { key: 'code', label: 'Kode Group', hidden: true },
-  { key: 'features', label: 'Hak Akses', minWidth: 220 },
+  { key: 'features', label: 'Hak Akses', minWidth: 180 },
   {
     key: 'limitasi',
     label: 'Limitasi',
@@ -170,13 +170,16 @@ function onSubmitted(): void {
         search-placeholder="Cari berdasarkan nama atau kode group..."
         actions
         :actions-width="60"
-        :can-edit="() => permission.can(ROLE_PERMISSIONS.UPDATE)"
+        :can-edit="
+          (row: unknown) =>
+            permission.can(ROLE_PERMISSIONS.UPDATE) && Boolean((row as RoleRow).can_edit ?? true)
+        "
         :can-delete="() => false"
         @edit="(row: unknown) => openEdit(row as RoleRow)"
         @create="openCreate"
       >
         <template #cell(name)="{ row, value }">
-          <div class="flex items-center gap-1.5">
+          <div class="flex flex-wrap items-center gap-1.5">
             <p>{{ value }}</p>
             <Badge variant="outline" class="bg-primary/10 border-primary/40">{{ row.code }}</Badge>
           </div>

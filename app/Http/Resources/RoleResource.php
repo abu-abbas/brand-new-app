@@ -37,15 +37,36 @@ class RoleResource extends JsonResource
             'name' => $f->v_name,
         ])->values()->all();
 
+        $user = $request->user();
+        $isRoot = (bool) $user?->isRoot();
+        $canManage = false;
+
+        if ($user) {
+            if ($isRoot) {
+                $canManage = true;
+            } else {
+                $firstRole = $user->relationLoaded('userRoles')
+                    ? $user->userRoles->pluck('v_role_code')->first()
+                    : $user->userRoles()->pluck('v_role_code')->first();
+
+                if ($firstRole) {
+                    $prefix = strtoupper((string) $firstRole).'_';
+                    $canManage = str_starts_with(strtoupper($this->v_code), $prefix);
+                }
+            }
+        }
+
         return [
             'id' => $this->hash_id,
             'code' => $this->v_code,
             'name' => $this->v_name,
-            'level' => $this->when((bool) $request->user()?->isRoot(), (int) $this->i_level),
+            'level' => $this->when($isRoot, (int) $this->i_level),
             'need_region' => (bool) $this->b_need_region,
             'need_unit' => (bool) $this->b_need_unit,
             'active_periode' => $this->v_active_periode,
             'locked' => (bool) $this->b_locked,
+            'can_edit' => $canManage,
+            'can_delete' => $canManage && ! (bool) $this->b_locked,
             'features' => array_values($features),
             'updated_at' => $this->dt_updated_at?->toIso8601String(),
             'deleted_at' => $this->dt_deleted_at?->toIso8601String(),

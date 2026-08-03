@@ -5,13 +5,14 @@ use App\Models\Feature;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->withHeader('Referer', config('app.url'));
     $admin = User::factory()->create();
-    Illuminate\Support\Facades\DB::table('tr_user_roles')->insert([
+    DB::table('tr_user_roles')->insert([
         'v_userid' => $admin->v_userid,
         'v_role_code' => 'ADM_SYS',
         'v_created_by' => 'system',

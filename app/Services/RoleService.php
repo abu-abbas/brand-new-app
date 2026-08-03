@@ -4,9 +4,11 @@ namespace App\Services;
 
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
+use App\Errors\AuthError;
 use App\Errors\RoleError;
 use App\Models\Feature;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +17,29 @@ use Illuminate\Support\Facades\DB;
 class RoleService
 {
     public function __construct(private readonly ErrorDefinitionReader $errorDefinitionReader) {}
+
+    public function canUserManageRole(?User $user, Role $role): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->isRoot()) {
+            return true;
+        }
+
+        $firstRole = $user->relationLoaded('userRoles')
+            ? $user->userRoles->pluck('v_role_code')->first()
+            : $user->userRoles()->pluck('v_role_code')->first();
+
+        if (! $firstRole) {
+            return false;
+        }
+
+        $prefix = strtoupper((string) $firstRole).'_';
+
+        return str_starts_with(strtoupper($role->v_code), $prefix);
+    }
 
     private const COLUMNS = [
         'code' => 'v_code',
@@ -31,11 +56,13 @@ class RoleService
      */
     public function paginate(array $params): LengthAwarePaginator
     {
-        $currentUserLevel = Auth::user()?->role_level ?? 0;
+        $currentUser = Auth::user();
+        $query = Role::query()->with('features');
 
-        $query = Role::query()
-            ->with('features')
-            ->where('i_level', '<=', $currentUserLevel);
+        if (! $currentUser?->isRoot()) {
+            $currentUserLevel = $currentUser?->role_level ?? 0;
+            $query->where('i_level', '<', $currentUserLevel);
+        }
 
         if (in_array((string) ($params['include_deleted'] ?? 'false'), ['true', '1'], true)) {
             $query->withTrashed();
@@ -92,12 +119,15 @@ class RoleService
      */
     public function options(): Collection
     {
-        $currentUserLevel = Auth::user()?->role_level ?? 0;
+        $currentUser = Auth::user();
+        $query = Role::query();
 
-        return Role::query()
-            ->where('i_level', '<=', $currentUserLevel)
-            ->orderBy('v_name')
-            ->get();
+        if (! $currentUser?->isRoot()) {
+            $currentUserLevel = $currentUser?->role_level ?? 0;
+            $query->where('i_level', '<', $currentUserLevel);
+        }
+
+        return $query->orderBy('v_name')->get();
     }
 
     /**
@@ -108,20 +138,42 @@ class RoleService
         $currentUser = Auth::user();
         $currentUserLevel = $currentUser?->role_level ?? 0;
 
-        if ($currentUser?->isRoot() && isset($data['level'])) {
-            $targetLevel = min((int) $data['level'], $currentUserLevel);
+        $code = trim((string) ($data['code'] ?? ''));
+
+        if (! $currentUser?->isRoot()) {
+            $userRoleCode = '';
+            if ($currentUser) {
+                $firstRole = $currentUser->userRoles->pluck('v_role_code')->first();
+                if ($firstRole) {
+                    $userRoleCode = strtoupper((string) $firstRole);
+                }
+            }
+            $prefix = $userRoleCode ? $userRoleCode.'_' : '';
+
+            if ($prefix && ! str_starts_with(strtoupper($code), $prefix)) {
+                $code = $prefix.$code;
+            }
+
+            // Batasi panjang v_code agar tidak melebihi 100 karakter
+            $code = substr($code, 0, 100);
+
+            $targetLevel = max(0, $currentUserLevel - 1);
+            $needRegion = false;
+            $needUnit = true;
         } else {
-            $targetLevel = $currentUserLevel;
+            $targetLevel = isset($data['level']) ? (int) $data['level'] : $currentUserLevel;
+            $needRegion = (bool) ($data['need_region'] ?? false);
+            $needUnit = (bool) ($data['need_unit'] ?? false);
         }
 
-        return DB::transaction(function () use ($data, $targetLevel) {
+        return DB::transaction(function () use ($data, $code, $targetLevel, $needRegion, $needUnit) {
             /** @var Role $role */
             $role = Role::query()->create([
-                'v_code' => $data['code'],
+                'v_code' => $code,
                 'v_name' => $data['name'],
                 'i_level' => $targetLevel,
-                'b_need_region' => $data['need_region'] ?? false,
-                'b_need_unit' => $data['need_unit'] ?? false,
+                'b_need_region' => $needRegion,
+                'b_need_unit' => $needUnit,
                 'v_active_periode' => $data['active_periode'] ?? null,
                 'b_locked' => false,
                 'v_created_by' => Auth::user()?->username,
@@ -145,6 +197,13 @@ class RoleService
     public function update(Role $role, array $data): Role
     {
         $currentUser = Auth::user();
+        if (! $this->canUserManageRole($currentUser, $role)) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(AuthError::UNAUTHORIZED_ACTION),
+                context: ['role_code' => $role->v_code]
+            );
+        }
+
         $currentUserLevel = $currentUser?->role_level ?? 0;
 
         return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel) {
@@ -180,6 +239,14 @@ class RoleService
 
     public function delete(Role $role): void
     {
+        $currentUser = Auth::user();
+        if (! $this->canUserManageRole($currentUser, $role)) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(AuthError::UNAUTHORIZED_ACTION),
+                context: ['role_code' => $role->v_code]
+            );
+        }
+
         if ($role->b_locked) {
             throw new ApplicationException(
                 definition: $this->errorDefinitionReader->read(RoleError::ROLE_LOCKED_CANNOT_DELETE),
