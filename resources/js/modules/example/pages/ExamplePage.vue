@@ -2,7 +2,6 @@
 import { computed, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  Home,
   Table,
   ShieldAlert,
   Sliders,
@@ -84,11 +83,6 @@ const activeExample = computed(() => {
 const activeComponent = computed(() => activeExample.value?.component);
 const currentTitle = computed(() => activeExample.value?.name || 'Example');
 
-function isItemActive(target: string, isExternal: boolean): boolean {
-  if (isExternal) return route.path === target;
-  return route.path === '/example-custom-component' && activeHash.value === target;
-}
-
 function navigate(target: string, isExternal: boolean) {
   if (isExternal) {
     router.push(target);
@@ -105,21 +99,6 @@ function navigate(target: string, isExternal: boolean) {
       <ScrollArea class="w-full pb-2">
         <NavigationMenu class="w-full max-w-full justify-start">
           <NavigationMenuList class="flex w-max flex-nowrap items-center gap-1 pr-4">
-            <!-- Home Link -->
-            <NavigationMenuItem>
-              <NavigationMenuLink
-                :class="[
-                  navigationMenuTriggerStyle(),
-                  'shrink-0 cursor-pointer gap-2 font-medium',
-                  isItemActive('/', true) && 'bg-primary/10 font-semibold text-primary',
-                ]"
-                @click="navigate('/', true)"
-              >
-                <Home class="size-4" />
-                Home
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
             <!-- Direct Quick Tabs (Auto-scanned) -->
             <NavigationMenuItem v-for="ex in examples" :key="ex.hash">
               <NavigationMenuLink
