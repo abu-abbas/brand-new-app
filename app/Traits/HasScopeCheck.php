@@ -9,21 +9,29 @@ trait HasScopeCheck
 {
     /**
      * Memeriksa apakah actor berhak mengelola/mengakses resource berdasarkan level, unit, dan wilayah.
+     *
+     * @param  ScopedResource|object  $resource
      */
-    public function canAccessScope(User $actor, ScopedResource $resource): bool
+    public function canAccessScope(User $actor, object $resource): bool
     {
         if ($actor->isRoot()) {
             return true;
         }
 
         // 1. Pengecekan Level (jika resource memiliki level, misal User)
-        $resourceLevel = $resource->getResourceLevel();
-        if ($resourceLevel !== null && $resourceLevel >= $actor->role_level) {
+        $resourceLevel = $resource instanceof ScopedResource
+            ? $resource->getResourceLevel()
+            : ($resource->role_level ?? null);
+
+        if ($resourceLevel !== null && (int) $resourceLevel >= $actor->role_level) {
             return false;
         }
 
         // 2. Pengecekan Unit Spesifik
-        $resourceUnit = $resource->getResourceUnit();
+        $resourceUnit = $resource instanceof ScopedResource
+            ? $resource->getResourceUnit()
+            : ($resource->v_kolok ?? null);
+
         if (! empty($resourceUnit)) {
             $actorUnits = $actor->userRoles
                 ->pluck('v_unit')
@@ -38,7 +46,10 @@ trait HasScopeCheck
         }
 
         // 3. Pengecekan Wilayah (2 Digit Prefix Kode Wilayah)
-        $resourceWilayah = $resource->getResourceWilayah();
+        $resourceWilayah = $resource instanceof ScopedResource
+            ? $resource->getResourceWilayah()
+            : ($resource->v_kolok ?? null);
+
         if (! empty($resourceWilayah)) {
             $actorWilayahs = $actor->userRoles
                 ->pluck('v_wilayah')
