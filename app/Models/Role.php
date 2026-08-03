@@ -75,6 +75,21 @@ class Role extends Model implements HasNotFoundError
         'dt_deleted_at' => 'datetime',
     ];
 
+    public function isCurrentlyActive(?Carbon $date = null): bool
+    {
+        $period = $this->v_active_periode;
+        if (! $period) {
+            return true;
+        }
+
+        $date = ($date ?? today())->startOfDay();
+        $start = $period['start'] ?? $period[0] ?? null;
+        $end = $period['end'] ?? $period[1] ?? null;
+
+        return (! $start || Carbon::parse($start)->startOfDay()->lte($date))
+            && (! $end || Carbon::parse($end)->startOfDay()->gte($date));
+    }
+
     /**
      * Relasi ke features.
      */

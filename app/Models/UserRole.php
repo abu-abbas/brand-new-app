@@ -84,7 +84,8 @@ class UserRole extends Model
 
         return $this->dt_deleted_at === null
             && ($this->dt_valid_from === null || $this->dt_valid_from->lte($date))
-            && ($this->dt_valid_until === null || $this->dt_valid_until->gte($date));
+            && ($this->dt_valid_until === null || $this->dt_valid_until->gte($date))
+            && ($this->roleModel === null || $this->roleModel->isCurrentlyActive($date));
     }
 
     public function user(): BelongsTo

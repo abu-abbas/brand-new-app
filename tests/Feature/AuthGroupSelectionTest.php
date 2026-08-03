@@ -131,6 +131,34 @@ test('hanya assignment dalam periode berlaku dan belum dihapus yang memengaruhi 
     expect(DB::table('tr_user_roles')->whereNotNull('dt_deleted_at')->count())->toBe(1);
 });
 
+test('role di luar periode aktif tidak tersedia saat login', function () {
+    $user = User::factory()->create([
+        'v_password' => bcrypt('password123'),
+        'b_is_active' => true,
+    ]);
+    Role::query()->create([
+        'v_code' => 'EXPIRED',
+        'v_name' => 'Expired',
+        'v_active_periode' => [today()->subDays(2)->toDateString(), today()->subDay()->toDateString()],
+    ]);
+    Role::query()->create([
+        'v_code' => 'ACTIVE',
+        'v_name' => 'Active',
+        'v_active_periode' => ['start' => today()->toDateString(), 'end' => today()->toDateString()],
+    ]);
+    UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'EXPIRED']);
+    UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ACTIVE']);
+
+    $this->postJson('/api/auth/login', [
+        'username' => $user->v_userid,
+        'password' => 'password123',
+    ])
+        ->assertOk()
+        ->assertJsonPath('data.roles', ['ACTIVE'])
+        ->assertJsonPath('data.active_group_id', 'ACTIVE')
+        ->assertJsonCount(1, 'data.user_roles');
+});
+
 test('is_root hanya diekspos untuk user dengan level root', function () {
     Role::query()->create(['v_code' => 'STAFF', 'v_name' => 'Staff', 'i_level' => 10]);
     Role::query()->create(['v_code' => 'ROOT', 'v_name' => 'Root', 'i_level' => RoleConstant::ROOT_LEVEL]);

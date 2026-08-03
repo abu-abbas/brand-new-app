@@ -180,7 +180,9 @@ class User extends Authenticatable implements HasNotFoundError, ScopedResource
         } else {
             $roles = $this->currentUserRoles()
                 ->with('roleModel.features')
-                ->get();
+                ->get()
+                ->filter(fn (UserRole $userRole) => $userRole->isCurrentlyValid())
+                ->values();
             $this->setRelation('currentUserRoles', $roles);
         }
 
