@@ -1,15 +1,17 @@
 import {
   referencesPerangkatDaerah,
   referencesWilayah,
+  rolesOptions,
+  type RoleOptionResource,
   usersDestroy,
   usersIndex,
   usersShow,
   usersStore,
-  usersTestError,
   usersToggleStatus,
   usersUpdate,
   type StoreUserRequest,
   type UpdateUserRequest,
+  type UserRoleResource,
   type UsersIndexParams,
 } from '../../../api/generated/api';
 
@@ -22,10 +24,11 @@ export const userManagementFacade = {
   updateUser: (id: string, data: UpdateUserRequest) => usersUpdate(id as unknown as number, data),
   deleteUser: (id: string) => usersDestroy(id as unknown as number),
   toggleUserStatus: (id: string) => usersToggleStatus(id as unknown as number),
-  triggerTestError: (signal?: AbortSignal) => usersTestError(signal ? { signal } : undefined),
-
-  getWilayahMock: () => referencesWilayah(),
-  getPerangkatDaerahMock: () => referencesPerangkatDaerah(),
+  getRoleOptions: () => rolesOptions(),
+  getWilayahOptions: () => referencesWilayah(),
+  getPerangkatDaerahOptions: () => referencesPerangkatDaerah(),
 };
 
 export const UserManagementFacade = userManagementFacade;
+
+export type { RoleOptionResource, UserRoleResource };

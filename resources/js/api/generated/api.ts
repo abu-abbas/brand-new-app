@@ -148,6 +148,11 @@ export interface RoleOptionResource {
 
 export type RoleResourceActivePeriode = unknown[] | null;
 
+export type RoleResourceFeaturesItem = {
+  alias: string;
+  name: string;
+};
+
 export type RoleResourceUpdatedAt = string | null;
 
 export type RoleResourceDeletedAt = string | null;
@@ -162,10 +167,17 @@ export interface RoleResource {
   active_periode: RoleResourceActivePeriode;
   locked: boolean;
   can_edit: boolean;
-  can_delete: string;
-  features: unknown[];
+  can_delete: boolean;
+  features: RoleResourceFeaturesItem[];
   updated_at: RoleResourceUpdatedAt;
   deleted_at: RoleResourceDeletedAt;
+}
+
+export type SetActiveGroupRequestRemember = boolean | null;
+
+export interface SetActiveGroupRequest {
+  group_id: string;
+  remember?: SetActiveGroupRequestRemember;
 }
 
 export type StoreFeatureRequestType = typeof StoreFeatureRequestType[keyof typeof StoreFeatureRequestType];
@@ -419,10 +431,11 @@ export type UserResourceUnit = {
   name: string;
 };
 
-export type UserResourceCreatedAt = string | null;
-
 export type UserResourceActiveGroupId = string | null;
+
 export type UserResourceDefaultGroupId = string | null;
+
+export type UserResourceCreatedAt = string | null;
 
 export interface UserResource {
   id: string;
@@ -435,9 +448,9 @@ export interface UserResource {
   is_external: boolean;
   roles: string[];
   user_roles?: UserRoleResource[];
-  active_group_id?: UserResourceActiveGroupId;
-  default_group_id?: UserResourceDefaultGroupId;
-  has_multiple_groups?: boolean;
+  active_group_id: UserResourceActiveGroupId;
+  default_group_id: UserResourceDefaultGroupId;
+  has_multiple_groups: boolean;
   permissions: string[];
   is_root?: boolean;
   created_at: UserResourceCreatedAt;
@@ -511,6 +524,14 @@ export type AuthMe200 = {
   data: UserResource;
 };
 
+export type AuthActiveGroup200 = {
+  data: UserResource;
+};
+
+export type AuthResetDefaultGroup200 = {
+  data: UserResource;
+};
+
 export type FeaturesIndexParams = {
 /**
  * @minimum 1
@@ -574,12 +595,25 @@ export type FeaturesRestore200 = {
   data: FeatureResource;
 };
 
+export type ReferencesWilayah200DataItem = {
+  code: string;
+  name: string;
+  order: number;
+};
+
 export type ReferencesWilayah200 = {
-  data: unknown[];
+  data: ReferencesWilayah200DataItem[];
+};
+
+export type ReferencesPerangkatDaerah200DataItem = {
+  code: string;
+  name: string;
+  spmu: string;
+  sipkd_code: string;
 };
 
 export type ReferencesPerangkatDaerah200 = {
-  data: unknown[];
+  data: ReferencesPerangkatDaerah200DataItem[];
 };
 
 export type RolesIndexParams = {
@@ -676,8 +710,6 @@ export type UsersStore201 = {
   data: UserResource;
 };
 
-export type UsersTestError200 = { [key: string]: unknown };
-
 export type UsersShow200 = {
   data: UserResource;
 };
@@ -712,19 +744,19 @@ export const authLogin = (
     },
       options);
     }
-  
+
 /**
  * @summary Return a single-use CAPTCHA challenge as a base64 data URI
  */
 export const authCaptcha = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<AuthCaptcha200>>,) => {
       return customAxiosInstance<AuthCaptcha200>(
       {url: `/auth/captcha`, method: 'GET'
     },
       options);
     }
-  
+
 /**
  * @summary Return audio (WAV format) pronouncing the CAPTCHA code for accessibility
  */
@@ -737,31 +769,57 @@ export const authCaptchaAudio = (
     },
       options);
     }
-  
+
 /**
  * @summary Return the authenticated user
  */
 export const authMe = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<AuthMe200>>,) => {
       return customAxiosInstance<AuthMe200>(
       {url: `/auth/me`, method: 'GET'
     },
       options);
     }
-  
+
+/**
+ * @summary Set the active group/role for the current session
+ */
+export const authActiveGroup = (
+    setActiveGroupRequest: SetActiveGroupRequest,
+ options?: SecondParameter<typeof customAxiosInstance<AuthActiveGroup200>>,) => {
+      return customAxiosInstance<AuthActiveGroup200>(
+      {url: `/auth/active-group`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: setActiveGroupRequest
+    },
+      options);
+    }
+
+/**
+ * @summary Reset the default group preference for the current user
+ */
+export const authResetDefaultGroup = (
+
+ options?: SecondParameter<typeof customAxiosInstance<AuthResetDefaultGroup200>>,) => {
+      return customAxiosInstance<AuthResetDefaultGroup200>(
+      {url: `/auth/reset-default-group`, method: 'POST'
+    },
+      options);
+    }
+
 /**
  * @summary End the authenticated session
  */
 export const authLogout = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
       return customAxiosInstance<void>(
       {url: `/auth/logout`, method: 'POST'
     },
       options);
     }
-  
+
 /**
  * @summary Display a paginated list of features, optionally including soft-deleted records
  */
@@ -774,7 +832,7 @@ export const featuresIndex = (
     },
       options);
     }
-  
+
 /**
  * @summary Store a new feature
  */
@@ -788,19 +846,19 @@ export const featuresStore = (
     },
       options);
     }
-  
+
 /**
  * @summary Display active features for parent selection
  */
 export const featuresOptions = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<FeaturesOptions200>>,) => {
       return customAxiosInstance<FeaturesOptions200>(
       {url: `/features/options`, method: 'GET'
     },
       options);
     }
-  
+
 /**
  * @summary Update an existing feature
  */
@@ -815,7 +873,7 @@ export const featuresUpdate = (
     },
       options);
     }
-  
+
 /**
  * @summary Soft-delete an existing feature
  */
@@ -827,7 +885,7 @@ export const featuresDestroy = (
     },
       options);
     }
-  
+
 /**
  * @summary Restore a soft-deleted feature
  */
@@ -839,31 +897,25 @@ export const featuresRestore = (
     },
       options);
     }
-  
-/**
- * @summary Mengambil data mock Wilayah
- */
+
 export const referencesWilayah = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<ReferencesWilayah200>>,) => {
       return customAxiosInstance<ReferencesWilayah200>(
       {url: `/references/wilayah`, method: 'GET'
     },
       options);
     }
-  
-/**
- * @summary Mengambil data mock Perangkat Daerah (Unit)
- */
+
 export const referencesPerangkatDaerah = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<ReferencesPerangkatDaerah200>>,) => {
       return customAxiosInstance<ReferencesPerangkatDaerah200>(
       {url: `/references/perangkat-daerah`, method: 'GET'
     },
       options);
     }
-  
+
 /**
  * @summary Display a paginated list of roles
  */
@@ -876,7 +928,7 @@ export const rolesIndex = (
     },
       options);
     }
-  
+
 /**
  * @summary Store a new role
  */
@@ -890,19 +942,19 @@ export const rolesStore = (
     },
       options);
     }
-  
+
 /**
  * @summary Display active roles for selection
  */
 export const rolesOptions = (
-    
+
  options?: SecondParameter<typeof customAxiosInstance<RolesOptions200>>,) => {
       return customAxiosInstance<RolesOptions200>(
       {url: `/roles/options`, method: 'GET'
     },
       options);
     }
-  
+
 /**
  * @summary Display the specified role detail
  */
@@ -914,7 +966,7 @@ export const rolesShow = (
     },
       options);
     }
-  
+
 /**
  * @summary Update an existing role
  */
@@ -929,7 +981,7 @@ export const rolesUpdate = (
     },
       options);
     }
-  
+
 /**
  * @summary Soft-delete an existing role
  */
@@ -941,7 +993,7 @@ export const rolesDestroy = (
     },
       options);
     }
-  
+
 /**
  * @summary Restore a soft-deleted role
  */
@@ -953,7 +1005,7 @@ export const rolesRestore = (
     },
       options);
     }
-  
+
 /**
  * @summary Display a paginated list of users
  */
@@ -966,7 +1018,7 @@ export const usersIndex = (
     },
       options);
     }
-  
+
 /**
  * @summary Create a new user
  */
@@ -980,19 +1032,7 @@ export const usersStore = (
     },
       options);
     }
-  
-/**
- * @summary Endpoint demonstrasi EDF ApplicationException
- */
-export const usersTestError = (
-    
- options?: SecondParameter<typeof customAxiosInstance<UsersTestError200>>,) => {
-      return customAxiosInstance<UsersTestError200>(
-      {url: `/users/test-error`, method: 'GET'
-    },
-      options);
-    }
-  
+
 /**
  * @summary Display detail of a user
  */
@@ -1004,7 +1044,7 @@ export const usersShow = (
     },
       options);
     }
-  
+
 /**
  * @summary Update an existing user
  */
@@ -1019,7 +1059,7 @@ export const usersUpdate = (
     },
       options);
     }
-  
+
 /**
  * @summary Soft delete a user
  */
@@ -1031,7 +1071,7 @@ export const usersDestroy = (
     },
       options);
     }
-  
+
 /**
  * @summary Toggle active status of a user
  */
@@ -1043,50 +1083,13 @@ export const usersToggleStatus = (
     },
       options);
     }
-  
-export interface SetActiveGroupRequest {
-  group_id: string;
-  remember?: boolean;
-}
-
-export type AuthSetActiveGroup200Data = UserResource;
-
-export interface AuthSetActiveGroup200 {
-  data: AuthSetActiveGroup200Data;
-}
-
-export const authSetActiveGroup = (
-  setActiveGroupRequest: SetActiveGroupRequest,
-  options?: SecondParameter<typeof customAxiosInstance<AuthSetActiveGroup200>>,
-) => {
-  return customAxiosInstance<AuthSetActiveGroup200>(
-    {
-      url: `/auth/active-group`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: setActiveGroupRequest,
-    },
-    options,
-  );
-};
-
-export const authResetDefaultGroup = (
-  options?: SecondParameter<typeof customAxiosInstance<AuthSetActiveGroup200>>,
-) => {
-  return customAxiosInstance<AuthSetActiveGroup200>(
-    {
-      url: `/auth/reset-default-group`,
-      method: 'POST',
-    },
-    options,
-  );
-};
 
 export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>
-export type AuthSetActiveGroupResult = NonNullable<Awaited<ReturnType<typeof authSetActiveGroup>>>
 export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>
 export type AuthCaptchaAudioResult = NonNullable<Awaited<ReturnType<typeof authCaptchaAudio>>>
 export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>
+export type AuthActiveGroupResult = NonNullable<Awaited<ReturnType<typeof authActiveGroup>>>
+export type AuthResetDefaultGroupResult = NonNullable<Awaited<ReturnType<typeof authResetDefaultGroup>>>
 export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
 export type FeaturesIndexResult = NonNullable<Awaited<ReturnType<typeof featuresIndex>>>
 export type FeaturesStoreResult = NonNullable<Awaited<ReturnType<typeof featuresStore>>>
@@ -1105,7 +1108,6 @@ export type RolesDestroyResult = NonNullable<Awaited<ReturnType<typeof rolesDest
 export type RolesRestoreResult = NonNullable<Awaited<ReturnType<typeof rolesRestore>>>
 export type UsersIndexResult = NonNullable<Awaited<ReturnType<typeof usersIndex>>>
 export type UsersStoreResult = NonNullable<Awaited<ReturnType<typeof usersStore>>>
-export type UsersTestErrorResult = NonNullable<Awaited<ReturnType<typeof usersTestError>>>
 export type UsersShowResult = NonNullable<Awaited<ReturnType<typeof usersShow>>>
 export type UsersUpdateResult = NonNullable<Awaited<ReturnType<typeof usersUpdate>>>
 export type UsersDestroyResult = NonNullable<Awaited<ReturnType<typeof usersDestroy>>>

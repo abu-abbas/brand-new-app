@@ -42,11 +42,7 @@ const authStore = useAuthStore();
 const permissionStore = usePermissionStore();
 
 const userRoleCode = computed(() => {
-  const roles = authStore.user?.roles;
-  if (Array.isArray(roles) && roles.length > 0) {
-    return String(roles[0]).toUpperCase();
-  }
-  return '';
+  return String(authStore.activeGroup ?? '').toUpperCase();
 });
 
 const userRolePrefix = computed(() => {

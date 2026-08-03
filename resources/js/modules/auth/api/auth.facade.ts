@@ -1,14 +1,15 @@
 import {
   authCaptcha,
+  authActiveGroup,
   authLogin,
   authLogout,
   authMe,
   authResetDefaultGroup,
-  authSetActiveGroup,
+  type AuthActiveGroup200,
   type AuthCaptcha200,
   type AuthLogin200,
   type AuthMe200,
-  type AuthSetActiveGroup200,
+  type AuthResetDefaultGroup200,
   type LoginRequest,
   type SetActiveGroupRequest,
 } from '@/api/generated/api';
@@ -25,11 +26,11 @@ export class AuthFacade {
     return authMe();
   }
 
-  public static setActiveGroup(data: SetActiveGroupRequest): Promise<AuthSetActiveGroup200> {
-    return authSetActiveGroup(data);
+  public static setActiveGroup(data: SetActiveGroupRequest): Promise<AuthActiveGroup200> {
+    return authActiveGroup(data);
   }
 
-  public static resetDefaultGroup(): Promise<AuthSetActiveGroup200> {
+  public static resetDefaultGroup(): Promise<AuthResetDefaultGroup200> {
     return authResetDefaultGroup();
   }
 

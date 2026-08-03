@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { rolesOptions, type RoleOptionResource, type UserRoleResource } from '@/api/generated/api';
+import {
+  userManagementFacade,
+  type RoleOptionResource,
+  type UserRoleResource,
+} from '../api/user-management.facade';
 import Combobox from '@/components/custom-ui/combobox/Combobox.vue';
 import { DatePicker, type DateRangeValue } from '@/components/custom-ui/date-picker';
 import Modal from '@/components/custom-ui/modal/Modal.vue';
@@ -80,7 +84,7 @@ const userIdCode = ref('');
 const fetchRoles = async () => {
   isFetchingRoles.value = true;
   try {
-    const res = await rolesOptions();
+    const res = await userManagementFacade.getRoleOptions();
     const data = res.data ?? [];
     availableRoles.value = data.map((r: RoleOptionResource) => ({
       code: r.code || '',

@@ -35,6 +35,7 @@ import type {
 } from './data-table.types';
 import { UserManagementFacade } from '@/modules/user-management/api/user-management.facade';
 import type { UsersIndexParams } from '@/api/generated/api';
+import { ERROR_CODES } from '@/generated/error-codes';
 import { axiosInstance } from '@/lib/axios';
 
 import supportIdBlade from '../../../../views/support-id.blade.php?raw';
@@ -97,11 +98,16 @@ const serverExtraParams = ref<Record<string, unknown>>({});
 /**
  * Server fetcher terintegrasi penuh ke Laravel 13 API (/api/users)
  * Menggunakan UserManagementFacade & Orval generated client.
- * Jika parameter extra simulate_error diaktifkan, API akan memicu Exception EDF backend atau simulasi firewall block.
+ * Jika parameter extra simulate_error diaktifkan, tabel menampilkan variasi kontrak error aplikasi.
  */
 const serverFetcher: DataTableFetcher<UserRow> = async ({ params, signal }) => {
   if (params.simulate_error === '409') {
-    await UserManagementFacade.triggerTestError(signal);
+    throw {
+      message: 'Pengguna dalam status terkunci dan tidak dapat diubah.',
+      code: ERROR_CODES.UM_BUS_001,
+      status: 409,
+      retryable: false,
+    };
   }
 
   if (params.simulate_error === '422') {

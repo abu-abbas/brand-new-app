@@ -161,6 +161,83 @@
                 }
             }
         },
+        "/auth/active-group": {
+            "post": {
+                "operationId": "auth.active-group",
+                "summary": "Set the active group/role for the current session",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SetActiveGroupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/auth/reset-default-group": {
+            "post": {
+                "operationId": "auth.reset-default-group",
+                "summary": "Reset the default group preference for the current user",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/auth/logout": {
             "post": {
                 "operationId": "auth.logout",
@@ -386,6 +463,9 @@
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -617,9 +697,8 @@
         "/references/wilayah": {
             "get": {
                 "operationId": "references.wilayah",
-                "summary": "Mengambil data mock Wilayah",
                 "tags": [
-                    "ReferenceMock"
+                    "Reference"
                 ],
                 "responses": {
                     "200": {
@@ -631,7 +710,25 @@
                                     "properties": {
                                         "data": {
                                             "type": "array",
-                                            "items": {}
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "order": {
+                                                        "type": "integer"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "code",
+                                                    "name",
+                                                    "order"
+                                                ]
+                                            }
                                         }
                                     },
                                     "required": [
@@ -650,9 +747,8 @@
         "/references/perangkat-daerah": {
             "get": {
                 "operationId": "references.perangkat-daerah",
-                "summary": "Mengambil data mock Perangkat Daerah (Unit)",
                 "tags": [
-                    "ReferenceMock"
+                    "Reference"
                 ],
                 "responses": {
                     "200": {
@@ -664,7 +760,29 @@
                                     "properties": {
                                         "data": {
                                             "type": "array",
-                                            "items": {}
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "code": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "spmu": {
+                                                        "type": "string"
+                                                    },
+                                                    "sipkd_code": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "code",
+                                                    "name",
+                                                    "spmu",
+                                                    "sipkd_code"
+                                                ]
+                                            }
                                         }
                                     },
                                     "required": [
@@ -988,11 +1106,11 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1045,11 +1163,11 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1080,11 +1198,11 @@
                     "204": {
                         "description": "No content"
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1129,11 +1247,11 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -1337,30 +1455,6 @@
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
-                    }
-                }
-            }
-        },
-        "/users/test-error": {
-            "get": {
-                "operationId": "users.test-error",
-                "summary": "Endpoint demonstrasi EDF ApplicationException",
-                "tags": [
-                    "User"
-                ],
-                "responses": {
-                    "200": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -1919,11 +2013,25 @@
                         "type": "boolean"
                     },
                     "can_delete": {
-                        "type": "string"
+                        "type": "boolean"
                     },
                     "features": {
                         "type": "array",
-                        "items": {}
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "alias": {
+                                    "type": "string"
+                                },
+                                "name": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "alias",
+                                "name"
+                            ]
+                        }
                     },
                     "updated_at": {
                         "type": [
@@ -1953,6 +2061,24 @@
                     "deleted_at"
                 ],
                 "title": "RoleResource"
+            },
+            "SetActiveGroupRequest": {
+                "type": "object",
+                "properties": {
+                    "group_id": {
+                        "type": "string"
+                    },
+                    "remember": {
+                        "type": [
+                            "boolean",
+                            "null"
+                        ]
+                    }
+                },
+                "required": [
+                    "group_id"
+                ],
+                "title": "SetActiveGroupRequest"
             },
             "StoreFeatureRequest": {
                 "type": "object",
@@ -2380,6 +2506,21 @@
                             "$ref": "#/components/schemas/UserRoleResource"
                         }
                     },
+                    "active_group_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "default_group_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "has_multiple_groups": {
+                        "type": "boolean"
+                    },
                     "permissions": {
                         "type": "array",
                         "items": {
@@ -2406,6 +2547,9 @@
                     "is_active",
                     "is_external",
                     "roles",
+                    "active_group_id",
+                    "default_group_id",
+                    "has_multiple_groups",
                     "permissions",
                     "created_at"
                 ],
