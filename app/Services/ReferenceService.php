@@ -23,8 +23,7 @@ class ReferenceService
         ];
 
         if ($user && ! $user->isRoot()) {
-            $user->loadMissing(['userRoles.roleModel']);
-            $userRoles = $user->userRoles;
+            $userRoles = $user->getCurrentUserRoles();
 
             $regionRoles = $userRoles->filter(fn ($ur) => (bool) ($ur->roleModel?->b_need_region ?? false));
 
@@ -73,16 +72,18 @@ class ReferenceService
         ];
 
         if ($user && ! $user->isRoot()) {
-            $user->loadMissing(['userRoles.roleModel']);
-            $userRoles = $user->userRoles;
+            $userRoles = $user->getCurrentUserRoles();
 
             $unitRoles = $userRoles->filter(fn ($ur) => (bool) ($ur->roleModel?->b_need_unit ?? false));
             $regionRoles = $userRoles->filter(fn ($ur) => (bool) ($ur->roleModel?->b_need_region ?? false));
 
             if ($unitRoles->isNotEmpty()) {
-                $userUnitCode = $unitRoles->first(fn ($ur) => ! empty($ur->v_unit))?->v_unit ?? $user->v_kolok;
-                if (! empty($userUnitCode)) {
-                    $data = array_values(array_filter($data, fn ($pd) => $pd['code'] === $userUnitCode));
+                $userUnitCodes = $unitRoles->pluck('v_unit')->filter()->unique()->values()->all();
+                if ($userUnitCodes === [] && ! empty($user->v_kolok)) {
+                    $userUnitCodes = [$user->v_kolok];
+                }
+                if ($userUnitCodes !== []) {
+                    $data = array_values(array_filter($data, fn ($pd) => in_array($pd['code'], $userUnitCodes, true)));
                 }
             } elseif ($regionRoles->isNotEmpty()) {
                 $wilayahList = [];

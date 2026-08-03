@@ -4,7 +4,7 @@ import { userManagementFacade } from '../api/user-management.facade';
 export function useWilayahListQuery() {
   return useQuery({
     queryKey: ['references', 'wilayah'],
-    queryFn: () => userManagementFacade.getWilayahMock(),
+    queryFn: () => userManagementFacade.getWilayahOptions(),
     staleTime: Infinity,
   });
 }

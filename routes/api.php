@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FeatureController;
-use App\Http\Controllers\Api\ReferenceMockController;
+use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Middleware\EnsureActiveUser;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,7 +23,7 @@ Route::get('/auth/captcha/audio', [AuthController::class, 'captchaAudio'])
     ->middleware('throttle:20,1')
     ->name('api.auth.captcha.audio');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', EnsureActiveUser::class])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
     Route::post('/auth/active-group', [AuthController::class, 'setActiveGroup'])->name('api.auth.active-group');
     Route::post('/auth/reset-default-group', [AuthController::class, 'resetDefaultGroup'])->name('api.auth.reset-default-group');
@@ -32,7 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserController::class, 'index'])
         ->middleware('can:manajemen-pengguna')
         ->name('api.users.index');
-    Route::get('/users/test-error', [UserController::class, 'testError'])->name('api.users.test-error');
     Route::get('/users/{user}', [UserController::class, 'show'])
         ->middleware('can:manajemen-pengguna')
         ->name('api.users.show');
@@ -49,9 +49,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->middleware('can:ubah-pengguna')
         ->name('api.users.toggle-status');
 
-    // Mock References
-    Route::get('/references/wilayah', [ReferenceMockController::class, 'wilayah'])->name('api.references.wilayah');
-    Route::get('/references/perangkat-daerah', [ReferenceMockController::class, 'perangkatDaerah'])->name('api.references.perangkat-daerah');
+    // References
+    Route::get('/references/wilayah', [ReferenceController::class, 'wilayah'])->name('api.references.wilayah');
+    Route::get('/references/perangkat-daerah', [ReferenceController::class, 'perangkatDaerah'])->name('api.references.perangkat-daerah');
 
     // Features
     Route::get('/features', [FeatureController::class, 'index'])

@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/stores/auth';
+import { usePerangkatDaerahListQuery } from '@/modules/user-management/queries/usePerangkatDaerahListQuery';
+import { useWilayahListQuery } from '@/modules/user-management/queries/useWilayahListQuery';
 import { ArrowRight, CheckCheck, ShieldCheck, Users, LucideInfo } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -15,29 +17,71 @@ const route = useRoute();
 const selectedGroupId = ref<string>(auth.user?.active_group_id || auth.user?.roles[0] || '');
 const rememberPreference = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
+const { data: wilayahResponse, isLoading: isLoadingWilayah } = useWilayahListQuery();
+const { data: unitResponse, isLoading: isLoadingUnit } = usePerangkatDaerahListQuery();
+
+const wilayahNames = computed(
+  () => new Map((wilayahResponse.value?.data ?? []).map((item) => [item.code, item.name])),
+);
+const unitNames = computed(
+  () => new Map((unitResponse.value?.data ?? []).map((item) => [item.code, item.name])),
+);
+const isLoadingReferences = computed(() => isLoadingWilayah.value || isLoadingUnit.value);
+
+function splitCodes(value?: string | null): string[] {
+  return (
+    value
+      ?.split(',')
+      .map((code) => code.trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+function resolveNames(codes: string[], lookup: Map<string, string>): string | null {
+  return codes.length > 0 ? codes.map((code) => lookup.get(code) ?? code).join(', ') : null;
+}
 
 const availableRoles = computed(() => {
   if (!auth.user) return [];
-  const userRolesMap = new Map<string, { code: string; name: string; unit?: string | null }>();
+  const userRolesMap = new Map<
+    string,
+    { code: string; name: string; wilayahCodes: Set<string>; unitCodes: Set<string> }
+  >();
 
   if (auth.user.user_roles && auth.user.user_roles.length > 0) {
     auth.user.user_roles.forEach((ur) => {
-      userRolesMap.set(ur.role_code, {
+      const group = userRolesMap.get(ur.role_code) ?? {
         code: ur.role_code,
         name: ur.role_name || ur.role_code,
-        unit: ur.unit,
-      });
+        wilayahCodes: new Set<string>(),
+        unitCodes: new Set<string>(),
+      };
+      splitCodes(ur.wilayah).forEach((code) => group.wilayahCodes.add(code));
+      if (ur.unit) group.unitCodes.add(ur.unit);
+      userRolesMap.set(ur.role_code, group);
     });
   } else if (auth.user.roles) {
     auth.user.roles.forEach((code) => {
       userRolesMap.set(code, {
         code,
         name: code,
+        wilayahCodes: new Set<string>(),
+        unitCodes: new Set<string>(),
       });
     });
   }
 
-  return Array.from(userRolesMap.values());
+  return Array.from(userRolesMap.values()).map((group) => {
+    const wilayahCodes = Array.from(group.wilayahCodes);
+    const unitCodes = Array.from(group.unitCodes);
+
+    return {
+      code: group.code,
+      name: group.name,
+      wilayahLabel: resolveNames(wilayahCodes, wilayahNames.value),
+      unitLabel: resolveNames(unitCodes, unitNames.value),
+    };
+  });
 });
 
 async function handleConfirmGroup() {
@@ -103,7 +147,7 @@ async function handleConfirmGroup() {
             ]"
             @click="selectedGroupId = group.code"
           >
-            <div class="flex items-center space-x-3 truncate">
+            <div class="flex min-w-0 items-center space-x-3">
               <div
                 class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors"
                 :class="[
@@ -114,12 +158,21 @@ async function handleConfirmGroup() {
               >
                 <ShieldCheck class="size-5" />
               </div>
-              <div class="truncate">
+              <div class="min-w-0">
                 <p class="text-sm font-semibold leading-tight text-foreground truncate">
                   {{ group.name }}
                 </p>
-                <p v-if="group.unit" class="text-[11px] text-muted-foreground mt-0.5 truncate">
-                  Unit: {{ group.unit }}
+                <p
+                  v-if="group.wilayahLabel"
+                  class="mt-1 text-[11px] leading-snug text-muted-foreground"
+                >
+                  {{ isLoadingReferences ? 'Memuat...' : group.wilayahLabel }}
+                </p>
+                <p
+                  v-if="group.unitLabel"
+                  class="mt-1 text-[11px] leading-snug text-muted-foreground"
+                >
+                  {{ isLoadingReferences ? 'Memuat...' : group.unitLabel }}
                 </p>
               </div>
             </div>
@@ -170,7 +223,7 @@ async function handleConfirmGroup() {
         <!-- Confirm Submit Button -->
         <div class="pt-3">
           <Button
-            class="w-full h-10.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs tracking-wide shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] rounded-xl group"
+            class="w-full h-10.5 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm tracking-wide shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] rounded-xl group"
             :disabled="!selectedGroupId || isLoading"
             @click="handleConfirmGroup"
           >
