@@ -376,4 +376,32 @@ enum UserManagementError: string implements ErrorCode
         retryable: false
     )]
     case CANNOT_DELETE_EXTERNAL_USER = 'UM-BUS-002';
+
+    #[ErrorDefinition(
+        message: 'Anda tidak dapat menetapkan role dengan level yang lebih tinggi atau setara dengan level Anda.',
+        category: ErrorCategory::AUTHORIZATION,
+        httpStatus: 403,
+        severity: ErrorSeverity::HIGH,
+        retryable: false
+    )]
+    case CANNOT_ASSIGN_HIGHER_ROLE = 'UM-AUTH-001';
+
+    #[ErrorDefinition(
+        message: 'Anda tidak dapat menonaktifkan akun Anda sendiri.',
+        category: ErrorCategory::WORKFLOW,
+        httpStatus: 422,
+        severity: ErrorSeverity::MEDIUM,
+        retryable: false
+    )]
+    case CANNOT_DEACTIVATE_SELF = 'UM-BUS-003';
+
+    #[ErrorDefinition(
+        message: 'Anda tidak dapat menghapus akun Anda sendiri.',
+        category: ErrorCategory::WORKFLOW,
+        httpStatus: 422,
+        severity: ErrorSeverity::MEDIUM,
+        retryable: false
+    )]
+    case CANNOT_DELETE_SELF = 'UM-BUS-004';
 }
+

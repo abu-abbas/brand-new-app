@@ -112,7 +112,7 @@ class UserService
             'created_at' => 'dt_created_at',
         ];
 
-        $orderColumn = $columnMap[$sortBy] ?? 'dt_created_at';
+            $orderColumn = $columnMap[$sortBy] ?? 'dt_created_at';
 
         return $query->orderBy($orderColumn, $sortDir)
             ->paginate((int) ($params['per_page'] ?? 15), ['*'], 'page', (int) ($params['page'] ?? 1));
@@ -123,8 +123,53 @@ class UserService
         return $user->load(['userRoles.roleModel']);
     }
 
+    private function validateRoleAssignments(array $rolesData, ?User $actor = null): void
+    {
+        if (! $actor) {
+            /** @var User|null $actor */
+            $actor = Auth::user();
+        }
+
+        if (! $actor || $actor->isRoot()) {
+            return;
+        }
+
+        $actorLevel = $actor->role_level;
+        $roleCodes = [];
+
+        foreach ($rolesData as $roleItem) {
+            $code = $roleItem['role_code'] ?? $roleItem['v_role_code'] ?? null;
+            if ($code) {
+                $roleCodes[] = $code;
+            }
+        }
+
+        if (empty($roleCodes)) {
+            return;
+        }
+
+        $assignedRoles = \App\Models\Role::whereIn('v_code', $roleCodes)->get();
+        foreach ($assignedRoles as $assignedRole) {
+            if ((int) $assignedRole->i_level >= $actorLevel) {
+                throw new ApplicationException(
+                    definition: $this->errorDefinitionReader->read(UserManagementError::CANNOT_ASSIGN_HIGHER_ROLE),
+                    context: [
+                        'actor_userid' => $actor->v_userid,
+                        'actor_level' => $actorLevel,
+                        'target_role_code' => $assignedRole->v_code,
+                        'target_role_level' => $assignedRole->i_level,
+                    ]
+                );
+            }
+        }
+    }
+
     public function createUser(array $data, ?string $authUserId = null): User
     {
+        if (! empty($data['roles']) && is_array($data['roles'])) {
+            $this->validateRoleAssignments($data['roles']);
+        }
+
         return DB::transaction(function () use ($data, $authUserId) {
             $now = Carbon::now();
 
@@ -167,6 +212,19 @@ class UserService
 
     public function updateUser(User $user, array $data, ?string $authUserId = null): User
     {
+        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+
+        if ($currentUserId === $user->v_userid && array_key_exists('is_active', $data) && ! $data['is_active']) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(UserManagementError::CANNOT_DEACTIVATE_SELF),
+                context: ['userid' => $user->v_userid]
+            );
+        }
+
+        if (array_key_exists('roles', $data) && is_array($data['roles'])) {
+            $this->validateRoleAssignments($data['roles']);
+        }
+
         return DB::transaction(function () use ($user, $data, $authUserId) {
             $now = Carbon::now();
 
@@ -218,6 +276,15 @@ class UserService
 
     public function toggleUserStatus(User $user, ?string $authUserId = null): User
     {
+        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+
+        if ($currentUserId === $user->v_userid && $user->b_is_active) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(UserManagementError::CANNOT_DEACTIVATE_SELF),
+                context: ['userid' => $user->v_userid]
+            );
+        }
+
         $user->update([
             'b_is_active' => ! $user->b_is_active,
             'v_updated_by' => $authUserId,
@@ -229,6 +296,15 @@ class UserService
 
     public function deleteUser(User $user, ?string $authUserId = null): void
     {
+        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+
+        if ($currentUserId === $user->v_userid) {
+            throw new ApplicationException(
+                definition: $this->errorDefinitionReader->read(UserManagementError::CANNOT_DELETE_SELF),
+                context: ['userid' => $user->v_userid]
+            );
+        }
+
         if ($user->b_use_other || empty($user->v_password)) {
             throw new ApplicationException(
                 definition: $this->errorDefinitionReader->read(UserManagementError::CANNOT_DELETE_EXTERNAL_USER),

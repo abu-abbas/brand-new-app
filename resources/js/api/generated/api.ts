@@ -161,7 +161,7 @@ export interface RoleResource {
   need_unit: boolean;
   active_periode: RoleResourceActivePeriode;
   locked: boolean;
-  can_edit: string;
+  can_edit: boolean;
   can_delete: string;
   features: unknown[];
   updated_at: RoleResourceUpdatedAt;
@@ -568,164 +568,12 @@ export type FeaturesRestore200 = {
   data: FeatureResource;
 };
 
-export type ReferencesWilayah200DataItemAnyOf = {
-  code: '10';
-  name: 'Jakarta Pusat';
-  order: number;
-};
-
-export type ReferencesWilayah200DataItemAnyOfTwo = {
-  code: '20';
-  name: 'Jakarta Utara';
-  order: 1;
-};
-
-export type ReferencesWilayah200DataItemAnyOfThree = {
-  code: '11';
-  name: 'Kepulauan Seribu';
-  order: 1;
-};
-
-export type ReferencesWilayah200DataItemAnyOfFour = {
-  code: '30';
-  name: 'Jakarta Barat';
-  order: 2;
-};
-
-export type ReferencesWilayah200DataItemAnyOfFive = {
-  code: '40';
-  name: 'Jakarta Selatan 1';
-  order: 3;
-};
-
-export type ReferencesWilayah200DataItemAnyOfSix = {
-  code: '41';
-  name: 'Jakarta Selatan 2';
-  order: 4;
-};
-
-export type ReferencesWilayah200DataItemAnyOfSeven = {
-  code: '50';
-  name: 'Jakarta Timur 1';
-  order: 5;
-};
-
-export type ReferencesWilayah200DataItemAnyOfEight = {
-  code: '51';
-  name: 'Jakarta Timur 2';
-  order: 6;
-};
-
-export type ReferencesWilayah200DataItem = ReferencesWilayah200DataItemAnyOf | ReferencesWilayah200DataItemAnyOfTwo | ReferencesWilayah200DataItemAnyOfThree | ReferencesWilayah200DataItemAnyOfFour | ReferencesWilayah200DataItemAnyOfFive | ReferencesWilayah200DataItemAnyOfSix | ReferencesWilayah200DataItemAnyOfSeven | ReferencesWilayah200DataItemAnyOfEight;
-
 export type ReferencesWilayah200 = {
-  data: ReferencesWilayah200DataItem[];
-};
-
-export type ReferencesPerangkatDaerah200DataItem0 = {
-  code: '000003890';
-  name: 'DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK';
-  spmu: 'C181';
-  sipkd_code: '21001000';
-};
-
-export type ReferencesPerangkatDaerah200DataItem1 = {
-  code: '000003891';
-  name: 'UNIT PENGELOLA LAYANAN PENGADAAN SECARA ELEKTRONIK';
-  spmu: 'C181';
-  sipkd_code: '21001701';
-};
-
-export type ReferencesPerangkatDaerah200DataItem2 = {
-  code: '000003892';
-  name: 'SEKRETARIAT KOMISI PENYIARAN DAN KOMISI INFORMASI PROVINSI';
-  spmu: 'C181';
-  sipkd_code: '11601702';
-};
-
-export type ReferencesPerangkatDaerah200DataItem3 = {
-  code: '000003893';
-  name: 'UNIT PENGELOLA JAKARTA SMART CITY';
-  spmu: 'C181';
-  sipkd_code: '21001703';
-};
-
-export type ReferencesPerangkatDaerah200DataItem4 = {
-  code: '000003894';
-  name: 'PUSAT PELAYANAN STATISTIK';
-  spmu: 'C181';
-  sipkd_code: '21001702';
-};
-
-export type ReferencesPerangkatDaerah200DataItem5 = {
-  code: '000003895';
-  name: 'UNIT PENGELOLA STATISTIK';
-  spmu: 'C181';
-  sipkd_code: string;
-};
-
-export type ReferencesPerangkatDaerah200DataItem6 = {
-  code: '000003896';
-  name: 'UNIT PENGELOLA LAYANAN TEKNOLOGI INFORMASI DAN KOMUNIKASI';
-  spmu: 'C181';
-  sipkd_code: string;
-};
-
-export type ReferencesPerangkatDaerah200DataItem7 = {
-  code: '000003897';
-  name: 'UNIT PENGELOLA PERANGKAT DAN JARINGAN SISTEM ELEKTRONIK';
-  spmu: 'C181';
-  sipkd_code: '21001704';
-};
-
-export type ReferencesPerangkatDaerah200DataItem8 = {
-  code: '100003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA PUSAT';
-  spmu: 'C181';
-  sipkd_code: '21001101';
-};
-
-export type ReferencesPerangkatDaerah200DataItem9 = {
-  code: '110003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KAB ADM. KEPULAUAN SERIBU';
-  spmu: 'C181';
-  sipkd_code: '21001601';
-};
-
-export type ReferencesPerangkatDaerah200DataItem10 = {
-  code: '200003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA UTARA';
-  spmu: 'C181';
-  sipkd_code: '21001201';
-};
-
-export type ReferencesPerangkatDaerah200DataItem11 = {
-  code: '300003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA BARAT';
-  spmu: 'C181';
-  sipkd_code: '21001301';
-};
-
-export type ReferencesPerangkatDaerah200DataItem12 = {
-  code: '400003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA SELATAN';
-  spmu: 'C181';
-  sipkd_code: '21001401';
-};
-
-export type ReferencesPerangkatDaerah200DataItem13 = {
-  code: '500003890';
-  name: 'SUKU DINAS KOMUNIKASI, INFORMATIKA DAN STATISTIK KOTA ADM. JAKARTA TIMUR';
-  spmu: 'C181';
-  sipkd_code: '21001501';
+  data: unknown[];
 };
 
 export type ReferencesPerangkatDaerah200 = {
-  /**
-   * @minItems 14
-   * @maxItems 14
-   */
-  data: [ReferencesPerangkatDaerah200DataItem0, ReferencesPerangkatDaerah200DataItem1, ReferencesPerangkatDaerah200DataItem2, ReferencesPerangkatDaerah200DataItem3, ReferencesPerangkatDaerah200DataItem4, ReferencesPerangkatDaerah200DataItem5, ReferencesPerangkatDaerah200DataItem6, ReferencesPerangkatDaerah200DataItem7, ReferencesPerangkatDaerah200DataItem8, ReferencesPerangkatDaerah200DataItem9, ReferencesPerangkatDaerah200DataItem10, ReferencesPerangkatDaerah200DataItem11, ReferencesPerangkatDaerah200DataItem12, ReferencesPerangkatDaerah200DataItem13];
+  data: unknown[];
 };
 
 export type RolesIndexParams = {
