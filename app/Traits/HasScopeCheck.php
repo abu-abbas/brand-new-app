@@ -28,7 +28,7 @@ trait HasScopeCheck
         }
 
         $activeGroupId = $actor->getActiveGroupId();
-        $relevantUserRoles = $actor->userRoles;
+        $relevantUserRoles = $actor->getCurrentUserRoles();
         if ($activeGroupId) {
             $relevantUserRoles = $relevantUserRoles->where('v_role_code', $activeGroupId);
         }

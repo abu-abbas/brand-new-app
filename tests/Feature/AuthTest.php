@@ -198,7 +198,9 @@ it('requires a captcha and protects authenticated endpoints', function () {
         ->assertUnprocessable()
         ->assertJsonPath('errors.captcha.0.code', 'AUTH-VAL-007');
 
-    $this->getJson('/api/features')->assertUnauthorized();
+    $this->getJson('/api/features')
+        ->assertUnauthorized()
+        ->assertJsonPath('code', 'AUTH-ACC-003');
 });
 
 it('logs out and invalidates the session', function () {

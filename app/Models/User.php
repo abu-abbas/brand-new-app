@@ -4,18 +4,20 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Constants\RoleConstant;
+use App\Contracts\HasNotFoundError;
 use App\Contracts\ScopedResource;
+use App\Errors\UserManagementError;
 use App\Traits\HasObfuscatedId;
 use App\Traits\HasOrganizationScope;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @property int $i_id
@@ -68,10 +70,18 @@ use Illuminate\Support\Facades\DB;
     'dt_deleted_at',
 ])]
 #[Hidden(['v_password', 'v_remember_token'])]
-class User extends Authenticatable implements ScopedResource
+class User extends Authenticatable implements HasNotFoundError, ScopedResource
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasObfuscatedId, HasOrganizationScope, Notifiable;
+
+    /** @var array<string, mixed> */
+    private array $authorizationCache = [];
+
+    public static function notFoundError(): UserManagementError
+    {
+        return UserManagementError::USER_NOT_FOUND;
+    }
 
     public function getResourceWilayah(): ?string
     {
@@ -142,6 +152,41 @@ class User extends Authenticatable implements ScopedResource
         return $this->hasMany(UserRole::class, 'v_userid', 'v_userid');
     }
 
+    public function currentUserRoles(): HasMany
+    {
+        return $this->userRoles()->currentlyValid();
+    }
+
+    public function forgetAuthorizationCache(): void
+    {
+        $this->authorizationCache = [];
+        $this->unsetRelation('currentUserRoles')->unsetRelation('userRoles');
+    }
+
+    /**
+     * @return Collection<int, UserRole>
+     */
+    public function getCurrentUserRoles(): Collection
+    {
+        if (isset($this->authorizationCache['current_user_roles'])) {
+            return $this->authorizationCache['current_user_roles'];
+        }
+
+        if ($this->relationLoaded('userRoles')) {
+            $this->loadMissing('userRoles.roleModel.features');
+            $roles = $this->userRoles
+                ->filter(fn (UserRole $userRole) => $userRole->isCurrentlyValid())
+                ->values();
+        } else {
+            $roles = $this->currentUserRoles()
+                ->with('roleModel.features')
+                ->get();
+            $this->setRelation('currentUserRoles', $roles);
+        }
+
+        return $this->authorizationCache['current_user_roles'] = $roles;
+    }
+
     /**
      * Mengambil daftar kode role (v_role_code) milik user.
      *
@@ -149,11 +194,12 @@ class User extends Authenticatable implements ScopedResource
      */
     public function getRolesList(): array
     {
-        if ($this->relationLoaded('userRoles')) {
-            return $this->userRoles->pluck('v_role_code')->filter()->unique()->values()->toArray();
-        }
-
-        return $this->userRoles()->pluck('v_role_code')->filter()->unique()->values()->toArray();
+        return $this->authorizationCache['roles'] ??= $this->getCurrentUserRoles()
+            ->pluck('v_role_code')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -161,26 +207,30 @@ class User extends Authenticatable implements ScopedResource
      */
     public function getActiveGroupId(): ?string
     {
+        if (array_key_exists('active_group_id', $this->authorizationCache)) {
+            return $this->authorizationCache['active_group_id'];
+        }
+
         $sessionActiveGroup = session('active_group_id');
         $userRoles = $this->getRolesList();
 
         if (empty($userRoles)) {
-            return null;
+            return $this->authorizationCache['active_group_id'] = null;
         }
 
         if ($sessionActiveGroup && in_array($sessionActiveGroup, $userRoles, true)) {
-            return $sessionActiveGroup;
+            return $this->authorizationCache['active_group_id'] = $sessionActiveGroup;
         }
 
         if ($this->v_default_group_id && in_array($this->v_default_group_id, $userRoles, true)) {
-            return $this->v_default_group_id;
+            return $this->authorizationCache['active_group_id'] = $this->v_default_group_id;
         }
 
         if (count($userRoles) === 1) {
-            return $userRoles[0];
+            return $this->authorizationCache['active_group_id'] = $userRoles[0];
         }
 
-        return null;
+        return $this->authorizationCache['active_group_id'] = null;
     }
 
     /**
@@ -201,11 +251,7 @@ class User extends Authenticatable implements ScopedResource
             return null;
         }
 
-        if ($this->relationLoaded('userRoles')) {
-            return $this->userRoles->firstWhere('v_role_code', $activeCode);
-        }
-
-        return $this->userRoles()->where('v_role_code', $activeCode)->first();
+        return $this->getCurrentUserRoles()->firstWhere('v_role_code', $activeCode);
     }
 
     /**
@@ -217,54 +263,36 @@ class User extends Authenticatable implements ScopedResource
      */
     public function getPermissionsList(): array
     {
-        if ($this->isRoot()) {
-            static $rootFeatures = null;
-            if ($rootFeatures === null) {
-                $rootFeatures = Feature::whereNull('dt_deleted_at')->pluck('v_alias')->unique()->values()->toArray();
-            }
-
-            return $rootFeatures;
+        $activeGroupId = $this->getActiveGroupId();
+        $cacheKey = 'permissions:'.($activeGroupId ?? '*');
+        if (isset($this->authorizationCache[$cacheKey])) {
+            return $this->authorizationCache[$cacheKey];
         }
 
-        $activeGroupId = $this->getActiveGroupId();
+        if ($this->isRoot()) {
+            return $this->authorizationCache[$cacheKey] = Feature::query()
+                ->pluck('v_alias')
+                ->unique()
+                ->values()
+                ->toArray();
+        }
+
         $aliases = [];
 
-        if ($this->relationLoaded('userRoles')) {
-            foreach ($this->userRoles as $userRole) {
-                if ($activeGroupId && $userRole->v_role_code !== $activeGroupId) {
-                    continue;
-                }
-                $role = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : $userRole->roleModel()->first();
-                if ($role) {
-                    $featureAliases = $role->relationLoaded('features')
-                        ? $role->features->pluck('v_alias')->toArray()
-                        : $role->features()->pluck('tm_features.v_alias')->toArray();
-                    $aliases = array_merge($aliases, $featureAliases);
-                }
+        foreach ($this->getCurrentUserRoles() as $userRole) {
+            if ($activeGroupId && $userRole->v_role_code !== $activeGroupId) {
+                continue;
             }
-        } else {
-            $roleCodes = $this->userRoles()->pluck('v_role_code')->filter()->toArray();
-            if ($activeGroupId && in_array($activeGroupId, $roleCodes, true)) {
-                $roleCodes = [$activeGroupId];
-            }
-            if (! empty($roleCodes)) {
-                $aliases = DB::table('tr_role_features')
-                    ->whereIn('v_code', $roleCodes)
-                    ->pluck('v_alias')
-                    ->toArray();
+
+            foreach ($userRole->roleModel?->features ?? [] as $feature) {
+                $aliases[] = $feature->v_alias;
+                if ($feature->v_parent) {
+                    $aliases[] = $feature->v_parent;
+                }
             }
         }
 
-        if (empty($aliases)) {
-            return [];
-        }
-
-        $parentAliases = Feature::whereIn('v_alias', $aliases)
-            ->whereNotNull('v_parent')
-            ->pluck('v_parent')
-            ->toArray();
-
-        return array_values(array_unique(array_merge($aliases, $parentAliases)));
+        return $this->authorizationCache[$cacheKey] = array_values(array_unique($aliases));
     }
 
     /**
@@ -313,66 +341,22 @@ class User extends Authenticatable implements ScopedResource
     public function getRoleLevelAttribute(): int
     {
         $activeGroupId = $this->getActiveGroupId();
+        $cacheKey = 'role_level:'.($activeGroupId ?? '*');
+        if (isset($this->authorizationCache[$cacheKey])) {
+            return $this->authorizationCache[$cacheKey];
+        }
+
+        $roles = $this->getCurrentUserRoles();
         if ($activeGroupId) {
-            if ($this->relationLoaded('userRoles')) {
-                $userRole = $this->userRoles->firstWhere('v_role_code', $activeGroupId);
-                if ($userRole) {
-                    $roleModel = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : $userRole->roleModel()->first();
-                    if ($roleModel) {
-                        return (int) $roleModel->i_level;
-                    }
-                }
-            } else {
-                $userRole = $this->userRoles()->where('v_role_code', $activeGroupId)->first();
-                if ($userRole) {
-                    $roleModel = $userRole->roleModel()->first();
-                    if ($roleModel) {
-                        return (int) $roleModel->i_level;
-                    }
-                }
-            }
+            $level = (int) ($roles->firstWhere('v_role_code', $activeGroupId)?->roleModel?->i_level ?? 0);
 
-            $roleObj = Role::where('v_code', $activeGroupId)->first();
-            if ($roleObj) {
-                return (int) $roleObj->i_level;
-            }
+            return $this->authorizationCache[$cacheKey] = $level;
         }
 
-        if ($this->relationLoaded('userRoles')) {
-            $highestLevel = 0;
-            foreach ($this->userRoles as $userRole) {
-                $roleModel = $userRole->relationLoaded('roleModel') ? $userRole->roleModel : null;
-                if ($roleModel && (int) $roleModel->i_level > $highestLevel) {
-                    $highestLevel = (int) $roleModel->i_level;
-                }
-            }
-            if ($highestLevel > 0) {
-                return $highestLevel;
-            }
-        }
-
-        $roleCodes = $this->userRoles->pluck('v_role_code')->toArray();
-        if (empty($roleCodes)) {
-            return 0;
-        }
-
-        $highestLevel = 0;
-        $roles = Role::whereIn('v_code', $roleCodes)->get();
-        foreach ($roles as $roleObj) {
-            if ((int) $roleObj->i_level > $highestLevel) {
-                $highestLevel = (int) $roleObj->i_level;
-            }
-        }
-
-        if ($highestLevel === 0) {
-            foreach ($roleCodes as $code) {
-                if (in_array(strtolower((string) $code), ['admin', 'super_admin', 'superadmin', 'root', 'adm_sys', 'sysadmin'], true)) {
-                    return RoleConstant::ROOT_LEVEL;
-                }
-            }
-        }
-
-        return $highestLevel;
+        return $this->authorizationCache[$cacheKey] = (int) ($roles
+            ->pluck('roleModel.i_level')
+            ->filter(fn ($level) => $level !== null)
+            ->max() ?? 0);
     }
 
     /**
@@ -380,15 +364,6 @@ class User extends Authenticatable implements ScopedResource
      */
     public function isRoot(): bool
     {
-        $activeGroupId = $this->getActiveGroupId();
-        if ($activeGroupId) {
-            return in_array(strtoupper($activeGroupId), ['ROOT', 'ADM_SYS', 'SYSADMIN'], true);
-        }
-
-        if (in_array(strtolower((string) $this->v_userid), ['root', 'adm_sys', 'sysadmin'], true)) {
-            return true;
-        }
-
         return $this->role_level >= RoleConstant::ROOT_LEVEL;
     }
 }

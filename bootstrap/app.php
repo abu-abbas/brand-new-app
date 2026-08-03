@@ -1,5 +1,6 @@
 <?php
 
+use App\Contracts\HasNotFoundError;
 use App\Core\ErrorDefinition\ApplicationExceptionReporter;
 use App\Core\ErrorDefinition\ContextSanitizer;
 use App\Core\ErrorDefinition\ErrorDefinitionReader;
@@ -10,11 +11,13 @@ use App\Errors\AuthError;
 use App\Http\Middleware\AssignRequestId;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,20 +32,41 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn (Request $request) => $request->is('api/*') ? null : '/login');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $renderer = new ErrorResponseRenderer;
+        $reader = new ErrorDefinitionReader;
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->wantsJson(),
         );
 
-        $exceptions->renderable(function (AuthenticationException $e, Request $request) {
+        $exceptions->renderable(function (AuthenticationException $e, Request $request) use ($renderer, $reader) {
             if ($request->is('api/*') || $request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Unauthenticated.',
-                ], 401);
+                return $renderer->application(new ApplicationException(
+                    $reader->read(AuthError::UNAUTHENTICATED),
+                    previous: $e,
+                ));
             }
         });
 
-        $renderer = new ErrorResponseRenderer;
-        $reader = new ErrorDefinitionReader;
+        $exceptions->renderable(function (NotFoundHttpException $e, Request $request) use ($renderer, $reader) {
+            if (! $request->is('api/*') && ! $request->wantsJson()) {
+                return null;
+            }
+
+            $modelNotFound = $e->getPrevious();
+            if (! $modelNotFound instanceof ModelNotFoundException) {
+                return null;
+            }
+
+            $model = $modelNotFound->getModel();
+            $error = is_subclass_of($model, HasNotFoundError::class)
+                ? $model::notFoundError()
+                : null;
+
+            return $error
+                ? $renderer->application(new ApplicationException($reader->read($error), previous: $e))
+                : null;
+        });
 
         // Rendering sentral — AuthorizationException & AccessDeniedHttpException (EDF 403)
         $exceptions->renderable(function (AuthorizationException $e, Request $request) use ($renderer, $reader) {

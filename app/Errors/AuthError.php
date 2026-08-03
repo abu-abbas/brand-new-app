@@ -177,4 +177,12 @@ enum AuthError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case REMEMBER_BOOLEAN = 'AUTH-VAL-016';
+
+    #[ErrorDefinition(
+        message: 'Sesi tidak valid atau sudah berakhir.',
+        category: ErrorCategory::AUTHENTICATION,
+        httpStatus: 401,
+        severity: ErrorSeverity::LOW,
+    )]
+    case UNAUTHENTICATED = 'AUTH-ACC-003';
 }

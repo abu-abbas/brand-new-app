@@ -28,13 +28,13 @@ trait HasOrganizationScope
         // Filter 1: Sembunyikan data milik user dengan level >= level user saat ini (jika bertipe User model)
         if ($this instanceof User) {
             $userLevel = $user->role_level;
-            $query->whereDoesntHave('userRoles.roleModel', function ($q) use ($userLevel) {
+            $query->whereDoesntHave('currentUserRoles.roleModel', function ($q) use ($userLevel) {
                 $q->where('i_level', '>=', $userLevel);
             });
         }
 
         $activeGroupId = $user->getActiveGroupId();
-        $relevantUserRoles = $user->userRoles;
+        $relevantUserRoles = $user->getCurrentUserRoles();
         if ($activeGroupId) {
             $relevantUserRoles = $relevantUserRoles->where('v_role_code', $activeGroupId);
         }

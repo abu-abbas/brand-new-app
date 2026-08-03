@@ -6,7 +6,6 @@ use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
 use App\Errors\AuthError;
 use App\Models\User;
-use App\Models\UserRole;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -97,18 +96,9 @@ class AuthService
             ]);
         }
 
-        // 3. Cek ketersediaan role aktif di tr_user_roles
-        $today = now()->format('Y-m-d');
-        $hasRole = UserRole::where('v_userid', $user->v_userid)
-            ->where(function ($q) use ($today) {
-                $q->whereNull('dt_valid_from')->orWhere('dt_valid_from', '<=', $today);
-            })
-            ->where(function ($q) use ($today) {
-                $q->whereNull('dt_valid_until')->orWhere('dt_valid_until', '>=', $today);
-            })
-            ->exists();
-
-        if (! $hasRole && ! $user->isRoot()) {
+        // 3. Hanya assignment dalam rentang berlaku yang dapat dipakai.
+        $roles = $user->getRolesList();
+        if (empty($roles)) {
             throw new ApplicationException(
                 definition: $this->reader->read(AuthError::NO_ROLE_ASSIGNED),
                 context: ['username' => $inputUsername],
@@ -121,7 +111,6 @@ class AuthService
         Auth::guard('web')->login($user);
 
         // Auto-set active group jika hanya punya 1 group atau punya default_group_id
-        $roles = $user->getRolesList();
         if (count($roles) === 1) {
             session(['active_group_id' => $roles[0]]);
         } elseif ($user->v_default_group_id && in_array($user->v_default_group_id, $roles, true)) {
@@ -138,7 +127,7 @@ class AuthService
     {
         $userRoles = $user->getRolesList();
 
-        if (! $user->isRoot() && ! in_array($groupId, $userRoles, true)) {
+        if (! in_array($groupId, $userRoles, true)) {
             throw new ApplicationException(
                 definition: $this->reader->read(AuthError::INVALID_GROUP),
                 context: ['userid' => $user->v_userid, 'group_id' => $groupId],
@@ -146,6 +135,7 @@ class AuthService
         }
 
         session(['active_group_id' => $groupId]);
+        $user->forgetAuthorizationCache();
 
         if ($remember) {
             $user->v_default_group_id = $groupId;
@@ -168,6 +158,8 @@ class AuthService
     public function resetDefaultGroup(User $user): User
     {
         $user->v_default_group_id = null;
+        session()->forget('active_group_id');
+        $user->forgetAuthorizationCache();
         User::where('v_userid', $user->v_userid)->update([
             'v_default_group_id' => null,
         ]);

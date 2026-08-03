@@ -31,7 +31,7 @@ class AuthController extends Controller
             $request->safe()->only(['username', 'password']),
             $request->ip() ?? 'unknown',
         );
-        $user->load(['userRoles.roleModel.features']);
+        $user = $this->loadAuthorizationContext($user);
         $request->session()->regenerate();
 
         return new UserResource($user);
@@ -115,7 +115,7 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $user->load(['userRoles.roleModel.features']);
+        $user = $this->loadAuthorizationContext($user);
 
         return new UserResource($user);
     }
@@ -133,7 +133,7 @@ class AuthController extends Controller
         $remember = filter_var($request->input('remember'), FILTER_VALIDATE_BOOLEAN);
 
         $updatedUser = $this->authService->setActiveGroup($user, $groupId, $remember);
-        $updatedUser->load(['userRoles.roleModel.features']);
+        $updatedUser = $this->loadAuthorizationContext($updatedUser);
 
         return new UserResource($updatedUser);
     }
@@ -148,7 +148,7 @@ class AuthController extends Controller
         /** @var User $user */
         $user = $request->user();
         $updatedUser = $this->authService->resetDefaultGroup($user);
-        $updatedUser->load(['userRoles.roleModel.features']);
+        $updatedUser = $this->loadAuthorizationContext($updatedUser);
 
         return new UserResource($updatedUser);
     }
@@ -165,5 +165,13 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return response()->noContent();
+    }
+
+    private function loadAuthorizationContext(User $user): User
+    {
+        $user->load(['userRoles.roleModel.features']);
+        $user->setRelation('userRoles', $user->getCurrentUserRoles());
+
+        return $user;
     }
 }
