@@ -2,6 +2,7 @@
 
 use App\Constants\RoleConstant;
 use App\Models\User;
+use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
