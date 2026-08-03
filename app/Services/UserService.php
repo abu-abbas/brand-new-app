@@ -44,7 +44,7 @@ class UserService
             ->forUserScope($currentUser);
 
         // Sembunyikan user tingkat Root (i_level >= ROOT_LEVEL) dari daftar pengguna
-        $query->whereDoesntHave('userRoles.roleModel', function ($q) {
+        $query->whereDoesntHave('currentUserRoles.roleModel', function ($q) {
             $q->where('i_level', '>=', RoleConstant::ROOT_LEVEL);
         });
 
@@ -224,7 +224,9 @@ class UserService
 
             if (array_key_exists('roles', $data) && is_array($data['roles'])) {
                 // Replace roles
-                UserRole::where('v_userid', $user->v_userid)->delete();
+                $assignedRoles = UserRole::where('v_userid', $user->v_userid);
+                $assignedRoles->update(['v_deleted_by' => $authUserId]);
+                $assignedRoles->delete();
 
                 foreach ($data['roles'] as $roleItem) {
                     UserRole::create([
@@ -240,6 +242,8 @@ class UserService
                     ]);
                 }
             }
+
+            $user->forgetAuthorizationCache();
 
             return $user->load(['userRoles.roleModel']);
         });

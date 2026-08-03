@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Core\ErrorDefinition\ErrorDefinitionReader;
-use App\Core\ErrorDefinition\Exceptions\ApplicationException;
-use App\Errors\UserManagementError;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\ListUserRequest;
 use App\Http\Requests\User\StoreUserRequest;
@@ -20,7 +17,6 @@ class UserController extends Controller
 {
     public function __construct(
         protected UserService $userService,
-        protected ErrorDefinitionReader $reader,
     ) {}
 
     /**
@@ -132,18 +128,5 @@ class UserController extends Controller
             'message' => 'Status pengguna berhasil diperbarui.',
             'data' => new UserResource($updatedUser),
         ]);
-    }
-
-    /**
-     * Endpoint demonstrasi EDF ApplicationException.
-     *
-     * @summary Simulasi kegagalan bisnis (ApplicationException EDF).
-     */
-    public function testError(): never
-    {
-        throw new ApplicationException(
-            definition: $this->reader->read(UserManagementError::USER_LOCKED),
-            context: ['user_id' => 99, 'action' => 'update_status'],
-        );
     }
 }

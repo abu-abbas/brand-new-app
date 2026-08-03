@@ -130,7 +130,7 @@ it('soft deletes a user', function () {
     expect($user->fresh()->dt_deleted_at)->not->toBeNull();
 });
 
-it('fetches reference mock data for wilayah and perangkat daerah', function () {
+it('fetches reference data for wilayah and perangkat daerah', function () {
     $this->getJson('/api/references/wilayah')
         ->assertOk()
         ->assertJsonCount(8, 'data');
@@ -138,6 +138,34 @@ it('fetches reference mock data for wilayah and perangkat daerah', function () {
     $this->getJson('/api/references/perangkat-daerah')
         ->assertOk()
         ->assertJsonCount(14, 'data');
+});
+
+it('returns names for every assigned unit through the reference contract', function () {
+    DB::table('tm_roles')->insert([
+        'v_code' => 'ADMIN_OPD',
+        'v_name' => 'Admin OPD',
+        'i_level' => 10,
+        'b_need_unit' => true,
+        'v_created_by' => 'system',
+    ]);
+    $user = User::factory()->create();
+    UserRole::create([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => 'ADMIN_OPD',
+        'v_unit' => '000003890',
+    ]);
+    UserRole::create([
+        'v_userid' => $user->v_userid,
+        'v_role_code' => 'ADMIN_OPD',
+        'v_unit' => '000003891',
+    ]);
+
+    $this->actingAs($user)
+        ->getJson('/api/references/perangkat-daerah')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.name', 'Dinas Komunikasi, Informatika dan Statistik')
+        ->assertJsonPath('data.1.name', 'Unit Pengelola Layanan Pengadaan Secara Elektronik');
 });
 
 it('prevents non-root user from assigning role with level equal or higher than self', function () {
@@ -192,7 +220,51 @@ it('prevents non-root user from assigning role with level equal or higher than s
     $response->assertStatus(403);
 });
 
+it('ignores expired assignments when checking organization scope', function () {
+    DB::table('tm_roles')->insert([
+        'v_code' => 'MANAGER',
+        'v_name' => 'Manager',
+        'i_level' => 50,
+        'v_created_by' => 'system',
+    ]);
+    DB::table('tm_features')->insert([
+        'v_alias' => 'manajemen-pengguna',
+        'v_name' => 'Manajemen Pengguna',
+        'e_type' => 'menu',
+    ]);
+    DB::table('tr_role_features')->insert([
+        'v_code' => 'MANAGER',
+        'v_alias' => 'manajemen-pengguna',
+    ]);
+    $manager = User::factory()->create();
+    UserRole::create([
+        'v_userid' => $manager->v_userid,
+        'v_role_code' => 'MANAGER',
+        'v_unit' => 'ACTIVE_UNIT',
+    ]);
+    UserRole::create([
+        'v_userid' => $manager->v_userid,
+        'v_role_code' => 'MANAGER',
+        'v_unit' => 'EXPIRED_UNIT',
+        'dt_valid_until' => today()->subDay(),
+    ]);
+    $target = User::factory()->create(['v_kolok' => 'EXPIRED_UNIT']);
+
+    expect($manager->can('view', $target))->toBeFalse();
+});
+
 it('prevents user from deactivating self', function () {
+    DB::table('tm_roles')->insert([
+        'v_code' => 'ADMIN_STAFF',
+        'v_name' => 'Staff Admin',
+        'i_level' => 50,
+        'v_created_by' => 'system',
+    ]);
+    DB::table('tm_features')->insert([
+        'v_alias' => 'ubah-pengguna',
+        'v_name' => 'Ubah Pengguna',
+        'e_type' => 'action',
+    ]);
     $user = User::factory()->create(['b_is_active' => true]);
     UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ADMIN_STAFF']);
     DB::table('tr_role_features')->insert([
@@ -208,6 +280,17 @@ it('prevents user from deactivating self', function () {
 });
 
 it('prevents user from deleting self', function () {
+    DB::table('tm_roles')->insert([
+        'v_code' => 'ADMIN_STAFF',
+        'v_name' => 'Staff Admin',
+        'i_level' => 50,
+        'v_created_by' => 'system',
+    ]);
+    DB::table('tm_features')->insert([
+        'v_alias' => 'hapus-pengguna',
+        'v_name' => 'Hapus Pengguna',
+        'e_type' => 'action',
+    ]);
     $user = User::factory()->create();
     UserRole::create(['v_userid' => $user->v_userid, 'v_role_code' => 'ADMIN_STAFF']);
     DB::table('tr_role_features')->insert([

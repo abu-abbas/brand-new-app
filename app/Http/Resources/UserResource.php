@@ -32,11 +32,13 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $name = toTitleCase($this->v_username ?? $this->v_userid);
+
         return [
             'id' => $this->hash_id,
             'userid' => $this->v_userid,
-            'username' => $this->v_username ?? $this->v_userid,
-            'name' => $this->v_username ?? $this->v_userid,
+            'username' => $name,
+            'name' => $name,
             'email' => $this->v_email,
             'unit' => [
                 'code' => $this->v_kolok,

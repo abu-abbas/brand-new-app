@@ -404,4 +404,3 @@ enum UserManagementError: string implements ErrorCode
     )]
     case CANNOT_DELETE_SELF = 'UM-BUS-004';
 }
-
