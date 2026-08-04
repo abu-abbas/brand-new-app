@@ -5,6 +5,12 @@
  * OpenAPI spec version: 0.0.1
  */
 import { customAxiosInstance } from '../../lib/axios';
+export interface ChangePasswordRequest {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export interface FeatureOptionResource {
   name: string;
   alias: string;
@@ -40,6 +46,11 @@ export interface FeatureResource {
   created_at: FeatureResourceCreatedAt;
   updated_at: FeatureResourceUpdatedAt;
   deleted_at: FeatureResourceDeletedAt;
+}
+
+export interface ForgotPasswordRequest {
+  /** @maxLength 255 */
+  email: string;
 }
 
 /**
@@ -134,6 +145,14 @@ export interface PaginationMetaLinksItem {
   active: boolean;
 }
 
+export interface ResetPasswordRequest {
+  /** @maxLength 255 */
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
 export type RoleOptionResourceActivePeriode = unknown[] | null;
 
 export interface RoleOptionResource {
@@ -165,6 +184,8 @@ export interface RoleResource {
   need_region: boolean;
   need_unit: boolean;
   active_periode: RoleResourceActivePeriode;
+  is_active: string;
+  is_expired: string;
   locked: boolean;
   can_edit: boolean;
   can_delete: boolean;
@@ -435,6 +456,8 @@ export type UserResourceActiveGroupId = string | null;
 
 export type UserResourceDefaultGroupId = string | null;
 
+export type UserResourcePasswordExpiresAt = string | null;
+
 export type UserResourceCreatedAt = string | null;
 
 export interface UserResource {
@@ -453,6 +476,9 @@ export interface UserResource {
   has_multiple_groups: boolean;
   permissions: string[];
   is_root?: boolean;
+  must_change_password: boolean;
+  password_expires_at: UserResourcePasswordExpiresAt;
+  is_verified: boolean;
   created_at: UserResourceCreatedAt;
 }
 
@@ -476,6 +502,7 @@ export interface UserRoleResource {
   pelaksana: UserRoleResourcePelaksana;
   valid_from: UserRoleResourceValidFrom;
   valid_until: UserRoleResourceValidUntil;
+  is_expired: boolean;
   need_region: boolean;
   need_unit: boolean;
 }
@@ -511,6 +538,14 @@ export type AuthLogin200 = {
   data: UserResource;
 };
 
+export type AuthForgotPassword200 = {
+  message: 'Jika email terdaftar sebagai akun internal, tautan akan dikirim.';
+};
+
+export type AuthResetPassword200 = {
+  message: 'Password berhasil diperbarui. Silakan login menggunakan password baru Anda.';
+};
+
 export type AuthCaptcha200 = {
   img: string;
   key: string;
@@ -522,6 +557,10 @@ key?: string;
 
 export type AuthMe200 = {
   data: UserResource;
+};
+
+export type AuthPassword200 = {
+  message: 'Password berhasil diubah. Seluruh sesi Anda telah diakhiri, silakan login kembali.';
 };
 
 export type AuthActiveGroup200 = {
@@ -728,6 +767,19 @@ export type UsersToggleStatus200 = {
   data: UserResource;
 };
 
+export type UsersSendPasswordLink200Message = typeof UsersSendPasswordLink200Message[keyof typeof UsersSendPasswordLink200Message];
+
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const UsersSendPasswordLink200Message = {
+  Tautan_undangan_verifikasi_berhasil_dikirim: 'Tautan undangan verifikasi berhasil dikirim.',
+  Tautan_reset_password_berhasil_dikirim: 'Tautan reset password berhasil dikirim.',
+} as const;
+
+export type UsersSendPasswordLink200 = {
+  message: UsersSendPasswordLink200Message;
+};
+
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
@@ -744,19 +796,47 @@ export const authLogin = (
     },
       options);
     }
-
+  
+/**
+ * @summary Request a password reset link
+ */
+export const authForgotPassword = (
+    forgotPasswordRequest: ForgotPasswordRequest,
+ options?: SecondParameter<typeof customAxiosInstance<AuthForgotPassword200>>,) => {
+      return customAxiosInstance<AuthForgotPassword200>(
+      {url: `/auth/forgot-password`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: forgotPasswordRequest
+    },
+      options);
+    }
+  
+/**
+ * @summary Reset/setup user password using a token
+ */
+export const authResetPassword = (
+    resetPasswordRequest: ResetPasswordRequest,
+ options?: SecondParameter<typeof customAxiosInstance<AuthResetPassword200>>,) => {
+      return customAxiosInstance<AuthResetPassword200>(
+      {url: `/auth/reset-password`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: resetPasswordRequest
+    },
+      options);
+    }
+  
 /**
  * @summary Return a single-use CAPTCHA challenge as a base64 data URI
  */
 export const authCaptcha = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<AuthCaptcha200>>,) => {
       return customAxiosInstance<AuthCaptcha200>(
       {url: `/auth/captcha`, method: 'GET'
     },
       options);
     }
-
+  
 /**
  * @summary Return audio (WAV format) pronouncing the CAPTCHA code for accessibility
  */
@@ -769,19 +849,33 @@ export const authCaptchaAudio = (
     },
       options);
     }
-
+  
 /**
  * @summary Return the authenticated user
  */
 export const authMe = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<AuthMe200>>,) => {
       return customAxiosInstance<AuthMe200>(
       {url: `/auth/me`, method: 'GET'
     },
       options);
     }
-
+  
+/**
+ * @summary Change user password for authenticated session
+ */
+export const authPassword = (
+    changePasswordRequest: ChangePasswordRequest,
+ options?: SecondParameter<typeof customAxiosInstance<AuthPassword200>>,) => {
+      return customAxiosInstance<AuthPassword200>(
+      {url: `/auth/password`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: changePasswordRequest
+    },
+      options);
+    }
+  
 /**
  * @summary Set the active group/role for the current session
  */
@@ -795,31 +889,31 @@ export const authActiveGroup = (
     },
       options);
     }
-
+  
 /**
  * @summary Reset the default group preference for the current user
  */
 export const authResetDefaultGroup = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<AuthResetDefaultGroup200>>,) => {
       return customAxiosInstance<AuthResetDefaultGroup200>(
       {url: `/auth/reset-default-group`, method: 'POST'
     },
       options);
     }
-
+  
 /**
  * @summary End the authenticated session
  */
 export const authLogout = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
       return customAxiosInstance<void>(
       {url: `/auth/logout`, method: 'POST'
     },
       options);
     }
-
+  
 /**
  * @summary Display a paginated list of features, optionally including soft-deleted records
  */
@@ -832,7 +926,7 @@ export const featuresIndex = (
     },
       options);
     }
-
+  
 /**
  * @summary Store a new feature
  */
@@ -846,19 +940,19 @@ export const featuresStore = (
     },
       options);
     }
-
+  
 /**
  * @summary Display active features for parent selection
  */
 export const featuresOptions = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<FeaturesOptions200>>,) => {
       return customAxiosInstance<FeaturesOptions200>(
       {url: `/features/options`, method: 'GET'
     },
       options);
     }
-
+  
 /**
  * @summary Update an existing feature
  */
@@ -873,7 +967,7 @@ export const featuresUpdate = (
     },
       options);
     }
-
+  
 /**
  * @summary Soft-delete an existing feature
  */
@@ -885,7 +979,7 @@ export const featuresDestroy = (
     },
       options);
     }
-
+  
 /**
  * @summary Restore a soft-deleted feature
  */
@@ -897,25 +991,25 @@ export const featuresRestore = (
     },
       options);
     }
-
+  
 export const referencesWilayah = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<ReferencesWilayah200>>,) => {
       return customAxiosInstance<ReferencesWilayah200>(
       {url: `/references/wilayah`, method: 'GET'
     },
       options);
     }
-
+  
 export const referencesPerangkatDaerah = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<ReferencesPerangkatDaerah200>>,) => {
       return customAxiosInstance<ReferencesPerangkatDaerah200>(
       {url: `/references/perangkat-daerah`, method: 'GET'
     },
       options);
     }
-
+  
 /**
  * @summary Display a paginated list of roles
  */
@@ -928,7 +1022,7 @@ export const rolesIndex = (
     },
       options);
     }
-
+  
 /**
  * @summary Store a new role
  */
@@ -942,19 +1036,19 @@ export const rolesStore = (
     },
       options);
     }
-
+  
 /**
  * @summary Display active roles for selection
  */
 export const rolesOptions = (
-
+    
  options?: SecondParameter<typeof customAxiosInstance<RolesOptions200>>,) => {
       return customAxiosInstance<RolesOptions200>(
       {url: `/roles/options`, method: 'GET'
     },
       options);
     }
-
+  
 /**
  * @summary Display the specified role detail
  */
@@ -966,7 +1060,7 @@ export const rolesShow = (
     },
       options);
     }
-
+  
 /**
  * @summary Update an existing role
  */
@@ -981,7 +1075,7 @@ export const rolesUpdate = (
     },
       options);
     }
-
+  
 /**
  * @summary Soft-delete an existing role
  */
@@ -993,7 +1087,7 @@ export const rolesDestroy = (
     },
       options);
     }
-
+  
 /**
  * @summary Restore a soft-deleted role
  */
@@ -1005,7 +1099,7 @@ export const rolesRestore = (
     },
       options);
     }
-
+  
 /**
  * @summary Display a paginated list of users
  */
@@ -1018,7 +1112,7 @@ export const usersIndex = (
     },
       options);
     }
-
+  
 /**
  * @summary Create a new user
  */
@@ -1032,7 +1126,7 @@ export const usersStore = (
     },
       options);
     }
-
+  
 /**
  * @summary Display detail of a user
  */
@@ -1044,7 +1138,7 @@ export const usersShow = (
     },
       options);
     }
-
+  
 /**
  * @summary Update an existing user
  */
@@ -1059,7 +1153,7 @@ export const usersUpdate = (
     },
       options);
     }
-
+  
 /**
  * @summary Soft delete a user
  */
@@ -1071,7 +1165,7 @@ export const usersDestroy = (
     },
       options);
     }
-
+  
 /**
  * @summary Toggle active status of a user
  */
@@ -1083,11 +1177,26 @@ export const usersToggleStatus = (
     },
       options);
     }
-
+  
+/**
+ * @summary Send password reset / invitation link to a user by Admin
+ */
+export const usersSendPasswordLink = (
+    user: number,
+ options?: SecondParameter<typeof customAxiosInstance<UsersSendPasswordLink200>>,) => {
+      return customAxiosInstance<UsersSendPasswordLink200>(
+      {url: `/users/${user}/send-password-link`, method: 'POST'
+    },
+      options);
+    }
+  
 export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>
+export type AuthForgotPasswordResult = NonNullable<Awaited<ReturnType<typeof authForgotPassword>>>
+export type AuthResetPasswordResult = NonNullable<Awaited<ReturnType<typeof authResetPassword>>>
 export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>
 export type AuthCaptchaAudioResult = NonNullable<Awaited<ReturnType<typeof authCaptchaAudio>>>
 export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>
+export type AuthPasswordResult = NonNullable<Awaited<ReturnType<typeof authPassword>>>
 export type AuthActiveGroupResult = NonNullable<Awaited<ReturnType<typeof authActiveGroup>>>
 export type AuthResetDefaultGroupResult = NonNullable<Awaited<ReturnType<typeof authResetDefaultGroup>>>
 export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
@@ -1112,3 +1221,4 @@ export type UsersShowResult = NonNullable<Awaited<ReturnType<typeof usersShow>>>
 export type UsersUpdateResult = NonNullable<Awaited<ReturnType<typeof usersUpdate>>>
 export type UsersDestroyResult = NonNullable<Awaited<ReturnType<typeof usersDestroy>>>
 export type UsersToggleStatusResult = NonNullable<Awaited<ReturnType<typeof usersToggleStatus>>>
+export type UsersSendPasswordLinkResult = NonNullable<Awaited<ReturnType<typeof usersSendPasswordLink>>>

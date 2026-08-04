@@ -52,6 +52,92 @@
                 }
             }
         },
+        "/auth/forgot-password": {
+            "post": {
+                "operationId": "auth.forgot-password",
+                "summary": "Request a password reset link",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ForgotPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Jika email terdaftar sebagai akun internal, tautan akan dikirim."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/auth/reset-password": {
+            "post": {
+                "operationId": "auth.reset-password",
+                "summary": "Reset/setup user password using a token",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Password berhasil diperbarui. Silakan login menggunakan password baru Anda."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
         "/auth/captcha": {
             "get": {
                 "operationId": "auth.captcha",
@@ -157,6 +243,52 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/auth/password": {
+            "put": {
+                "operationId": "auth.password",
+                "summary": "Change user password for authenticated session",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "const": "Password berhasil diubah. Seluruh sesi Anda telah diakhiri, silakan login kembali."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
@@ -1674,10 +1806,83 @@
                     }
                 }
             }
+        },
+        "/users/{user}/send-password-link": {
+            "post": {
+                "operationId": "users.send-password-link",
+                "summary": "Send password reset / invitation link to a user by Admin",
+                "tags": [
+                    "User"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Tautan undangan verifikasi berhasil dikirim.",
+                                                "Tautan reset password berhasil dikirim."
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "ChangePasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "current_password": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "password_confirmation": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "current_password",
+                    "password",
+                    "password_confirmation"
+                ],
+                "title": "ChangePasswordRequest"
+            },
             "FeatureOptionResource": {
                 "type": "object",
                 "properties": {
@@ -1782,6 +1987,20 @@
                     "deleted_at"
                 ],
                 "title": "FeatureResource"
+            },
+            "ForgotPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "email"
+                ],
+                "title": "ForgotPasswordRequest"
             },
             "LoginRequest": {
                 "type": "object",
@@ -1938,6 +2157,32 @@
                 ],
                 "title": "PaginationMetaLinksItem"
             },
+            "ResetPasswordRequest": {
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "maxLength": 255
+                    },
+                    "token": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "password_confirmation": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "token",
+                    "password",
+                    "password_confirmation"
+                ],
+                "title": "ResetPasswordRequest"
+            },
             "RoleOptionResource": {
                 "type": "object",
                 "properties": {
@@ -2006,6 +2251,12 @@
                         ],
                         "items": {}
                     },
+                    "is_active": {
+                        "type": "string"
+                    },
+                    "is_expired": {
+                        "type": "string"
+                    },
                     "locked": {
                         "type": "boolean"
                     },
@@ -2053,6 +2304,8 @@
                     "need_region",
                     "need_unit",
                     "active_periode",
+                    "is_active",
+                    "is_expired",
                     "locked",
                     "can_edit",
                     "can_delete",
@@ -2530,6 +2783,18 @@
                     "is_root": {
                         "type": "boolean"
                     },
+                    "must_change_password": {
+                        "type": "boolean"
+                    },
+                    "password_expires_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "is_verified": {
+                        "type": "boolean"
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -2551,6 +2816,9 @@
                     "default_group_id",
                     "has_multiple_groups",
                     "permissions",
+                    "must_change_password",
+                    "password_expires_at",
+                    "is_verified",
                     "created_at"
                 ],
                 "title": "UserResource"
@@ -2600,6 +2868,9 @@
                             "null"
                         ]
                     },
+                    "is_expired": {
+                        "type": "boolean"
+                    },
                     "need_region": {
                         "type": "boolean"
                     },
@@ -2617,6 +2888,7 @@
                     "pelaksana",
                     "valid_from",
                     "valid_until",
+                    "is_expired",
                     "need_region",
                     "need_unit"
                 ],
