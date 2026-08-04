@@ -185,4 +185,60 @@ enum AuthError: string implements ErrorCode
         severity: ErrorSeverity::LOW,
     )]
     case UNAUTHENTICATED = 'AUTH-ACC-003';
+
+    #[ErrorDefinition(
+        message: 'Password Anda sudah kedaluwarsa. Anda wajib memperbarui password Anda terlebih dahulu.',
+        category: ErrorCategory::AUTHORIZATION,
+        httpStatus: 403,
+        severity: ErrorSeverity::MEDIUM,
+    )]
+    case PASSWORD_EXPIRED = 'AUTH-VAL-017';
+
+    #[ErrorDefinition(
+        message: 'Password baru tidak boleh sama dengan dua password terakhir Anda.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PASSWORD_REUSED = 'AUTH-VAL-018';
+
+    #[ErrorDefinition(
+        message: 'Tautan reset password tidak valid atau sudah kedaluwarsa.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case TOKEN_INVALID = 'AUTH-VAL-019';
+
+    #[ErrorDefinition(
+        message: 'Password saat ini tidak sesuai.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case CURRENT_PASSWORD_INCORRECT = 'AUTH-VAL-020';
+
+    #[ErrorDefinition(
+        message: 'Anda tidak dapat mereset password akun ini.',
+        category: ErrorCategory::AUTHORIZATION,
+        httpStatus: 403,
+        severity: ErrorSeverity::HIGH,
+    )]
+    case ADMIN_RESET_FORBIDDEN = 'AUTH-ACC-004';
+
+    #[ErrorDefinition(
+        message: 'Password tidak memenuhi syarat keamanan minimum.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case PASSWORD_INVALID = 'AUTH-VAL-021';
+
+    #[ErrorDefinition(
+        message: 'Akun Anda tidak aktif atau dinonaktifkan.',
+        category: ErrorCategory::AUTHENTICATION,
+        httpStatus: 401,
+        severity: ErrorSeverity::LOW,
+    )]
+    case ACCOUNT_DISABLED = 'AUTH-LOGIN-004';
 }

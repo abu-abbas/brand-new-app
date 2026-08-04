@@ -1,9 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use App\Providers\TitleCaseServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    TitleCaseServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\HorizonServiceProvider::class,
+    App\Providers\TitleCaseServiceProvider::class,
 ];

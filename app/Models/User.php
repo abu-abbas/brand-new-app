@@ -43,6 +43,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $dt_updated_at
  * @property string|null $v_deleted_by
  * @property Carbon|null $dt_deleted_at
+ * @property Carbon|null $dt_email_verified_at
+ * @property Carbon|null $dt_last_updated_password
  * @property int $role_level
  */
 #[Fillable([
@@ -62,6 +64,8 @@ use Illuminate\Support\Carbon;
     'v_spmu',
     'v_kd',
     'v_remember_token',
+    'dt_email_verified_at',
+    'dt_last_updated_password',
     'v_created_by',
     'dt_created_at',
     'v_updated_by',
@@ -138,10 +142,39 @@ class User extends Authenticatable implements HasNotFoundError, ScopedResource
         return [
             'b_is_active' => 'boolean',
             'b_use_other' => 'boolean',
+            'dt_email_verified_at' => 'datetime',
+            'dt_last_updated_password' => 'datetime',
             'dt_created_at' => 'datetime',
             'dt_updated_at' => 'datetime',
             'dt_deleted_at' => 'datetime',
         ];
+    }
+
+    public function passwordHistories(): HasMany
+    {
+        return $this->hasMany(UserPasswordHistory::class, 'v_userid', 'v_userid');
+    }
+
+    public function mustChangePassword(): bool
+    {
+        if ($this->b_use_other || $this->isRoot()) {
+            return false;
+        }
+
+        if ($this->dt_last_updated_password === null) {
+            return true;
+        }
+
+        return $this->dt_last_updated_password->copy()->addMonths(3)->isPast();
+    }
+
+    public function passwordExpiresAt(): ?Carbon
+    {
+        if ($this->b_use_other || $this->isRoot() || $this->dt_last_updated_password === null) {
+            return null;
+        }
+
+        return $this->dt_last_updated_password->copy()->addMonths(3);
     }
 
     /**
@@ -367,5 +400,21 @@ class User extends Authenticatable implements HasNotFoundError, ScopedResource
     public function isRoot(): bool
     {
         return $this->role_level >= RoleConstant::ROOT_LEVEL;
+    }
+
+    /**
+     * Route notifications for the mail channel.
+     */
+    public function routeNotificationForMail(): ?string
+    {
+        return $this->v_email;
+    }
+
+    /**
+     * Get the e-mail address where password reset links are sent.
+     */
+    public function getEmailForPasswordReset(): ?string
+    {
+        return $this->v_email;
     }
 }

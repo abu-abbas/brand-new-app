@@ -32,6 +32,8 @@ return new class extends Migration
             $table->string('v_kd', 4)->nullable();
 
             $table->string('v_remember_token', 100)->nullable();
+            $table->timestamp('dt_email_verified_at')->nullable();
+            $table->timestamp('dt_last_updated_password')->nullable();
 
             // Audit trail
             $table->string('v_created_by', 100)->nullable();

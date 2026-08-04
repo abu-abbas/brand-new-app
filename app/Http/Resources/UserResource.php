@@ -53,6 +53,9 @@ class UserResource extends JsonResource
             'has_multiple_groups' => $this->hasMultipleGroups(),
             'permissions' => $this->getPermissionsList(),
             'is_root' => $this->when($this->isRoot(), true),
+            'must_change_password' => $this->mustChangePassword(),
+            'password_expires_at' => $this->passwordExpiresAt()?->toIso8601String(),
+            'is_verified' => $this->dt_email_verified_at !== null,
             'created_at' => $this->dt_created_at?->toIso8601String(),
         ];
     }

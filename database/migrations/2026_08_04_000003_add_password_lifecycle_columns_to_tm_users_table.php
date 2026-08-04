@@ -1,0 +1,32 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('tm_users', function (Blueprint $table) {
+            if (! Schema::hasColumn('tm_users', 'dt_email_verified_at')) {
+                $table->timestamp('dt_email_verified_at')->nullable();
+            }
+            if (! Schema::hasColumn('tm_users', 'dt_last_updated_password')) {
+                $table->timestamp('dt_last_updated_password')->nullable();
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('tm_users', function (Blueprint $table) {
+            if (Schema::hasColumn('tm_users', 'dt_last_updated_password')) {
+                $table->dropColumn('dt_last_updated_password');
+            }
+            if (Schema::hasColumn('tm_users', 'dt_email_verified_at')) {
+                $table->dropColumn('dt_email_verified_at');
+            }
+        });
+    }
+};

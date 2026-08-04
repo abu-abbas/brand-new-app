@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\EnsurePasswordIsFresh;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/login', [AuthController::class, 'login'])
     ->name('api.auth.login');
+Route::post('/auth/forgot-password', [AuthController::class, 'forgotPassword'])
+    ->middleware('throttle:6,1')
+    ->name('api.auth.forgot-password');
+Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])
+    ->middleware('throttle:10,1')
+    ->name('api.auth.reset-password');
 Route::get('/auth/captcha', [AuthController::class, 'captcha'])
     ->middleware('throttle:20,1')
     ->name('api.auth.captcha');
@@ -23,8 +30,9 @@ Route::get('/auth/captcha/audio', [AuthController::class, 'captchaAudio'])
     ->middleware('throttle:20,1')
     ->name('api.auth.captcha.audio');
 
-Route::middleware(['auth:sanctum', EnsureActiveUser::class])->group(function () {
+Route::middleware(['auth:sanctum', EnsureActiveUser::class, EnsurePasswordIsFresh::class])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
+    Route::put('/auth/password', [AuthController::class, 'changePassword'])->name('api.auth.password');
     Route::post('/auth/active-group', [AuthController::class, 'setActiveGroup'])->name('api.auth.active-group');
     Route::post('/auth/reset-default-group', [AuthController::class, 'resetDefaultGroup'])->name('api.auth.reset-default-group');
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');
@@ -48,6 +56,9 @@ Route::middleware(['auth:sanctum', EnsureActiveUser::class])->group(function () 
     Route::patch('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
         ->middleware('can:ubah-pengguna')
         ->name('api.users.toggle-status');
+    Route::post('/users/{user}/send-password-link', [UserController::class, 'sendPasswordLink'])
+        ->middleware('can:reset-password-pengguna')
+        ->name('api.users.send-password-link');
 
     // References
     Route::get('/references/wilayah', [ReferenceController::class, 'wilayah'])->name('api.references.wilayah');

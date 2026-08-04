@@ -167,6 +167,66 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
+    /**
+     * Request a password reset link.
+     *
+     * @summary Lupa password
+     */
+    public function forgotPassword(\App\Http\Requests\Auth\ForgotPasswordRequest $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authService->forgotPassword(
+            (string) $request->input('email'),
+            $request->ip() ?? 'unknown',
+        );
+
+        return response()->json([
+            'message' => 'Jika email terdaftar sebagai akun internal, tautan akan dikirim.',
+        ]);
+    }
+
+    /**
+     * Reset/setup user password using a token.
+     *
+     * @summary Reset/setup password
+     */
+    public function resetPassword(\App\Http\Requests\Auth\ResetPasswordRequest $request): \Illuminate\Http\JsonResponse
+    {
+        $this->authService->resetPassword(
+            (string) $request->input('email'),
+            (string) $request->input('token'),
+            (string) $request->input('password'),
+        );
+
+        return response()->json([
+            'message' => 'Password berhasil diperbarui. Silakan login menggunakan password baru Anda.',
+        ]);
+    }
+
+    /**
+     * Change user password for authenticated session.
+     *
+     * @summary Ubah password
+     */
+    public function changePassword(\App\Http\Requests\Auth\ChangePasswordRequest $request): \Illuminate\Http\JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        $this->authService->changePassword(
+            $user,
+            (string) $request->input('current_password'),
+            (string) $request->input('password'),
+        );
+
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'message' => 'Password berhasil diubah. Seluruh sesi Anda telah diakhiri, silakan login kembali.',
+        ]);
+    }
+
     private function loadAuthorizationContext(User $user): User
     {
         $user->load(['userRoles.roleModel.features']);

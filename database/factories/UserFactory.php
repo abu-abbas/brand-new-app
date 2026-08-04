@@ -26,6 +26,8 @@ class UserFactory extends Factory
             'b_is_active' => true,
             'b_use_other' => false,
             'v_remember_token' => Str::random(10),
+            'dt_email_verified_at' => now(),
+            'dt_last_updated_password' => now(),
             'dt_created_at' => now(),
         ];
     }
