@@ -207,9 +207,9 @@ const handleLogout = async () => {
 
         <!-- Confirm New Password -->
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-muted-foreground block"
-            >Konfirmasi Password Baru</label
-          >
+          <label class="text-xs font-semibold text-muted-foreground block">
+            Konfirmasi Password Baru
+          </label>
           <div class="relative flex items-center">
             <Lock class="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
