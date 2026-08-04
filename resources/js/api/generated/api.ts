@@ -297,15 +297,6 @@ export type StoreUserRequestEmail = string | null;
 export type StoreUserRequestUnitCode = string | null;
 
 /**
- * @minLength 6
- */
-export type StoreUserRequestPassword = string | null;
-
-export type StoreUserRequestIsActive = boolean | null;
-
-export type StoreUserRequestIsExternal = boolean | null;
-
-/**
  * @maxLength 50
  */
 export type StoreUserRequestRolesAnyOfItemWilayah = string | null;
@@ -347,10 +338,8 @@ export interface StoreUserRequest {
   email?: StoreUserRequestEmail;
   /** @maxLength 50 */
   unit_code?: StoreUserRequestUnitCode;
-  /** @minLength 6 */
-  password?: StoreUserRequestPassword;
-  is_active?: StoreUserRequestIsActive;
-  is_external?: StoreUserRequestIsExternal;
+  is_active: boolean;
+  is_external: boolean;
   roles?: StoreUserRequestRoles;
 }
 
@@ -388,59 +377,46 @@ export type UpdateUserRequestEmail = string | null;
 export type UpdateUserRequestUnitCode = string | null;
 
 /**
- * @minLength 6
+ * @maxLength 50
  */
-export type UpdateUserRequestPassword = string | null;
-
-export type UpdateUserRequestIsActive = boolean | null;
-
-export type UpdateUserRequestIsExternal = boolean | null;
+export type UpdateUserRequestRolesItemWilayah = string | null;
 
 /**
  * @maxLength 50
  */
-export type UpdateUserRequestRolesAnyOfItemWilayah = string | null;
-
-/**
- * @maxLength 50
- */
-export type UpdateUserRequestRolesAnyOfItemUnit = string | null;
+export type UpdateUserRequestRolesItemUnit = string | null;
 
 /**
  * @maxLength 10
  */
-export type UpdateUserRequestRolesAnyOfItemPelaksana = string | null;
+export type UpdateUserRequestRolesItemPelaksana = string | null;
 
-export type UpdateUserRequestRolesAnyOfItemValidFrom = string | null;
+export type UpdateUserRequestRolesItemValidFrom = string | null;
 
-export type UpdateUserRequestRolesAnyOfItemValidUntil = string | null;
+export type UpdateUserRequestRolesItemValidUntil = string | null;
 
-export type UpdateUserRequestRolesAnyOfItem = {
+export type UpdateUserRequestRolesItem = {
   role_code: string;
   /** @maxLength 50 */
-  wilayah?: UpdateUserRequestRolesAnyOfItemWilayah;
+  wilayah?: UpdateUserRequestRolesItemWilayah;
   /** @maxLength 50 */
-  unit?: UpdateUserRequestRolesAnyOfItemUnit;
+  unit?: UpdateUserRequestRolesItemUnit;
   /** @maxLength 10 */
-  pelaksana?: UpdateUserRequestRolesAnyOfItemPelaksana;
-  valid_from?: UpdateUserRequestRolesAnyOfItemValidFrom;
-  valid_until?: UpdateUserRequestRolesAnyOfItemValidUntil;
+  pelaksana?: UpdateUserRequestRolesItemPelaksana;
+  valid_from?: UpdateUserRequestRolesItemValidFrom;
+  valid_until?: UpdateUserRequestRolesItemValidUntil;
 };
-
-export type UpdateUserRequestRoles = UpdateUserRequestRolesAnyOfItem[] | null;
 
 export interface UpdateUserRequest {
   /** @maxLength 255 */
-  username: string;
+  username?: string;
   /** @maxLength 255 */
   email?: UpdateUserRequestEmail;
   /** @maxLength 50 */
   unit_code?: UpdateUserRequestUnitCode;
-  /** @minLength 6 */
-  password?: UpdateUserRequestPassword;
-  is_active?: UpdateUserRequestIsActive;
-  is_external?: UpdateUserRequestIsExternal;
-  roles?: UpdateUserRequestRoles;
+  is_active?: boolean;
+  is_external?: boolean;
+  roles?: UpdateUserRequestRolesItem[];
 }
 
 export type UserResourceEmail = string | null;

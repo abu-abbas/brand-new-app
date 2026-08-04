@@ -228,6 +228,22 @@ enum UserManagementError: string implements ErrorCode
     case EMAIL_UNIQUE = 'UM-VAL-044';
 
     #[ErrorDefinition(
+        message: 'Status aktif wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case IS_ACTIVE_REQUIRED = 'UM-VAL-045';
+
+    #[ErrorDefinition(
+        message: 'Jenis autentikasi eksternal wajib diisi.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case USE_OTHER_REQUIRED = 'UM-VAL-046';
+
+    #[ErrorDefinition(
         message: 'Password harus berupa teks.',
         category: ErrorCategory::VALIDATION,
         httpStatus: 422,

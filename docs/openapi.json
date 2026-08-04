@@ -1657,7 +1657,6 @@
                     }
                 ],
                 "requestBody": {
-                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
@@ -2477,24 +2476,11 @@
                         ],
                         "maxLength": 50
                     },
-                    "password": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "minLength": 6
-                    },
                     "is_active": {
-                        "type": [
-                            "boolean",
-                            "null"
-                        ]
+                        "type": "boolean"
                     },
                     "is_external": {
-                        "type": [
-                            "boolean",
-                            "null"
-                        ]
+                        "type": "boolean"
                     },
                     "roles": {
                         "type": [
@@ -2551,7 +2537,9 @@
                 },
                 "required": [
                     "userid",
-                    "username"
+                    "username",
+                    "is_active",
+                    "is_external"
                 ],
                 "title": "StoreUserRequest"
             },
@@ -2625,30 +2613,14 @@
                         ],
                         "maxLength": 50
                     },
-                    "password": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "minLength": 6
-                    },
                     "is_active": {
-                        "type": [
-                            "boolean",
-                            "null"
-                        ]
+                        "type": "boolean"
                     },
                     "is_external": {
-                        "type": [
-                            "boolean",
-                            "null"
-                        ]
+                        "type": "boolean"
                     },
                     "roles": {
-                        "type": [
-                            "array",
-                            "null"
-                        ],
+                        "type": "array",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -2697,9 +2669,6 @@
                         }
                     }
                 },
-                "required": [
-                    "username"
-                ],
                 "title": "UpdateUserRequest"
             },
             "UserResource": {

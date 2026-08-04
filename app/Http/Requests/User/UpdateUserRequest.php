@@ -4,7 +4,9 @@ namespace App\Http\Requests\User;
 
 use App\Core\ErrorDefinition\Traits\HasErrorDefinitions;
 use App\Errors\UserManagementError;
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -17,65 +19,39 @@ class UpdateUserRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $toMerge = [];
-
-        if ($this->has('v_username') && ! $this->has('username')) {
-            $toMerge['username'] = $this->v_username;
-        }
-
-        if ($this->has('v_email') && ! $this->has('email')) {
-            $toMerge['email'] = $this->v_email;
-        }
-
-        if ($this->has('v_kolok') && ! $this->has('unit_code')) {
-            $toMerge['unit_code'] = $this->v_kolok;
-        }
-
-        if ($this->has('v_password') && ! $this->has('password')) {
-            $toMerge['password'] = $this->v_password;
-        }
-
-        if ($this->has('b_is_active') && ! $this->has('is_active')) {
-            $toMerge['is_active'] = $this->b_is_active;
-        }
-
-        if ($this->has('b_use_other') && ! $this->has('is_external')) {
-            $toMerge['is_external'] = $this->b_use_other;
-        }
-
-        if (! empty($toMerge)) {
-            $this->merge($toMerge);
-        }
-
-        if ($this->has('roles') && is_array($this->roles)) {
-            $mappedRoles = array_map(function ($r) {
-                if (! is_array($r)) {
-                    return $r;
-                }
-
-                return [
-                    'role_code' => $r['role_code'] ?? $r['v_role_code'] ?? null,
-                    'wilayah' => $r['wilayah'] ?? $r['v_wilayah'] ?? null,
-                    'unit' => $r['unit'] ?? $r['v_unit'] ?? null,
-                    'pelaksana' => $r['pelaksana'] ?? $r['v_pelaksana'] ?? null,
-                    'valid_from' => $r['valid_from'] ?? $r['dt_valid_from'] ?? null,
-                    'valid_until' => $r['valid_until'] ?? $r['dt_valid_until'] ?? null,
-                ];
-            }, $this->roles);
-            $this->merge(['roles' => $mappedRoles]);
+        if ($this->has('email') && is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim((string) $this->input('email')))]);
         }
     }
 
     public function rules(): array
     {
+        $user = $this->route('user');
+        $uniqueEmail = Rule::unique('tm_users', 'v_email');
+        $emailRules = ['sometimes', 'nullable', 'email', 'max:255', $uniqueEmail];
+
+        if ($user instanceof User) {
+            $targetIsExternal = $user->b_use_other;
+            if ($this->has('is_external')) {
+                $parsedExternal = filter_var($this->input('is_external'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                if (is_bool($parsedExternal)) {
+                    $targetIsExternal = $parsedExternal;
+                }
+            }
+
+            $emailRules[4] = $uniqueEmail->ignore($user->i_id, 'i_id');
+            if (! $targetIsExternal && ($this->has('email') || empty($user->v_email))) {
+                $emailRules[0] = 'required';
+            }
+        }
+
         return [
-            'username' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'unit_code' => ['nullable', 'string', 'max:50'],
-            'password' => ['nullable', 'string', 'min:6'],
-            'is_active' => ['nullable', 'boolean'],
-            'is_external' => ['nullable', 'boolean'],
-            'roles' => ['nullable', 'array'],
+            'username' => ['sometimes', 'required', 'string', 'max:255'],
+            'email' => $emailRules,
+            'unit_code' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'is_active' => ['sometimes', 'required', 'boolean'],
+            'is_external' => ['sometimes', 'required', 'boolean'],
+            'roles' => ['sometimes', 'array'],
             'roles.*.role_code' => ['required', 'string', 'exists:tm_roles,v_code'],
             'roles.*.wilayah' => ['nullable', 'string', 'max:50'],
             'roles.*.unit' => ['nullable', 'string', 'max:50'],
@@ -94,14 +70,15 @@ class UpdateUserRequest extends FormRequest
 
             'email.email' => UserManagementError::EMAIL_INVALID,
             'email.max' => UserManagementError::EMAIL_MAX,
+            'email.required' => UserManagementError::EMAIL_REQUIRED,
+            'email.illuminate\validation\rules\unique' => UserManagementError::EMAIL_UNIQUE,
 
             'unit_code.string' => UserManagementError::UNIT_STRING,
             'unit_code.max' => UserManagementError::UNIT_MAX,
 
-            'password.string' => UserManagementError::PASSWORD_STRING,
-            'password.min' => UserManagementError::PASSWORD_MIN,
-
+            'is_active.required' => UserManagementError::IS_ACTIVE_REQUIRED,
             'is_active.boolean' => UserManagementError::IS_ACTIVE_BOOLEAN,
+            'is_external.required' => UserManagementError::USE_OTHER_REQUIRED,
             'is_external.boolean' => UserManagementError::USE_OTHER_BOOLEAN,
 
             'roles.array' => UserManagementError::ROLES_ARRAY,

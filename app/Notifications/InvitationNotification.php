@@ -36,14 +36,14 @@ class InvitationNotification extends Notification implements ShouldQueue
             ? $notifiable->getEmailForPasswordReset()
             : ($notifiable->v_email ?? '');
 
-        $url = config('app.url') . '/reset-password?' . http_build_query([
+        $url = config('app.url').'/reset-password?'.http_build_query([
             'email' => $email,
             'token' => $this->token,
         ]);
 
         return (new MailMessage)
             ->subject('Undangan Aktivasi Akun Pengguna')
-            ->greeting('Halo ' . ($notifiable->v_username ?? 'Pengguna') . ',')
+            ->greeting('Halo '.($notifiable->v_username ?? 'Pengguna').',')
             ->line('Akun Anda telah dibuat. Silakan atur password Anda melalui tautan di bawah ini untuk mengaktifkan akun.')
             ->action('Atur Password Akun', $url)
             ->line('Tautan ini berlaku selama 60 menit.')

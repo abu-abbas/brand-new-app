@@ -9,11 +9,13 @@ use App\Errors\UserManagementError;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Notifications\InvitationNotification;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
 class UserService
@@ -71,15 +73,11 @@ class UserService
         $columnMap = [
             'id' => 'i_id',
             'userid' => 'v_userid',
-            'v_userid' => 'v_userid',
             'username' => 'v_username',
             'name' => 'v_username',
-            'v_username' => 'v_username',
-            'v_email' => 'v_email',
             'email' => 'v_email',
             'is_active' => 'b_is_active',
             'b_is_active' => 'b_is_active',
-            'dt_created_at' => 'dt_created_at',
             'created_at' => 'dt_created_at',
         ];
 
@@ -109,9 +107,10 @@ class UserService
         $roleCodes = [];
 
         foreach ($rolesData as $roleItem) {
-            $code = $roleItem['role_code'] ?? $roleItem['v_role_code'] ?? null;
-            if ($code) {
-                $roleCodes[] = $code;
+            if (array_key_exists('role_code', $roleItem)) {
+                $roleCodes[] = $roleItem['role_code'];
+            } elseif (array_key_exists('v_role_code', $roleItem)) {
+                $roleCodes[] = $roleItem['v_role_code'];
             }
         }
 
@@ -141,57 +140,56 @@ class UserService
             $this->validateRoleAssignments($data['roles']);
         }
 
-        return DB::transaction(function () use ($data, $authUserId) {
+        $user = DB::transaction(function () use ($data, $authUserId) {
             $now = Carbon::now();
+            $password = null;
+            if (! $data['is_external']) {
+                $password = Hash::make(Str::random(32));
+            }
 
-            $rawPassword = $data['password'] ?? null;
-            $password = ! empty($rawPassword)
-                ? Hash::make($rawPassword)
-                : Hash::make(Str::random(32));
-
-            $user = User::create([
+            $attributes = [
                 'v_userid' => $data['userid'],
                 'v_username' => $data['username'],
-                'v_email' => $data['email'] ?? null,
-                'v_kolok' => $data['unit_code'] ?? null,
                 'v_password' => $password,
-                'b_is_active' => (bool) ($data['is_active'] ?? true),
-                'b_use_other' => (bool) ($data['is_external'] ?? false),
+                'b_is_active' => (bool) $data['is_active'],
+                'b_use_other' => (bool) $data['is_external'],
                 'v_created_by' => $authUserId,
                 'dt_created_at' => $now,
-            ]);
+            ];
+
+            if (array_key_exists('email', $data)) {
+                $attributes['v_email'] = $data['email'];
+            }
+            if (array_key_exists('unit_code', $data)) {
+                $attributes['v_kolok'] = $data['unit_code'];
+            }
+
+            $user = User::create($attributes);
 
             if (! empty($data['roles']) && is_array($data['roles'])) {
                 foreach ($data['roles'] as $roleItem) {
-                    UserRole::create([
+                    $roleAttributes = [
                         'v_userid' => $user->v_userid,
-                        'v_role_code' => $roleItem['role_code'] ?? $roleItem['v_role_code'],
-                        'v_wilayah' => $roleItem['wilayah'] ?? $roleItem['v_wilayah'] ?? null,
-                        'v_unit' => $roleItem['unit'] ?? $roleItem['v_unit'] ?? null,
-                        'v_pelaksana' => $roleItem['pelaksana'] ?? $roleItem['v_pelaksana'] ?? null,
-                        'dt_valid_from' => $roleItem['valid_from'] ?? $roleItem['dt_valid_from'] ?? null,
-                        'dt_valid_until' => $roleItem['valid_until'] ?? $roleItem['dt_valid_until'] ?? null,
+                        'v_role_code' => $roleItem['role_code'],
                         'v_created_by' => $authUserId,
                         'dt_created_at' => $now,
-                    ]);
+                    ];
+                    $this->copyRoleMutationFields($roleAttributes, $roleItem);
+                    UserRole::create($roleAttributes);
                 }
             }
 
-            $user = $user->load(['userRoles.roleModel']);
-
-            if (! $user->b_use_other && ! empty($user->v_email)) {
-                DB::table('password_reset_tokens')->where('email', $user->v_email)->delete();
-                $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
-                $user->notify(new \App\Notifications\InvitationNotification($token));
-            }
-
-            return $user;
+            return $user->load(['userRoles.roleModel']);
         });
+
+        $this->sendInvitationIfEligible($user);
+
+        return $user;
     }
 
     public function updateUser(User $user, array $data, ?string $authUserId = null): User
     {
-        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+        $currentUserId = $this->resolveActorId($authUserId);
 
         if ($currentUserId === $user->v_userid && array_key_exists('is_active', $data) && ! $data['is_active']) {
             throw new ApplicationException(
@@ -204,7 +202,10 @@ class UserService
             $this->validateRoleAssignments($data['roles']);
         }
 
-        return DB::transaction(function () use ($user, $data, $authUserId) {
+        $oldEmail = $user->v_email;
+        $wasExternal = $user->b_use_other;
+
+        $updatedUser = DB::transaction(function () use ($user, $data, $authUserId) {
             $now = Carbon::now();
 
             $updateData = [];
@@ -215,6 +216,9 @@ class UserService
 
             if (array_key_exists('email', $data)) {
                 $updateData['v_email'] = $data['email'];
+                if ($data['email'] !== $user->v_email) {
+                    $updateData['dt_email_verified_at'] = null;
+                }
             }
 
             if (array_key_exists('unit_code', $data)) {
@@ -227,11 +231,15 @@ class UserService
 
             if (array_key_exists('is_external', $data) && $data['is_external'] !== null) {
                 $updateData['b_use_other'] = (bool) $data['is_external'];
-            }
-
-            $rawPassword = $data['password'] ?? null;
-            if (! empty($rawPassword)) {
-                $updateData['v_password'] = Hash::make($rawPassword);
+                if ((bool) $data['is_external'] !== $user->b_use_other) {
+                    if ($data['is_external']) {
+                        $updateData['v_password'] = null;
+                    } else {
+                        $updateData['v_password'] = Hash::make(Str::random(32));
+                    }
+                    $updateData['dt_last_updated_password'] = null;
+                    $updateData['dt_email_verified_at'] = null;
+                }
             }
 
             if (! empty($updateData)) {
@@ -247,17 +255,14 @@ class UserService
                 $assignedRoles->delete();
 
                 foreach ($data['roles'] as $roleItem) {
-                    UserRole::create([
+                    $roleAttributes = [
                         'v_userid' => $user->v_userid,
-                        'v_role_code' => $roleItem['role_code'] ?? $roleItem['v_role_code'],
-                        'v_wilayah' => $roleItem['wilayah'] ?? $roleItem['v_wilayah'] ?? null,
-                        'v_unit' => $roleItem['unit'] ?? $roleItem['v_unit'] ?? null,
-                        'v_pelaksana' => $roleItem['pelaksana'] ?? $roleItem['v_pelaksana'] ?? null,
-                        'dt_valid_from' => $roleItem['valid_from'] ?? $roleItem['dt_valid_from'] ?? null,
-                        'dt_valid_until' => $roleItem['valid_until'] ?? $roleItem['dt_valid_until'] ?? null,
+                        'v_role_code' => $roleItem['role_code'],
                         'v_created_by' => $authUserId,
                         'dt_created_at' => $now,
-                    ]);
+                    ];
+                    $this->copyRoleMutationFields($roleAttributes, $roleItem);
+                    UserRole::create($roleAttributes);
                 }
             }
 
@@ -265,11 +270,27 @@ class UserService
 
             return $user->load(['userRoles.roleModel']);
         });
+
+        $emailChanged = array_key_exists('email', $data) && $oldEmail !== $updatedUser->v_email;
+        $becameInternal = $wasExternal && ! $updatedUser->b_use_other;
+        if (($emailChanged || $becameInternal) && ! empty($oldEmail)) {
+            DB::table('password_reset_tokens')->where('email', $oldEmail)->delete();
+        }
+        if ($emailChanged || $becameInternal) {
+            $this->sendInvitationIfEligible($updatedUser);
+        }
+
+        if ((array_key_exists('is_active', $data) && ! $updatedUser->b_is_active)
+            || (array_key_exists('is_external', $data) && $updatedUser->b_use_other)) {
+            DB::table('sessions')->where('user_id', $updatedUser->v_userid)->delete();
+        }
+
+        return $updatedUser;
     }
 
     public function toggleUserStatus(User $user, ?string $authUserId = null): User
     {
-        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+        $currentUserId = $this->resolveActorId($authUserId);
 
         if ($currentUserId === $user->v_userid && $user->b_is_active) {
             throw new ApplicationException(
@@ -284,12 +305,16 @@ class UserService
             'dt_updated_at' => Carbon::now(),
         ]);
 
+        if (! $user->b_is_active) {
+            DB::table('sessions')->where('user_id', $user->v_userid)->delete();
+        }
+
         return $user->load(['userRoles.roleModel']);
     }
 
     public function deleteUser(User $user, ?string $authUserId = null): void
     {
-        $currentUserId = $authUserId ?? Auth::user()?->v_userid;
+        $currentUserId = $this->resolveActorId($authUserId);
 
         if ($currentUserId === $user->v_userid) {
             throw new ApplicationException(
@@ -309,5 +334,51 @@ class UserService
             'v_deleted_by' => $authUserId,
             'dt_deleted_at' => Carbon::now(),
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @param  array<string, mixed>  $role
+     */
+    private function copyRoleMutationFields(array &$attributes, array $role): void
+    {
+        $fields = [
+            'wilayah' => 'v_wilayah',
+            'unit' => 'v_unit',
+            'pelaksana' => 'v_pelaksana',
+            'valid_from' => 'dt_valid_from',
+            'valid_until' => 'dt_valid_until',
+        ];
+
+        foreach ($fields as $payloadKey => $column) {
+            if (array_key_exists($payloadKey, $role)) {
+                $attributes[$column] = $role[$payloadKey];
+            }
+        }
+    }
+
+    private function sendInvitationIfEligible(User $user): void
+    {
+        if ($user->b_use_other || ! $user->b_is_active || empty($user->v_email)) {
+            return;
+        }
+
+        DB::table('password_reset_tokens')->where('email', $user->v_email)->delete();
+        $token = Password::broker()->createToken($user);
+        $user->notify(new InvitationNotification($token));
+    }
+
+    private function resolveActorId(?string $authUserId): ?string
+    {
+        if ($authUserId !== null) {
+            return $authUserId;
+        }
+
+        $actor = Auth::user();
+        if ($actor instanceof User) {
+            return $actor->v_userid;
+        }
+
+        return null;
     }
 }

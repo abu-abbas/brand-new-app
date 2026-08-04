@@ -168,6 +168,10 @@ export const ERROR_CODES = {
   'UM_VAL_040': 'UM-VAL-040',
   'UM_VAL_041': 'UM-VAL-041',
   'UM_VAL_042': 'UM-VAL-042',
+  'UM_VAL_043': 'UM-VAL-043',
+  'UM_VAL_044': 'UM-VAL-044',
+  'UM_VAL_045': 'UM-VAL-045',
+  'UM_VAL_046': 'UM-VAL-046',
 } as const;
 
 export type ErrorCode =

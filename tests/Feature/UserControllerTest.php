@@ -3,8 +3,10 @@
 use App\Constants\RoleConstant;
 use App\Models\User;
 use App\Models\UserRole;
+use App\Notifications\InvitationNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -50,18 +52,19 @@ it('lists paginated users', function () {
 });
 
 it('creates a new user with roles and scope', function () {
+    Notification::fake();
+
     $response = $this->postJson('/api/users', [
-        'v_userid' => '199901012026011001',
-        'v_username' => 'Pengguna Baru',
-        'v_email' => 'pengguna.baru@jakarta.go.id',
-        'v_password' => 'secret123',
-        'b_is_active' => true,
-        'b_use_other' => false,
+        'userid' => '199901012026011001',
+        'username' => 'Pengguna Baru',
+        'email' => 'pengguna.baru@jakarta.go.id',
+        'is_active' => true,
+        'is_external' => false,
         'roles' => [
             [
-                'v_role_code' => 'ADM_SYS',
-                'v_wilayah' => '10',
-                'v_unit' => '000003890',
+                'role_code' => 'ADM_SYS',
+                'wilayah' => '10',
+                'unit' => '000003890',
             ],
         ],
     ]);
@@ -81,6 +84,9 @@ it('creates a new user with roles and scope', function () {
         'v_wilayah' => '10',
         'v_unit' => '000003890',
     ]);
+
+    $createdUser = User::where('v_userid', '199901012026011001')->firstOrFail();
+    Notification::assertSentTo($createdUser, InvitationNotification::class);
 });
 
 it('updates an existing user profile and roles', function () {
@@ -89,13 +95,13 @@ it('updates an existing user profile and roles', function () {
     ]);
 
     $response = $this->putJson("/api/users/{$user->hash_id}", [
-        'v_username' => 'Nama Diubah',
-        'v_email' => 'diubah@jakarta.go.id',
-        'b_is_active' => true,
+        'username' => 'Nama Diubah',
+        'email' => 'diubah@jakarta.go.id',
+        'is_active' => true,
         'roles' => [
             [
-                'v_role_code' => 'ADM_SYS',
-                'v_wilayah' => '20',
+                'role_code' => 'ADM_SYS',
+                'wilayah' => '20',
             ],
         ],
     ]);
@@ -107,6 +113,28 @@ it('updates an existing user profile and roles', function () {
         'i_id' => $user->i_id,
         'v_username' => 'Nama Diubah',
     ]);
+});
+
+it('does not translate database-prefixed API fields', function () {
+    $this->postJson('/api/users', [
+        'v_userid' => 'legacy-user',
+        'v_username' => 'Legacy User',
+        'v_email' => 'legacy@example.test',
+        'b_is_active' => true,
+        'b_use_other' => false,
+    ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.userid.0.code', 'UM-VAL-016');
+
+    $user = User::factory()->create(['v_username' => 'Nama Asli']);
+
+    $this->putJson("/api/users/{$user->hash_id}", [
+        'v_username' => 'Nama Legacy',
+        'dt_last_updated_password' => null,
+    ])->assertOk();
+
+    expect($user->fresh()->v_username)->toBe('Nama Asli');
+    expect($user->fresh()->dt_last_updated_password)->not->toBeNull();
 });
 
 it('toggles user active status', function () {
@@ -211,9 +239,9 @@ it('prevents non-root user from assigning role with level equal or higher than s
     $targetUser = User::factory()->create(['v_userid' => 'target1']);
 
     $response = $this->putJson("/api/users/{$targetUser->hash_id}", [
-        'v_username' => 'Target Changed',
+        'username' => 'Target Changed',
         'roles' => [
-            ['v_role_code' => 'CHIEF_ADMIN'],
+            ['role_code' => 'CHIEF_ADMIN'],
         ],
     ]);
 

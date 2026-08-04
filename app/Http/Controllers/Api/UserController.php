@@ -8,8 +8,10 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\AuthService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,7 +19,7 @@ class UserController extends Controller
 {
     public function __construct(
         protected UserService $userService,
-        protected \App\Services\AuthService $authService,
+        protected AuthService $authService,
     ) {}
 
     /**
@@ -136,7 +138,7 @@ class UserController extends Controller
      *
      * @summary Kirim tautan reset/verifikasi password oleh admin.
      */
-    public function sendPasswordLink(User $user, \Illuminate\Http\Request $request): JsonResponse
+    public function sendPasswordLink(User $user, Request $request): JsonResponse
     {
         $this->authorize('update', $user);
 

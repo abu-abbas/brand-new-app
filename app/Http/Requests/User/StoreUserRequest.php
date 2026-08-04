@@ -18,56 +18,8 @@ class StoreUserRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $toMerge = [];
-
-        if ($this->has('v_userid') && ! $this->has('userid')) {
-            $toMerge['userid'] = $this->v_userid;
-        }
-
-        if ($this->has('v_username') && ! $this->has('username')) {
-            $toMerge['username'] = $this->v_username;
-        }
-
-        if ($this->has('v_email') && ! $this->has('email')) {
-            $toMerge['email'] = $this->v_email;
-        }
-
-        if ($this->has('v_kolok') && ! $this->has('unit_code')) {
-            $toMerge['unit_code'] = $this->v_kolok;
-        }
-
-        if ($this->has('v_password') && ! $this->has('password')) {
-            $toMerge['password'] = $this->v_password;
-        }
-
-        if ($this->has('b_is_active') && ! $this->has('is_active')) {
-            $toMerge['is_active'] = $this->b_is_active;
-        }
-
-        if ($this->has('b_use_other') && ! $this->has('is_external')) {
-            $toMerge['is_external'] = $this->b_use_other;
-        }
-
-        if (! empty($toMerge)) {
-            $this->merge($toMerge);
-        }
-
-        if ($this->has('roles') && is_array($this->roles)) {
-            $mappedRoles = array_map(function ($r) {
-                if (! is_array($r)) {
-                    return $r;
-                }
-
-                return [
-                    'role_code' => $r['role_code'] ?? $r['v_role_code'] ?? null,
-                    'wilayah' => $r['wilayah'] ?? $r['v_wilayah'] ?? null,
-                    'unit' => $r['unit'] ?? $r['v_unit'] ?? null,
-                    'pelaksana' => $r['pelaksana'] ?? $r['v_pelaksana'] ?? null,
-                    'valid_from' => $r['valid_from'] ?? $r['dt_valid_from'] ?? null,
-                    'valid_until' => $r['valid_until'] ?? $r['dt_valid_until'] ?? null,
-                ];
-            }, $this->roles);
-            $this->merge(['roles' => $mappedRoles]);
+        if ($this->has('email') && is_string($this->input('email'))) {
+            $this->merge(['email' => mb_strtolower(trim((string) $this->input('email')))]);
         }
     }
 
@@ -81,12 +33,11 @@ class StoreUserRequest extends FormRequest
                 'nullable',
                 'email',
                 'max:255',
-                Rule::unique('tm_users', 'v_email')->whereNull('dt_deleted_at'),
+                Rule::unique('tm_users', 'v_email'),
             ],
             'unit_code' => ['nullable', 'string', 'max:50'],
-            'password' => ['nullable', 'string', 'min:6'],
-            'is_active' => ['nullable', 'boolean'],
-            'is_external' => ['nullable', 'boolean'],
+            'is_active' => ['required', 'boolean'],
+            'is_external' => ['required', 'boolean'],
             'roles' => ['nullable', 'array'],
             'roles.*.role_code' => ['required', 'string', 'exists:tm_roles,v_code'],
             'roles.*.wilayah' => ['nullable', 'string', 'max:50'],
@@ -117,10 +68,9 @@ class StoreUserRequest extends FormRequest
             'unit_code.string' => UserManagementError::UNIT_STRING,
             'unit_code.max' => UserManagementError::UNIT_MAX,
 
-            'password.string' => UserManagementError::PASSWORD_STRING,
-            'password.min' => UserManagementError::PASSWORD_MIN,
-
+            'is_active.required' => UserManagementError::IS_ACTIVE_REQUIRED,
             'is_active.boolean' => UserManagementError::IS_ACTIVE_BOOLEAN,
+            'is_external.required' => UserManagementError::USE_OTHER_REQUIRED,
             'is_external.boolean' => UserManagementError::USE_OTHER_BOOLEAN,
 
             'roles.array' => UserManagementError::ROLES_ARRAY,
