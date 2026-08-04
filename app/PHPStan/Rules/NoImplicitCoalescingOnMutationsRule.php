@@ -89,15 +89,43 @@ final class NoImplicitCoalescingOnMutationsRule implements Rule
 
     private function isCoalescingNode(Node $node): bool
     {
+        if (! ($node instanceof Coalesce) && ! ($node instanceof Ternary && $node->if === null)) {
+            return false;
+        }
+
+        return ! $this->isAllowedFallback($node);
+    }
+
+    private function isAllowedFallback(Node $node): bool
+    {
+        $fallbackNode = null;
         if ($node instanceof Coalesce) {
+            $fallbackNode = $node->right;
+        } elseif ($node instanceof Ternary && $node->if === null) {
+            $fallbackNode = $node->else;
+        }
+
+        if ($fallbackNode === null) {
+            return false;
+        }
+
+        // Izinkan fallback null atau false (seperti `$data['field'] ?? null` atau `$data['field'] ?? false`)
+        if ($fallbackNode instanceof Node\Expr\ConstFetch && in_array(strtolower($fallbackNode->name->toString()), ['null', 'false'], true)) {
             return true;
         }
 
-        // Shorthand ternary `$a ?: $b` diparse sebagai Ternary dengan `if` null.
-        // Ternary lengkap `$a ? $b : $c` TIDAK termasuk rule ini secara default
-        // karena bukan fallback implisit — kalau mau ikut di-cover juga,
-        // hapus pengecekan `$node->if === null` di bawah.
-        if ($node instanceof Ternary && $node->if === null) {
+        // Izinkan fallback string kosong (seperti `$data['field'] ?? ''`)
+        if ($fallbackNode instanceof Node\Scalar\String_ && $fallbackNode->value === '') {
+            return true;
+        }
+
+        // Izinkan fallback array kosong (seperti `$data['items'] ?? []`)
+        if ($fallbackNode instanceof Node\Expr\Array_ && count($fallbackNode->items) === 0) {
+            return true;
+        }
+
+        // Izinkan fallback integer literal (seperti `$data['order'] ?? 1` atau `$data['level'] ?? 0`)
+        if ($fallbackNode instanceof Node\Scalar\Int_) {
             return true;
         }
 

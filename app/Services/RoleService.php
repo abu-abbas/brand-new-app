@@ -112,7 +112,7 @@ class RoleService
     public function create(array $data): Role
     {
         $currentUser = Auth::user();
-        $currentUserLevel = $currentUser !== null ? (int) $currentUser->role_level : 0;
+        $currentUserLevel = $currentUser?->role_level ?? 0;
 
         $features = array_key_exists('features', $data) ? (array) $data['features'] : [];
         $this->assertCanAssignFeatures($currentUser, $features);
@@ -125,7 +125,7 @@ class RoleService
 
             $ownedPrefixes = array_map(
                 fn (string $roleCode) => strtoupper($roleCode).'_',
-                $currentUser !== null ? (array) $currentUser->getRolesList() : [],
+                $currentUser?->getRolesList() ?? [],
             );
             usort($ownedPrefixes, fn (string $a, string $b) => strlen($b) <=> strlen($a));
             foreach ($ownedPrefixes as $ownedPrefix) {
@@ -160,7 +160,7 @@ class RoleService
                 'i_level' => $targetLevel,
                 'b_need_region' => $needRegion,
                 'b_need_unit' => $needUnit,
-                'v_active_periode' => array_key_exists('active_periode', $data) ? $data['active_periode'] : null,
+                'v_active_periode' => $data['active_periode'] ?? null,
                 'b_locked' => false,
                 'v_created_by' => Auth::user()?->username,
             ]);
@@ -183,7 +183,7 @@ class RoleService
     public function update(Role $role, array $data): Role
     {
         $currentUser = Auth::user();
-        $currentUserLevel = $currentUser !== null ? (int) $currentUser->role_level : 0;
+        $currentUserLevel = $currentUser?->role_level ?? 0;
 
         $features = array_key_exists('features', $data) ? (array) $data['features'] : [];
         $this->assertCanAssignFeatures($currentUser, $features);
