@@ -5,11 +5,22 @@ import {
   authLogout,
   authMe,
   authResetDefaultGroup,
+  authForgotPassword,
+  authResetPassword,
+  authPassword,
+  usersSendPasswordLink,
   type AuthActiveGroup200,
   type AuthCaptcha200,
   type AuthLogin200,
   type AuthMe200,
   type AuthResetDefaultGroup200,
+  type AuthForgotPassword200,
+  type AuthResetPassword200,
+  type AuthPassword200,
+  type UsersSendPasswordLink200,
+  type ForgotPasswordRequest,
+  type ResetPasswordRequest,
+  type ChangePasswordRequest,
   type LoginRequest,
   type SetActiveGroupRequest,
 } from '@/api/generated/api';
@@ -40,6 +51,22 @@ export class AuthFacade {
 
   public static captcha(): Promise<AuthCaptcha200> {
     return authCaptcha();
+  }
+
+  public static forgotPassword(data: ForgotPasswordRequest): Promise<AuthForgotPassword200> {
+    return authForgotPassword(data);
+  }
+
+  public static resetPassword(data: ResetPasswordRequest): Promise<AuthResetPassword200> {
+    return authResetPassword(data);
+  }
+
+  public static changePassword(data: ChangePasswordRequest): Promise<AuthPassword200> {
+    return authPassword(data);
+  }
+
+  public static sendPasswordLink(user: number | string): Promise<UsersSendPasswordLink200> {
+    return usersSendPasswordLink(typeof user === 'string' ? Number(user) : user);
   }
 
   public static async playCaptchaAudio(key: string): Promise<HTMLAudioElement> {

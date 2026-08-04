@@ -37,6 +37,9 @@ router.beforeEach(async (to) => {
     if (!auth.isAuthenticated) {
       return true;
     }
+    if (auth.user?.must_change_password) {
+      return { name: 'auth.change-password' };
+    }
     if (auth.requiresGroupSelection) {
       return { name: 'auth.select-group' };
     }
@@ -48,6 +51,15 @@ router.beforeEach(async (to) => {
   }
 
   // Pengguna terautentikasi:
+  // 0. Cek kedaluwarsa password
+  if (auth.user?.must_change_password) {
+    if (to.name === 'auth.change-password') {
+      return true;
+    }
+    return { name: 'auth.change-password' };
+  }
+
+  // 1. Cek pemilihan group
   if (auth.requiresGroupSelection) {
     // KUNCI ANTI-LOOP: Jika halaman tujuan adalah 'auth.select-group', biarkan lewat!
     if (to.name === 'auth.select-group') {

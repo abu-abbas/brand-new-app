@@ -126,7 +126,14 @@ const handleLogin = async () => {
 
   try {
     await auth.login(form);
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    const rawRedirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    const isAuthRoute =
+      rawRedirect.startsWith('/change-password') ||
+      rawRedirect.startsWith('/reset-password') ||
+      rawRedirect.startsWith('/forgot-password') ||
+      rawRedirect.startsWith('/login');
+
+    const redirect = isAuthRoute ? '/' : rawRedirect;
     await router.replace(redirect);
   } catch (error) {
     const appError = error as AppError;
@@ -195,7 +202,8 @@ const handleLogin = async () => {
 
       <!-- Main Title -->
       <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground mb-1">
-        PPPK PW <span class="font-normal italic text-primary">Login</span>
+        {{ appBootstrap.config.name }}
+        <span class="font-normal italic text-primary">Login</span>
       </h1>
 
       <!-- Description -->
@@ -397,13 +405,13 @@ const handleLogin = async () => {
       class="pt-2 border-t border-border flex items-center justify-between text-[9px] font-semibold tracking-wider text-muted-foreground uppercase max-w-92.5 w-full mx-auto shrink-0 mt-1.5"
     >
       <span>VERSION 2.4.0</span>
-      <button
-        type="button"
+      <RouterLink
+        to="/forgot-password"
         class="inline-flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors cursor-pointer normal-case leading-none"
       >
         <HelpCircle class="h-3 w-3 shrink-0" />
         <span class="inline-block pt-px">Masalah saat login?</span>
-      </button>
+      </RouterLink>
     </div>
   </div>
 </template>

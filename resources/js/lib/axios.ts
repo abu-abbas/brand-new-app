@@ -193,9 +193,12 @@ axiosInstance.interceptors.response.use(
       return axiosInstance(config);
     }
 
+    const isAuthCheck = config?.url?.includes('/auth/me');
+
     if (
       (status === 401 || status === 419) &&
       typeof window !== 'undefined' &&
+      !isAuthCheck &&
       window.location.pathname !== '/login'
     ) {
       clearDataTableMemory();
