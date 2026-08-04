@@ -168,8 +168,8 @@ const handleSubmit = async () => {
         id: props.userId,
         data: {
           username: form.username,
-          email: form.email || undefined,
-          unit_code: form.unit_code || undefined,
+          email: form.email,
+          unit_code: form.unit_code,
           is_active: form.is_active,
           is_external: form.is_external,
         },
@@ -178,8 +178,8 @@ const handleSubmit = async () => {
       await createUserMutation.mutateAsync({
         userid: form.userid,
         username: form.username,
-        email: form.email || undefined,
-        unit_code: form.unit_code || undefined,
+        email: form.email,
+        unit_code: form.unit_code,
         is_active: form.is_active,
         is_external: false,
       });

@@ -260,19 +260,23 @@ const handleSubmit = async () => {
   // Strip internal flags sebelum kirim ke server
   const cleanRoles = roles.value
     .filter((r) => r.role_code)
-    .map((r) => ({
-      role_code: r.role_code,
-      wilayah:
-        Array.isArray(r.wilayah) && r.wilayah.length > 0
-          ? r.wilayah.join(',')
-          : typeof r.wilayah === 'string'
-            ? r.wilayah
-            : undefined,
-      unit: r.unit,
-      pelaksana: r.pelaksana,
-      valid_from: r.valid_from,
-      valid_until: r.valid_until,
-    }));
+    .map((r) => {
+      let wilayah: string | undefined;
+      if (Array.isArray(r.wilayah) && r.wilayah.length > 0) {
+        wilayah = r.wilayah.join(',');
+      } else if (typeof r.wilayah === 'string') {
+        wilayah = r.wilayah;
+      }
+
+      return {
+        role_code: r.role_code,
+        wilayah,
+        unit: r.unit,
+        pelaksana: r.pelaksana,
+        valid_from: r.valid_from,
+        valid_until: r.valid_until,
+      };
+    });
 
   try {
     await confirmDialog({
@@ -284,10 +288,10 @@ const handleSubmit = async () => {
         await updateUserMutation.mutateAsync({
           id: props.userId!,
           data: {
-            username: currentDetail.username || currentDetail.name || '',
-            email: currentDetail.email || undefined,
-            is_active: currentDetail.is_active ?? true,
-            is_external: currentDetail.is_external ?? false,
+            username: currentDetail.username,
+            email: currentDetail.email,
+            is_active: currentDetail.is_active,
+            is_external: currentDetail.is_external,
             roles: cleanRoles,
           },
         });
