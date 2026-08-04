@@ -23,6 +23,7 @@ class UserRoleResource extends JsonResource
      *     pelaksana: string|null,
      *     valid_from: string|null,
      *     valid_until: string|null,
+     *     is_expired: bool,
      *     need_region: bool,
      *     need_unit: bool
      * }
@@ -41,6 +42,7 @@ class UserRoleResource extends JsonResource
             'pelaksana' => $this->v_pelaksana,
             'valid_from' => $this->dt_valid_from?->toDateString(),
             'valid_until' => $this->dt_valid_until?->toDateString(),
+            'is_expired' => ! $this->isCurrentlyValid(),
             'need_region' => (bool) ($this->roleModel?->b_need_region ?? false),
             'need_unit' => (bool) ($this->roleModel?->b_need_unit ?? false),
         ];

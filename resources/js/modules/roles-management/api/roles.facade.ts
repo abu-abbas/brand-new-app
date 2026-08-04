@@ -28,6 +28,8 @@ export interface RoleRow {
   need_region: boolean;
   need_unit: boolean;
   active_periode?: DateRangeValue | null;
+  is_active?: boolean;
+  is_expired?: boolean;
   locked: boolean;
   can_edit?: boolean;
   can_delete?: boolean;
@@ -200,6 +202,8 @@ export class RolesFacade {
       need_region: item.need_region,
       need_unit: item.need_unit,
       active_periode: RolesFacade.parseActivePeriode(item.active_periode),
+      is_active: Boolean(item.is_active),
+      is_expired: Boolean(item.is_expired),
       locked: item.locked,
       can_edit: (item as unknown as { can_edit?: boolean }).can_edit ?? true,
       can_delete: (item as unknown as { can_delete?: boolean }).can_delete ?? false,

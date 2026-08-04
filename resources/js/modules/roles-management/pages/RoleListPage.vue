@@ -12,7 +12,8 @@ import type {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LucideIcon } from '@/components/custom-ui/lucide-icon';
-import { CircleCheck, CircleX } from '@lucide/vue';
+import { CircleCheck, CircleX, Clock } from '@lucide/vue';
+import { formatHumanDate } from '@/lib/utils';
 import { usePermissionStore } from '@/stores/permission';
 import RoleFormModal from '../components/RoleFormModal.vue';
 import { RolesFacade, type RoleRow } from '../api/roles.facade';
@@ -72,7 +73,7 @@ const fields: DataTableField<RoleRow>[] = [
   {
     key: 'deleted_at',
     label: 'Status',
-    minWidth: 40,
+    minWidth: 80,
     align: 'center',
     sortable: true,
     filterColumn: true,
@@ -195,11 +196,19 @@ function onSubmitted(): void {
           <CircleX v-else class="mx-auto size-4 text-destructive/50" />
         </template>
 
-        <template #cell(active_periode)="{ value }">
-          <CircleCheck
-            v-if="value && (value.start || value.end)"
-            class="mx-auto size-4 text-emerald-500"
-          />
+        <template #cell(active_periode)="{ row, value }">
+          <template v-if="value && (value.start || value.end)">
+            <Clock
+              v-if="(row as unknown as RoleRow).is_expired"
+              class="mx-auto size-4 text-amber-500"
+              :title="`Periode Kedaluwarsa (${value.start ? formatHumanDate(value.start) : ''} - ${value.end ? formatHumanDate(value.end) : ''})`"
+            />
+            <CircleCheck
+              v-else
+              class="mx-auto size-4 text-emerald-500"
+              :title="`Periode Aktif (${value.start ? formatHumanDate(value.start) : ''} - ${value.end ? formatHumanDate(value.end) : ''})`"
+            />
+          </template>
           <CircleX v-else class="mx-auto size-4 text-destructive/50" />
         </template>
 
@@ -207,20 +216,29 @@ function onSubmitted(): void {
           <BadgeList :items="value" :search="search" :max="10" />
         </template>
 
-        <template #cell(deleted_at)="{ value }">
+        <template #cell(deleted_at)="{ row, value }">
           <Badge
-            v-if="!value"
+            v-if="value"
             variant="outline"
-            class="font-normal border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+            class="font-normal border-destructive/30 text-destructive bg-destructive/5"
           >
-            Aktif
+            Tidak Aktif
+          </Badge>
+          <Badge
+            v-else-if="(row as unknown as RoleRow).is_expired"
+            variant="outline"
+            class="font-normal border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 border-dashed gap-1"
+            title="Periode aktif group ini telah kedaluwarsa"
+          >
+            <Clock class="size-3 text-amber-500" />
+            Kedaluwarsa
           </Badge>
           <Badge
             v-else
             variant="outline"
-            class="font-normal border-destructive/30 text-destructive"
+            class="font-normal border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
           >
-            Tidak Aktif
+            Aktif
           </Badge>
         </template>
 
