@@ -265,18 +265,6 @@ parameters:
 			path: app/Services/FeatureService.php
 
 		-
-			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "create\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
-			identifier: app.noImplicitCoalescingOnMutations
-			count: 1
-			path: app/Services/FeatureService.php
-
-		-
-			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "update\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
-			identifier: app.noImplicitCoalescingOnMutations
-			count: 1
-			path: app/Services/FeatureService.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>b_need_region" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
@@ -325,18 +313,6 @@ parameters:
 			path: app/Services/RoleService.php
 
 		-
-			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "create\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
-			identifier: app.noImplicitCoalescingOnMutations
-			count: 2
-			path: app/Services/RoleService.php
-
-		-
-			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "update\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
-			identifier: app.noImplicitCoalescingOnMutations
-			count: 1
-			path: app/Services/RoleService.php
-
-		-
 			message: '#^Parameter \#1 \$user of method App\\Services\\RoleService\:\:assertCanAssignFeatures\(\) expects App\\Models\\User\|null, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -345,7 +321,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>role_level" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 4
+			count: 2
 			path: app/Services/RoleService.php
 
 		-
