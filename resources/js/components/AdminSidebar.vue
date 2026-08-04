@@ -28,6 +28,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTheme } from '@/composables/useTheme';
 import { useDarkMode } from '@/composables/useDarkMode';
 import { useAuthStore } from '@/stores/auth';
@@ -372,31 +373,33 @@ const dynamicMenu = computed<DynamicMenuItem[]>(() => {
                     <Palette class="size-4 mr-2 text-primary" />
                     <span>Accent Color</span>
                   </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent class="w-48 max-h-72 overflow-y-auto">
-                    <DropdownMenuItem
-                      class="flex items-center justify-between bg-accent/40 font-semibold"
-                      @click="setTheme(activeTheme)"
-                    >
-                      <span>{{ activeThemeLabel }}</span>
-                      <span
-                        class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
-                        :style="{ backgroundColor: activeThemeColor }"
-                      />
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <template v-for="t in otherThemes" :key="t.name">
+                  <DropdownMenuSubContent class="w-48 p-0">
+                    <ScrollArea class="h-72 w-full p-1">
                       <DropdownMenuItem
-                        class="flex items-center justify-between"
-                        :class="activeTheme === t.name ? 'bg-accent/40 font-semibold' : ''"
-                        @click="setTheme(t.name)"
+                        class="flex items-center justify-between bg-accent/40 font-semibold"
+                        @click="setTheme(activeTheme)"
                       >
-                        <span>{{ t.label }}</span>
+                        <span>{{ activeThemeLabel }}</span>
                         <span
                           class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
-                          :style="{ backgroundColor: t.color }"
+                          :style="{ backgroundColor: activeThemeColor }"
                         />
                       </DropdownMenuItem>
-                    </template>
+                      <DropdownMenuSeparator />
+                      <template v-for="t in otherThemes" :key="t.name">
+                        <DropdownMenuItem
+                          class="flex items-center justify-between"
+                          :class="activeTheme === t.name ? 'bg-accent/40 font-semibold' : ''"
+                          @click="setTheme(t.name)"
+                        >
+                          <span>{{ t.label }}</span>
+                          <span
+                            class="size-2.5 rounded-full border border-black/10 dark:border-white/10 shrink-0"
+                            :style="{ backgroundColor: t.color }"
+                          />
+                        </DropdownMenuItem>
+                      </template>
+                    </ScrollArea>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
 
