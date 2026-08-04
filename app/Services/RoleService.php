@@ -113,9 +113,11 @@ class RoleService
     {
         $currentUser = Auth::user();
         $currentUserLevel = $currentUser?->role_level ?? 0;
-        $this->assertCanAssignFeatures($currentUser, $data['features'] ?? []);
 
-        $code = trim((string) ($data['code'] ?? ''));
+        $features = array_key_exists('features', $data) ? (array) $data['features'] : [];
+        $this->assertCanAssignFeatures($currentUser, $features);
+
+        $code = trim((string) $data['code']);
 
         if (! $currentUser?->isRoot()) {
             $userRoleCode = strtoupper((string) $currentUser?->getActiveGroupId());
@@ -145,11 +147,12 @@ class RoleService
             $needUnit = true;
         } else {
             $targetLevel = isset($data['level']) ? (int) $data['level'] : $currentUserLevel;
-            $needRegion = (bool) ($data['need_region'] ?? false);
-            $needUnit = (bool) ($data['need_unit'] ?? false);
+            // @allow-fallback default false untuk root: need_region/need_unit bersifat sometimes di FormRequest
+            $needRegion = array_key_exists('need_region', $data) ? (bool) $data['need_region'] : false;
+            $needUnit = array_key_exists('need_unit', $data) ? (bool) $data['need_unit'] : false;
         }
 
-        return DB::transaction(function () use ($data, $code, $targetLevel, $needRegion, $needUnit) {
+        return DB::transaction(function () use ($data, $code, $targetLevel, $needRegion, $needUnit, $features) {
             /** @var Role $role */
             $role = Role::query()->create([
                 'v_code' => $code,
@@ -157,14 +160,14 @@ class RoleService
                 'i_level' => $targetLevel,
                 'b_need_region' => $needRegion,
                 'b_need_unit' => $needUnit,
-                'v_active_periode' => $data['active_periode'] ?? null,
+                'v_active_periode' => $data['active_periode'],
                 'b_locked' => false,
                 'v_created_by' => Auth::user()?->username,
             ]);
 
-            if (array_key_exists('features', $data) && is_array($data['features'])) {
+            if ($features !== []) {
                 $featureAliases = Feature::query()
-                    ->whereIn('v_alias', $data['features'])
+                    ->whereIn('v_alias', $features)
                     ->pluck('v_alias')
                     ->toArray();
                 $role->features()->sync($featureAliases);
@@ -181,16 +184,24 @@ class RoleService
     {
         $currentUser = Auth::user();
         $currentUserLevel = $currentUser?->role_level ?? 0;
-        $this->assertCanAssignFeatures($currentUser, $data['features'] ?? []);
 
-        return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel) {
+        $features = array_key_exists('features', $data) ? (array) $data['features'] : [];
+        $this->assertCanAssignFeatures($currentUser, $features);
+
+        return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel, $features) {
             $updateData = [
                 'v_name' => $data['name'],
-                'b_need_region' => $data['need_region'] ?? $role->b_need_region,
-                'b_need_unit' => $data['need_unit'] ?? $role->b_need_unit,
                 'v_active_periode' => array_key_exists('active_periode', $data) ? $data['active_periode'] : $role->v_active_periode,
                 'v_updated_by' => Auth::user()?->username,
             ];
+
+            if (array_key_exists('need_region', $data)) {
+                $updateData['b_need_region'] = (bool) $data['need_region'];
+            }
+
+            if (array_key_exists('need_unit', $data)) {
+                $updateData['b_need_unit'] = (bool) $data['need_unit'];
+            }
 
             if ($currentUser?->isRoot() && isset($data['level'])) {
                 $updateData['i_level'] = min((int) $data['level'], $currentUserLevel);
@@ -202,9 +213,9 @@ class RoleService
 
             $role->update($updateData);
 
-            if (array_key_exists('features', $data) && is_array($data['features'])) {
+            if ($features !== [] || array_key_exists('features', $data)) {
                 $featureAliases = Feature::query()
-                    ->whereIn('v_alias', $data['features'])
+                    ->whereIn('v_alias', $features)
                     ->pluck('v_alias')
                     ->toArray();
                 $role->features()->sync($featureAliases);

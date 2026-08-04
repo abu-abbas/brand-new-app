@@ -109,19 +109,31 @@ class FeatureService
     {
         $isMenu = $data['type'] === 'menu';
 
-        return Feature::query()->create([
+        $attributes = [
             'v_name' => $data['name'],
             'v_alias' => $data['alias'],
             'e_type' => $data['type'],
-            'v_parent' => $data['parent'] ?? null,
-            'v_desc' => $data['description'] ?? null,
-            'v_route' => $isMenu ? ($data['route'] ?? null) : null,
-            'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
-            'si_order' => $data['order'] ?? 1,
-            'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
-            'b_is_restricted' => (bool) ($data['is_restricted'] ?? false),
+            'v_parent' => $data['parent'],
+            'v_desc' => $data['description'],
+            'v_route' => $isMenu ? $data['route'] : null,
+            'v_icon' => $isMenu ? $data['icon'] : null,
             'v_created_by' => Auth::user()?->username,
-        ]);
+        ];
+
+        // @allow-fallback default order=1 untuk field nullable yang tidak dikirim
+        $attributes['si_order'] = $data['order'] ?? 1;
+
+        if (array_key_exists('show_on_sidebar', $data)) {
+            $attributes['b_show_on_sidebar'] = $isMenu ? (bool) $data['show_on_sidebar'] : false;
+        } else {
+            $attributes['b_show_on_sidebar'] = $isMenu;
+        }
+
+        if (array_key_exists('is_restricted', $data)) {
+            $attributes['b_is_restricted'] = (bool) $data['is_restricted'];
+        }
+
+        return Feature::query()->create($attributes);
     }
 
     /**
@@ -131,18 +143,28 @@ class FeatureService
     {
         $isMenu = $data['type'] === 'menu';
 
-        $feature->update([
+        $updateData = [
             'v_name' => $data['name'],
             'e_type' => $data['type'],
-            'v_parent' => $data['parent'] ?? null,
-            'v_desc' => $data['description'] ?? null,
-            'v_route' => $isMenu ? ($data['route'] ?? null) : null,
-            'v_icon' => $isMenu ? ($data['icon'] ?? null) : null,
-            'si_order' => $data['order'] ?? 1,
-            'b_show_on_sidebar' => $isMenu ? ($data['show_on_sidebar'] ?? true) : false,
-            'b_is_restricted' => (bool) ($data['is_restricted'] ?? $feature->b_is_restricted),
+            'v_parent' => $data['parent'],
+            'v_desc' => $data['description'],
+            'v_route' => $isMenu ? $data['route'] : null,
+            'v_icon' => $isMenu ? $data['icon'] : null,
             'v_updated_by' => Auth::user()?->username,
-        ]);
+        ];
+
+        // @allow-fallback default order=1 untuk field nullable yang tidak dikirim
+        $updateData['si_order'] = $data['order'] ?? 1;
+
+        if (array_key_exists('show_on_sidebar', $data)) {
+            $updateData['b_show_on_sidebar'] = $isMenu ? (bool) $data['show_on_sidebar'] : false;
+        }
+
+        if (array_key_exists('is_restricted', $data)) {
+            $updateData['b_is_restricted'] = (bool) $data['is_restricted'];
+        }
+
+        $feature->update($updateData);
 
         return $feature->refresh();
     }
