@@ -6,10 +6,13 @@ use App\Core\ErrorDefinition\ErrorDefinitionReader;
 use App\Core\ErrorDefinition\Exceptions\ApplicationException;
 use App\Errors\AuthError;
 use App\Models\User;
+use App\Models\UserPasswordHistory;
+use App\Notifications\InvitationNotification;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
@@ -43,12 +46,9 @@ class AuthService
             ->first();
 
         if ($user) {
-            $isPasswordValid = false;
-            if ($user->v_password && Hash::check($password, $user->v_password)) {
-                $isPasswordValid = true;
-            } elseif ($user->b_use_other && $this->verifyMd5FromView($user->v_userid, $password)) {
-                $isPasswordValid = true;
-            }
+            $isPasswordValid = $user->b_use_other
+                ? $this->verifyMd5FromView($user->v_userid, $password)
+                : is_string($user->v_password) && Hash::check($password, $user->v_password);
 
             if (! $isPasswordValid || ! $user->b_is_active) {
                 RateLimiter::hit($throttleKey, 300);
@@ -88,7 +88,10 @@ class AuthService
         }
 
         $vwUser = DB::table('vw_users')
-            ->where('v_userid', $inputUsername)
+            ->where(function ($query) use ($inputUsername) {
+                $query->where('v_userid', $inputUsername)
+                    ->orWhere('v_username', $inputUsername);
+            })
             ->first();
 
         if (! $vwUser || empty($vwUser->v_password) || md5($password) !== $vwUser->v_password) {
@@ -100,22 +103,22 @@ class AuthService
         }
 
         // Auto-provisioning ke tm_users
-        $user = User::create([
+        $attributes = [
             'v_userid' => (string) $vwUser->v_userid,
-            'v_username' => (string) ($vwUser->v_username ?? $vwUser->v_userid),
+            'v_username' => (string) $vwUser->v_username,
             'v_password' => null,
             'b_is_active' => true,
             'b_use_other' => true,
-            'v_klogad' => $vwUser->v_klogad ?? null,
-            'v_kolok' => $vwUser->v_kolok ?? null,
-            'v_kojab' => $vwUser->v_kojab ?? null,
-            'v_koper' => $vwUser->v_koper ?? null,
-            'v_kopang' => $vwUser->v_kopang ?? null,
-            'v_eselon' => $vwUser->v_eselon ?? null,
-            'v_spmu' => $vwUser->v_spmu ?? null,
-            'v_kd' => $vwUser->v_kd ?? null,
             'dt_created_at' => now(),
-        ]);
+        ];
+
+        foreach (['v_klogad', 'v_kolok', 'v_kojab', 'v_koper', 'v_kopang', 'v_eselon', 'v_spmu', 'v_kd'] as $field) {
+            if (property_exists($vwUser, $field)) {
+                $attributes[$field] = $vwUser->{$field};
+            }
+        }
+
+        $user = User::create($attributes);
 
         // 3. Hanya assignment dalam rentang berlaku yang dapat dipakai.
         $roles = $user->getRolesList();
@@ -163,6 +166,11 @@ class AuthService
             User::where('v_userid', $user->v_userid)->update([
                 'v_default_group_id' => $groupId,
             ]);
+        } else {
+            $user->v_default_group_id = null;
+            User::where('v_userid', $user->v_userid)->update([
+                'v_default_group_id' => null,
+            ]);
         }
 
         return $user;
@@ -204,46 +212,23 @@ class AuthService
      */
     public function forgotPassword(string $email, string $ip): void
     {
-        $throttleKey = 'forgot-password:'.Str::lower($email).'|'.$ip;
+        $emailKey = 'forgot-password:email:'.hash('sha256', Str::lower($email));
+        $ipKey = 'forgot-password:ip:'.$ip;
 
-        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
-            Log::warning('AuthService@forgotPassword rate limited', ['email' => $email, 'ip' => $ip]);
-
+        if (RateLimiter::tooManyAttempts($emailKey, 3) || RateLimiter::tooManyAttempts($ipKey, 10)) {
             return;
         }
-        RateLimiter::hit($throttleKey, 60);
+        RateLimiter::hit($emailKey, 60);
+        RateLimiter::hit($ipKey, 60);
 
         $user = User::where('v_email', $email)
             ->whereNull('dt_deleted_at')
             ->first();
 
-        Log::info('AuthService@forgotPassword dipanggil', [
-            'email_input' => $email,
-            'user_exists' => (bool) $user,
-            'userid' => $user?->v_userid,
-            'b_use_other' => $user?->b_use_other,
-            'b_is_active' => $user?->b_is_active,
-            'v_email' => $user?->v_email,
-        ]);
-
         if ($user && ! $user->b_use_other && $user->b_is_active && ! empty($user->v_email)) {
             DB::table('password_reset_tokens')->where('email', $user->v_email)->delete();
-            $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
-
-            Log::info('AuthService@forgotPassword: Mengirimkan ResetPasswordNotification', [
-                'userid' => $user->v_userid,
-                'email' => $user->v_email,
-                'token' => $token,
-            ]);
-
-            $user->notify(new \App\Notifications\ResetPasswordNotification($token, false));
-        } else {
-            Log::notice('AuthService@forgotPassword: User tidak memenuhi syarat pengiriman email', [
-                'email' => $email,
-                'user_found' => (bool) $user,
-                'b_use_other' => $user?->b_use_other,
-                'b_is_active' => $user?->b_is_active,
-            ]);
+            $token = Password::broker()->createToken($user);
+            $user->notify(new ResetPasswordNotification($token, false));
         }
     }
 
@@ -252,20 +237,32 @@ class AuthService
      */
     public function resetPassword(string $email, string $token, string $password): void
     {
-        $user = User::where('v_email', $email)
-            ->whereNull('dt_deleted_at')
-            ->first();
+        DB::transaction(function () use ($email, $token, $password) {
+            $user = User::query()
+                ->where('v_email', $email)
+                ->where('b_use_other', false)
+                ->where('b_is_active', true)
+                ->whereNull('dt_deleted_at')
+                ->lockForUpdate()
+                ->first();
 
-        if (! $user || ! \Illuminate\Support\Facades\Password::broker()->tokenExists($user, $token)) {
-            throw new ApplicationException(
-                definition: $this->reader->read(AuthError::TOKEN_INVALID),
-                context: ['email' => $email],
-            );
-        }
+            if (! $user) {
+                $this->throwInvalidToken($email);
+            }
 
-        DB::transaction(function () use ($user, $password) {
-            if ($user->v_password) {
-                \App\Models\UserPasswordHistory::create([
+            DB::table('password_reset_tokens')
+                ->where('email', $email)
+                ->lockForUpdate()
+                ->first();
+
+            if (! Password::broker()->tokenExists($user, $token)) {
+                $this->throwInvalidToken($email);
+            }
+
+            $this->assertPasswordNotReused($user, $password);
+
+            if ($user->dt_last_updated_password !== null && is_string($user->v_password)) {
+                UserPasswordHistory::create([
                     'v_userid' => $user->v_userid,
                     'v_password_hash' => $user->v_password,
                     'dt_created_at' => now(),
@@ -282,7 +279,7 @@ class AuthService
             $user->v_remember_token = Str::random(60);
             $user->save();
 
-            \Illuminate\Support\Facades\Password::broker()->deleteToken($user);
+            Password::broker()->deleteToken($user);
             DB::table('sessions')->where('user_id', $user->v_userid)->delete();
         });
     }
@@ -292,30 +289,37 @@ class AuthService
      */
     public function changePassword(User $user, string $currentPassword, string $newPassword): void
     {
-        if (empty($user->v_password) || ! Hash::check($currentPassword, $user->v_password)) {
-            throw new ApplicationException(
-                definition: $this->reader->read(AuthError::CURRENT_PASSWORD_INCORRECT),
-                context: ['userid' => $user->v_userid],
-            );
-        }
+        DB::transaction(function () use ($user, $currentPassword, $newPassword) {
+            $lockedUser = User::query()
+                ->where('v_userid', $user->v_userid)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        DB::transaction(function () use ($user, $newPassword) {
-            if ($user->v_password) {
-                \App\Models\UserPasswordHistory::create([
-                    'v_userid' => $user->v_userid,
-                    'v_password_hash' => $user->v_password,
+            if (empty($lockedUser->v_password) || ! Hash::check($currentPassword, $lockedUser->v_password)) {
+                throw new ApplicationException(
+                    definition: $this->reader->read(AuthError::CURRENT_PASSWORD_INCORRECT),
+                    context: ['userid' => $lockedUser->v_userid],
+                );
+            }
+
+            $this->assertPasswordNotReused($lockedUser, $newPassword);
+
+            if (is_string($lockedUser->v_password)) {
+                UserPasswordHistory::create([
+                    'v_userid' => $lockedUser->v_userid,
+                    'v_password_hash' => $lockedUser->v_password,
                     'dt_created_at' => now(),
                 ]);
             }
 
-            $this->prunePasswordHistories($user->v_userid);
+            $this->prunePasswordHistories($lockedUser->v_userid);
 
-            $user->v_password = Hash::make($newPassword);
-            $user->dt_last_updated_password = now();
-            $user->v_remember_token = Str::random(60);
-            $user->save();
+            $lockedUser->v_password = Hash::make($newPassword);
+            $lockedUser->dt_last_updated_password = now();
+            $lockedUser->v_remember_token = Str::random(60);
+            $lockedUser->save();
 
-            DB::table('sessions')->where('user_id', $user->v_userid)->delete();
+            DB::table('sessions')->where('user_id', $lockedUser->v_userid)->delete();
         });
     }
 
@@ -345,26 +349,70 @@ class AuthService
             );
         }
 
+        $throttleKey = 'admin-password-link:'.$actor->v_userid.':'.$target->v_userid;
+        if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            throw new ApplicationException(
+                definition: $this->reader->read(AuthError::TOO_MANY_ATTEMPTS),
+                context: ['seconds' => RateLimiter::availableIn($throttleKey)],
+            );
+        }
+        RateLimiter::hit($throttleKey, 60);
+
         DB::table('password_reset_tokens')->where('email', $target->v_email)->delete();
-        $token = \Illuminate\Support\Facades\Password::broker()->createToken($target);
+        $token = Password::broker()->createToken($target);
 
         if ($target->dt_email_verified_at === null) {
-            $target->notify(new \App\Notifications\InvitationNotification($token));
+            $target->notify(new InvitationNotification($token));
         } else {
-            $target->notify(new \App\Notifications\ResetPasswordNotification($token, true));
+            $target->notify(new ResetPasswordNotification($token, true));
         }
     }
 
     private function prunePasswordHistories(string $userId): void
     {
-        $historyCount = \App\Models\UserPasswordHistory::where('v_userid', $userId)->count();
-        if ($historyCount > 5) {
-            $excess = $historyCount - 5;
-            $oldestIds = \App\Models\UserPasswordHistory::where('v_userid', $userId)
+        $historyCount = UserPasswordHistory::where('v_userid', $userId)->count();
+        if ($historyCount > 2) {
+            $excess = $historyCount - 2;
+            $oldestIds = UserPasswordHistory::where('v_userid', $userId)
                 ->orderBy('dt_created_at', 'asc')
                 ->limit($excess)
                 ->pluck('i_id');
-            \App\Models\UserPasswordHistory::whereIn('i_id', $oldestIds)->delete();
+            UserPasswordHistory::whereIn('i_id', $oldestIds)->delete();
         }
+    }
+
+    private function assertPasswordNotReused(User $user, string $password): void
+    {
+        if (is_string($user->v_password) && Hash::check($password, $user->v_password)) {
+            $this->throwPasswordReused($user);
+        }
+
+        $recentHistories = UserPasswordHistory::query()
+            ->where('v_userid', $user->v_userid)
+            ->orderByDesc('dt_created_at')
+            ->limit(2)
+            ->get();
+
+        foreach ($recentHistories as $history) {
+            if (Hash::check($password, $history->v_password_hash)) {
+                $this->throwPasswordReused($user);
+            }
+        }
+    }
+
+    private function throwPasswordReused(User $user): never
+    {
+        throw new ApplicationException(
+            definition: $this->reader->read(AuthError::PASSWORD_REUSED),
+            context: ['userid' => $user->v_userid],
+        );
+    }
+
+    private function throwInvalidToken(string $email): never
+    {
+        throw new ApplicationException(
+            definition: $this->reader->read(AuthError::TOKEN_INVALID),
+            context: ['email_hash' => hash('sha256', Str::lower($email))],
+        );
     }
 }

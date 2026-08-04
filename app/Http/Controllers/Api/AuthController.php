@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\SetActiveGroupRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -172,7 +176,7 @@ class AuthController extends Controller
      *
      * @summary Lupa password
      */
-    public function forgotPassword(\App\Http\Requests\Auth\ForgotPasswordRequest $request): \Illuminate\Http\JsonResponse
+    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
         $this->authService->forgotPassword(
             (string) $request->input('email'),
@@ -189,7 +193,7 @@ class AuthController extends Controller
      *
      * @summary Reset/setup password
      */
-    public function resetPassword(\App\Http\Requests\Auth\ResetPasswordRequest $request): \Illuminate\Http\JsonResponse
+    public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
         $this->authService->resetPassword(
             (string) $request->input('email'),
@@ -207,7 +211,7 @@ class AuthController extends Controller
      *
      * @summary Ubah password
      */
-    public function changePassword(\App\Http\Requests\Auth\ChangePasswordRequest $request): \Illuminate\Http\JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         /** @var User $user */
         $user = $request->user();

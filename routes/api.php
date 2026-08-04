@@ -57,7 +57,7 @@ Route::middleware(['auth:sanctum', EnsureActiveUser::class, EnsurePasswordIsFres
         ->middleware('can:ubah-pengguna')
         ->name('api.users.toggle-status');
     Route::post('/users/{user}/send-password-link', [UserController::class, 'sendPasswordLink'])
-        ->middleware('can:reset-password-pengguna')
+        ->middleware(['can:reset-password-pengguna', 'throttle:6,1'])
         ->name('api.users.send-password-link');
 
     // References

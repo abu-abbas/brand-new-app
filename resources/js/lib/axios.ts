@@ -1,5 +1,6 @@
 import axios, { AxiosError, type AxiosRequestConfig } from 'axios';
 import { clearDataTableMemory } from '../components/custom-ui/data-table/data-table.utils.ts';
+import { ERROR_CODES } from '../generated/error-codes.ts';
 
 type RetriableAxiosRequestConfig = AxiosRequestConfig & {
   csrfRetried?: boolean;
@@ -194,6 +195,16 @@ axiosInstance.interceptors.response.use(
     }
 
     const isAuthCheck = config?.url?.includes('/auth/me');
+    const normalizedError = normalizeAppError(error);
+
+    if (
+      status === 403 &&
+      normalizedError.code === ERROR_CODES.AUTH_VAL_017 &&
+      typeof window !== 'undefined' &&
+      window.location.pathname !== '/change-password'
+    ) {
+      window.location.assign('/change-password');
+    }
 
     if (
       (status === 401 || status === 419) &&
@@ -206,7 +217,7 @@ axiosInstance.interceptors.response.use(
       window.location.assign(`/login?redirect=${encodeURIComponent(intendedUrl)}`);
     }
 
-    return Promise.reject(normalizeAppError(error));
+    return Promise.reject(normalizedError);
   },
 );
 

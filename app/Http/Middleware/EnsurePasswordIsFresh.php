@@ -28,12 +28,7 @@ class EnsurePasswordIsFresh
             ];
 
             $routeName = $request->route()?->getName();
-            $path = $request->path();
-
-            $isAllowed = ($routeName && in_array($routeName, $allowedRoutes, true))
-                || str_contains($path, 'auth/me')
-                || str_contains($path, 'auth/password')
-                || str_contains($path, 'auth/logout');
+            $isAllowed = is_string($routeName) && in_array($routeName, $allowedRoutes, true);
 
             if (! $isAllowed) {
                 throw new ApplicationException(

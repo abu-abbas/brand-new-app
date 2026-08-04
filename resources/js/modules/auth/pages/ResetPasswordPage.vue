@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import StrongPasswordChecklist from '../components/StrongPasswordChecklist.vue';
 import { AuthFacade } from '../api/auth.facade';
 import type { AppError } from '@/lib/axios';
+import { ERROR_CODES } from '@/generated/error-codes';
 
 const route = useRoute();
 const router = useRouter();
@@ -29,6 +30,7 @@ const showPassword = ref(false);
 const showConfirmation = ref(false);
 
 const error = ref('');
+const canRequestNewLink = ref(false);
 const successMessage = ref('');
 const isLoading = ref(false);
 
@@ -47,6 +49,7 @@ const isFormValid = computed(() => {
 
 const handleSubmit = async () => {
   error.value = '';
+  canRequestNewLink.value = false;
   successMessage.value = '';
 
   if (!email.value || !token.value) {
@@ -76,6 +79,7 @@ const handleSubmit = async () => {
   } catch (err) {
     const appErr = err as AppError;
     error.value = appErr.message || 'Gagal mereset password. Pastikan token belum kedaluwarsa.';
+    canRequestNewLink.value = appErr.code === ERROR_CODES.AUTH_VAL_019;
   } finally {
     isLoading.value = false;
   }
@@ -152,7 +156,16 @@ const handleSubmit = async () => {
           class="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-start gap-2"
         >
           <AlertCircle class="h-4 w-4 shrink-0 mt-0.5" />
-          <span>{{ error }}</span>
+          <div class="space-y-1.5">
+            <span>{{ error }}</span>
+            <RouterLink
+              v-if="canRequestNewLink"
+              to="/forgot-password"
+              class="block text-primary font-semibold hover:underline"
+            >
+              Kirim ulang tautan reset password
+            </RouterLink>
+          </div>
         </div>
 
         <!-- Password Field -->

@@ -6,7 +6,6 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Log;
 
 class ResetPasswordNotification extends Notification implements ShouldQueue
 {
@@ -38,16 +37,9 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
             ? $notifiable->getEmailForPasswordReset()
             : ($notifiable->v_email ?? '');
 
-        $url = config('app.url') . '/reset-password?' . http_build_query([
+        $url = config('app.url').'/reset-password?'.http_build_query([
             'email' => $email,
             'token' => $this->token,
-        ]);
-
-        Log::info('ResetPasswordNotification@toMail dieksekusi queue worker/Horizon', [
-            'userid' => $notifiable->v_userid ?? null,
-            'target_email' => $email,
-            'reset_url' => $url,
-            'is_admin_reset' => $this->isAdminReset,
         ]);
 
         $subject = $this->isAdminReset
@@ -60,7 +52,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject($subject)
-            ->greeting('Halo ' . ($notifiable->v_username ?? 'Pengguna') . ',')
+            ->greeting('Halo '.($notifiable->v_username ?? 'Pengguna').',')
             ->line($lineMessage)
             ->action('Reset Password', $url)
             ->line('Tautan reset password ini berlaku selama 60 menit.')

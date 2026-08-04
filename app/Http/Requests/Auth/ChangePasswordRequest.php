@@ -4,7 +4,6 @@ namespace App\Http\Requests\Auth;
 
 use App\Core\ErrorDefinition\Traits\HasErrorDefinitions;
 use App\Errors\AuthError;
-use App\Models\User;
 use App\Rules\StrongPassword;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -19,12 +18,9 @@ class ChangePasswordRequest extends FormRequest
 
     public function rules(): array
     {
-        /** @var User|null $user */
-        $user = $this->user();
-
         return [
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'confirmed', new StrongPassword($user)],
+            'password' => ['required', 'confirmed', new StrongPassword],
         ];
     }
 
@@ -35,7 +31,7 @@ class ChangePasswordRequest extends FormRequest
             'current_password.string' => AuthError::PASSWORD_STRING,
             'password.required' => AuthError::PASSWORD_REQUIRED,
             'password.confirmed' => AuthError::PASSWORD_STRING,
-            'password.app\rules\strongpassword' => AuthError::PASSWORD_REUSED,
+            'password.app\rules\strongpassword' => AuthError::PASSWORD_INVALID,
         ];
     }
 }

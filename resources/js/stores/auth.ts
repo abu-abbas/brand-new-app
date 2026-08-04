@@ -55,6 +55,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function logout(): Promise<void> {
     await AuthFacade.logout();
+    clearLocalSession();
+  }
+
+  function clearLocalSession(): void {
     user.value = null;
     clearDataTableMemory();
   }
@@ -69,5 +73,6 @@ export const useAuthStore = defineStore('auth', () => {
     setActiveGroup,
     resetDefaultGroup,
     logout,
+    clearLocalSession,
   };
 });

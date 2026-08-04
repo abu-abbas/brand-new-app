@@ -72,8 +72,8 @@ const handleSubmit = async () => {
     });
     successMessage.value =
       res.message || 'Password berhasil diubah. Seluruh sesi Anda telah diakhiri.';
-    window.setTimeout(async () => {
-      await authStore.logout();
+    window.setTimeout(() => {
+      authStore.clearLocalSession();
       window.location.assign('/login');
     }, 2000);
   } catch (err) {
