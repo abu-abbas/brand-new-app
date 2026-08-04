@@ -1,0 +1,11 @@
+# phpstan-coalescing.neon
+#
+# File ini di-include dari phpstan.neon utama.
+# Rule ini mendaftarkan NoImplicitCoalescingOnMutationsRule sebagai
+# custom PHPStan rule, sesuai ADR 002.
+
+services:
+    -
+        class: App\PHPStan\Rules\NoImplicitCoalescingOnMutationsRule
+        tags:
+            - phpstan.rules.rule

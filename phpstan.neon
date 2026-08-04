@@ -1,0 +1,11 @@
+includes:
+    - phpstan-baseline.neon
+    - phpstan-coalescing.neon
+    - phpstan-resource-keys.neon
+
+parameters:
+    paths:
+        - app
+    excludePaths:
+        - app/PHPStan
+    level: 5

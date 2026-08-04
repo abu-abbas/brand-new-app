@@ -4,3 +4,6 @@ echo "🔍 Memeriksa format berkas (Prettier)..."
 npm run format:check
 echo "🔍 Memeriksa format PHP (Pint)..."
 composer format:php:check
+echo "🔍 Memeriksa static analysis PHP (PHPStan)..."
+composer analyse
+

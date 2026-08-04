@@ -1,0 +1,385 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to an undefined static method App\\Core\\ErrorDefinition\\ErrorCode\:\:cases\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Console/Commands/GenerateErrorCatalogCommand.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<class\-string\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 2
+			path: app/Core/ErrorDefinition/ErrorDefinitionDiscovery.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$instance contains unresolvable type\.$#'
+			identifier: varTag.unresolvableType
+			count: 1
+			path: app/Core/ErrorDefinition/ErrorDefinitionLinter.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Guard\:\:logout\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/AuthController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Guard\:\:logout\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Middleware/EnsureActiveUser.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Routing\\Route\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Middleware/EnsurePasswordIsFresh.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\FeatureResource\:\:\$b_is_restricted\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/FeatureResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserResource\:\:\$v_default_group_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Method App\\Http\\Resources\\UserResource\:\:toArray\(\) should return array\{id\: string, userid\: string, username\: string, name\: string, email\: string\|null, unit\: array\{code\: string\|null, name\: string\}, is_active\: bool, is_external\: bool, \.\.\.\} but returns array\{id\: string, userid\: string, username\: string, name\: string, email\: string\|null, unit\: array\{code\: string\|null, name\: string\}, is_active\: bool, is_external\: bool, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\UserRoleResource\:\:\$roleModel\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/UserRoleResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>b_need_region" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/UserRoleResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>b_need_unit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/UserRoleResource.php
+
+		-
+			message: '#^Method App\\Models\\Feature\:\:scopeVisibleOnSidebar\(\) should return Illuminate\\Database\\Eloquent\\Builder but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Feature.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Role.php
+
+		-
+			message: '#^Method App\\Models\\Role\:\:resolveRouteBindingQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Role.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-array\<string, string\> on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/Role.php
+
+		-
+			message: '#^Offset 1 on non\-empty\-array\<string, string\> on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/Role.php
+
+		-
+			message: '#^Parameter \#1 \$query of method App\\Models\\Role\:\:resolveRouteBindingQuery\(\) expects Illuminate\\Database\\Eloquent\\Builder, \$this\(App\\Models\\Role\) given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Models/Role.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$userRoles\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$v_default_group_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\UserRole\:\:\$roleModel\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:currentlyValid\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\User\:\:resolveRouteBindingQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder but returns Illuminate\\Database\\Query\\Builder\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\UserRole\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Parameter \#1 \$query of method App\\Models\\User\:\:resolveRouteBindingQuery\(\) expects Illuminate\\Database\\Eloquent\\Builder, \$this\(App\\Models\\User\) given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>features" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>i_level" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\UserRole\:\:\$roleModel\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/UserRole.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$v_default_group_id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Guard\:\:login\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:createToken\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:deleteToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:tokenExists\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\User\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\User\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 5
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\UserPasswordHistory\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\UserPasswordHistory\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\UserPasswordHistory\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Cannot call method save\(\) on stdClass\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\AuthService\:\:assertPasswordNotReused\(\) expects App\\Models\\User, stdClass given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/FeatureService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable\:\:isRoot\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/FeatureService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Feature\>\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/FeatureService.php
+
+		-
+			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "create\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
+			identifier: app.noImplicitCoalescingOnMutations
+			count: 1
+			path: app/Services/FeatureService.php
+
+		-
+			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "update\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
+			identifier: app.noImplicitCoalescingOnMutations
+			count: 1
+			path: app/Services/FeatureService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>b_need_region" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/ReferenceService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>b_need_unit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ReferenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$role_level\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Contracts\\Auth\\Authenticatable\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable\:\:getActiveGroupId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable\:\:getRolesList\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\Authenticatable\:\:isRoot\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\Role\>\:\:withTrashed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "create\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
+			identifier: app.noImplicitCoalescingOnMutations
+			count: 2
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Dilarang pakai operator fallback implisit \(\?\? / \?\:\) di method mutasi "update\(\)"\. Cek ketersediaan key eksplisit pakai array_key_exists\(\)/\$request\-\>has\(\), atau biarkan gagal lewat validasi \(422\) kalau field ini required\. Kalau fallback ini emang business requirement, tambahin komentar "@allow\-fallback \<alasan\>" di baris sebelum statement ini\.$#'
+			identifier: app.noImplicitCoalescingOnMutations
+			count: 1
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\RoleService\:\:assertCanAssignFeatures\(\) expects App\\Models\\User\|null, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>role_level" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\PasswordBroker\:\:createToken\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/UserService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Query\\Builder\:\:forUserScope\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/UserService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\Role\:\:whereIn\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Services/UserService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\User\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Services/UserService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\UserRole\:\:create\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 2
+			path: app/Services/UserService.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\UserRole\:\:where\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Services/UserService.php

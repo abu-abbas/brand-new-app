@@ -1,0 +1,11 @@
+# phpstan-resource-keys.neon
+#
+# File ini di-include dari phpstan.neon utama.
+# Rule ini mendaftarkan NoInternalColumnPrefixInResourceRule sebagai
+# custom PHPStan rule untuk mencegah kebocoran prefix kolom DB ke API response.
+
+services:
+    -
+        class: App\PHPStan\Rules\NoInternalColumnPrefixInResourceRule
+        tags:
+            - phpstan.rules.rule
