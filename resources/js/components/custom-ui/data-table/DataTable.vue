@@ -945,17 +945,24 @@ defineExpose({
           </template>
         </ElTableColumn>
 
-        <ElTableColumn v-if="actions" :width="actionsWidth" fixed="left" align="center">
+        <ElTableColumn
+          v-if="actions"
+          :width="actionsWidth"
+          fixed="left"
+          align="center"
+          class-name="!px-1"
+        >
           <template #header>Aksi</template>
           <template #default="{ row }">
             <slot name="cell(action)" :row="row">
               <div class="flex justify-center gap-1">
+                <slot name="action-extra" :row="row" />
                 <Button
                   v-if="canEdit?.(row) !== false"
-                  variant="ghost"
+                  variant="link"
                   size="icon-sm"
                   aria-label="Edit"
-                  class="cursor-pointer"
+                  class="cursor-pointer w-5"
                   @click.stop="emit('edit', row)"
                 >
                   <Pencil />
@@ -965,7 +972,7 @@ defineExpose({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Hapus"
-                  class="cursor-pointer"
+                  class="cursor-pointer w-5"
                   @click.stop="emit('delete', row)"
                 >
                   <Trash2 />
