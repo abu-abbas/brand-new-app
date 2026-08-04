@@ -16,7 +16,7 @@ const isAnnouncementModalOpen = ref(false);
 
 <template>
   <div
-    class="h-screen w-screen flex flex-col lg:flex-row bg-muted/20 font-sans text-foreground overflow-hidden"
+    class="fixed inset-0 flex flex-col lg:flex-row bg-muted/20 font-sans text-foreground overflow-hidden"
   >
     <!-- Left Panel: Slim Login Form Panel (Full Height, Vertically Centered Content) -->
     <section

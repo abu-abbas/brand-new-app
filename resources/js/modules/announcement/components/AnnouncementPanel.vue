@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, type Component } from 'vue';
 import { formatHumanDate } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Cog,
   Bell,
@@ -121,11 +122,11 @@ function getCategoryIconBgClass(category: string) {
 
 // Stable Hysteresis Scroll Threshold
 const isScrolled = ref(false);
-const scrollContainer = ref<HTMLElement | null>(null);
+const scrollContent = ref<HTMLElement | null>(null);
+const scrollViewport = ref<HTMLElement | null>(null);
 
-function handleScroll() {
-  if (!scrollContainer.value) return;
-  const scrollTop = scrollContainer.value.scrollTop;
+function handleScroll(event) {
+  const scrollTop = (event.currentTarget as HTMLElement).scrollTop;
 
   if (!isScrolled.value && scrollTop > 35) {
     isScrolled.value = true;
@@ -135,25 +136,29 @@ function handleScroll() {
 }
 
 onMounted(() => {
-  if (scrollContainer.value) {
-    scrollContainer.value.addEventListener('scroll', handleScroll, { passive: true });
+  scrollViewport.value =
+    scrollContent.value?.closest<HTMLElement>(
+      '[data-reka-scroll-area-viewport], [data-radix-scroll-area-viewport]',
+    ) ?? null;
+
+  if (scrollViewport.value) {
+    scrollViewport.value.addEventListener('scroll', handleScroll, { passive: true });
   }
 });
 
 onUnmounted(() => {
-  if (scrollContainer.value) {
-    scrollContainer.value.removeEventListener('scroll', handleScroll);
+  if (scrollViewport.value) {
+    scrollViewport.value.removeEventListener('scroll', handleScroll);
   }
 });
 </script>
 
 <template>
-  <div
-    ref="scrollContainer"
-    class="h-full bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 overflow-y-auto"
+  <ScrollArea
+    class="h-full bg-[#f4f4f6] dark:bg-[#09090b] text-foreground transition-colors duration-300 [&>[data-reka-scroll-area-viewport]>div]:h-full"
   >
     <!-- Max-Width Centered Container -->
-    <div class="w-full max-w-3xl mx-auto min-h-full flex flex-col">
+    <div ref="scrollContent" class="w-full max-w-3xl mx-auto min-h-full flex flex-col">
       <div class="my-auto w-full py-4 sm:py-6">
         <!-- Shrinking Sticky Header (Extends solid background flush to top-0) -->
         <div
@@ -302,5 +307,5 @@ onUnmounted(() => {
         </div>
       </div>
     </div>
-  </div>
+  </ScrollArea>
 </template>
