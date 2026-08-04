@@ -9,6 +9,11 @@
             "url": "http://localhost:8000/api"
         }
     ],
+    "security": [
+        {
+            "apiKey": []
+        }
+    ],
     "paths": {
         "/auth/login": {
             "post": {
@@ -49,7 +54,8 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/forgot-password": {
@@ -92,7 +98,8 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/reset-password": {
@@ -135,7 +142,8 @@
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/captcha": {
@@ -168,7 +176,8 @@
                             }
                         }
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/captcha/audio": {
@@ -212,7 +221,8 @@
                     "400": {
                         "description": ""
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/me": {
@@ -1861,6 +1871,13 @@
         }
     },
     "components": {
+        "securitySchemes": {
+            "apiKey": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "laravel_session"
+            }
+        },
         "schemas": {
             "ChangePasswordRequest": {
                 "type": "object",
