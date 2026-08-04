@@ -26,6 +26,7 @@ class ScanResourceColumnPrefix extends Command
 
         if (! is_dir($basePath)) {
             $this->error("Direktori '{$basePath}' tidak ditemukan.");
+
             return self::FAILURE;
         }
 
@@ -35,7 +36,7 @@ class ScanResourceColumnPrefix extends Command
         $rows = [];
         $totalHits = 0;
 
-        $finder = new Finder();
+        $finder = new Finder;
         $finder->files()->in($basePath)->name('*Resource.php');
 
         foreach ($finder as $file) {
@@ -64,6 +65,7 @@ class ScanResourceColumnPrefix extends Command
 
         if (empty($rows)) {
             $this->info(' (bersih — tidak ditemukan key ber-prefix di API Resource)');
+
             return self::SUCCESS;
         }
 

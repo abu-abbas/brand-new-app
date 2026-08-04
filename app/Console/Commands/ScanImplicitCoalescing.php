@@ -36,6 +36,7 @@ class ScanImplicitCoalescing extends Command
 
         if (! is_dir($basePath)) {
             $this->error("Direktori '{$basePath}' tidak ditemukan.");
+
             return self::FAILURE;
         }
 
@@ -46,13 +47,13 @@ class ScanImplicitCoalescing extends Command
         $totalHits = 0;
 
         foreach ($this->targetSubdirs as $subdir) {
-            $dirPath = rtrim($basePath, '/') . '/' . ltrim($subdir, '/');
+            $dirPath = rtrim($basePath, '/').'/'.ltrim($subdir, '/');
 
             if (! is_dir($dirPath)) {
                 continue;
             }
 
-            $finder = new Finder();
+            $finder = new Finder;
             $finder->files()->in($dirPath)->name('*.php');
 
             foreach ($finder as $file) {
@@ -76,6 +77,7 @@ class ScanImplicitCoalescing extends Command
                             mb_strimwidth($trimmedLine, 0, 80, '...'),
                         ];
                         $totalHits++;
+
                         continue;
                     }
 
@@ -107,6 +109,7 @@ class ScanImplicitCoalescing extends Command
 
         if (empty($rows)) {
             $this->info(' (bersih — tidak ditemukan pola mencurigakan)');
+
             return self::SUCCESS;
         }
 
