@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import {
   Activity,
-  ArrowRight,
   Calendar,
   Clock,
   DollarSign,
@@ -10,17 +8,14 @@ import {
   Package,
   Server,
   ShieldCheck,
-  Sparkles,
   Users,
 } from '@lucide/vue';
 import AdminLayout from '@/components/AdminLayout.vue';
 import TrafficChannelsChart from '@/components/TrafficChannelsChart.vue';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useServerClock } from '@/composables/useServerClock';
 import { useAppBootstrapStore } from '@/stores/app-bootstrap';
 
-const router = useRouter();
 const appBootstrap = useAppBootstrapStore();
 const { formattedTime } = useServerClock();
 
@@ -35,10 +30,6 @@ const stats = [
   { title: 'Sales', value: '+12,234', change: '+19% from last month', icon: Package },
   { title: 'Active Now', value: '+573', change: '+201 since last hour', icon: Activity },
 ];
-
-function goToExamples() {
-  router.push('/example-custom-component');
-}
 </script>
 
 <template>
@@ -140,30 +131,6 @@ function goToExamples() {
         </div>
       </CardContent>
     </Card>
-
-    <!-- Top Action Banner to Custom Components Page -->
-    <div
-      class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 shadow-2xs md:p-6"
-    >
-      <div class="flex items-start gap-3">
-        <div
-          class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-xs mt-0.5"
-        >
-          <Sparkles class="size-5" />
-        </div>
-        <div>
-          <h2 class="text-base font-bold text-foreground">Custom UI Components</h2>
-          <p class="text-sm text-muted-foreground">
-            Lihat halaman khusus demonstrasi DataTable, ConfirmDialog, Combobox, dan komponen kustom
-            lainnya.
-          </p>
-        </div>
-      </div>
-      <Button class="w-full gap-2 font-medium sm:w-auto" @click="goToExamples">
-        Buka Example Custom Components
-        <ArrowRight class="size-4" />
-      </Button>
-    </div>
 
     <!-- Cards grid -->
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
