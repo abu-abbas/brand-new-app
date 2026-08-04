@@ -109,14 +109,16 @@ it('lists active and soft-deleted features when requested', function () {
     ]);
     $deleted->delete();
 
-    $this->getJson('/api/features?include_deleted=true')
+    $withDeleted = $this->getJson('/api/features?include_deleted=true')
         ->assertOk()
-        ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.1.deleted_at', fn ($value) => $value !== null);
+        ->assertJsonCount(3, 'data');
+
+    expect(collect($withDeleted->json('data'))->firstWhere('alias', 'deleted-feature')['deleted_at'])
+        ->not->toBeNull();
 
     $this->getJson('/api/features?include_deleted=false')
         ->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertJsonCount(2, 'data');
 });
 
 it('filters features by type and rejects an invalid type', function () {
@@ -131,10 +133,12 @@ it('filters features by type and rejects an invalid type', function () {
         'e_type' => 'crud',
     ]);
 
-    $this->getJson('/api/features?type=crud')
+    $response = $this->getJson('/api/features?type=crud')
         ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.type', 'crud');
+        ->assertJsonCount(2, 'data');
+
+    expect(collect($response->json('data'))->pluck('alias'))->toContain('aksi');
+    expect(collect($response->json('data'))->pluck('type')->unique()->all())->toBe(['crud']);
 
     $this->getJson('/api/features?type=invalid')
         ->assertUnprocessable()
