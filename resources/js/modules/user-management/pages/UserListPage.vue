@@ -21,7 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatHumanDate } from '@/lib/utils';
 import { usePermissionStore } from '@/stores/permission';
+import { useConfirmDialog } from '@/composables/useConfirmDialog';
 import { Users } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { userManagementFacade } from '../api/user-management.facade';
@@ -32,6 +34,7 @@ import { USER_PERMISSIONS } from '../permissions';
 interface UserRow extends Record<string, unknown>, UserResource {}
 
 const permission = usePermissionStore();
+const confirmDialog = useConfirmDialog();
 
 const dataTableRef = ref();
 const formModalOpen = ref(false);
@@ -44,6 +47,7 @@ const activeStatus = ref<'all' | 'true' | 'false'>('all');
 
 const canCreate = computed(() => permission.can(USER_PERMISSIONS.CREATE));
 const canUpdate = computed(() => permission.can(USER_PERMISSIONS.UPDATE));
+const canResetPassword = computed(() => permission.can(USER_PERMISSIONS.RESET_PASSWORD));
 
 const fields: DataTableField<UserRow>[] = [
   {
@@ -57,8 +61,8 @@ const fields: DataTableField<UserRow>[] = [
   { key: 'userid', label: 'User ID', hidden: true },
   { key: 'username', label: 'Info Pengguna', minWidth: 200, sortable: true },
   { key: 'roles', label: 'Group Akses', minWidth: 180, sortable: false },
-  { key: 'is_active', label: 'Status', minWidth: 100, align: 'center', sortable: true },
-  { key: 'created_at', label: 'Tanggal Dibuat', minWidth: 140, sortable: true },
+  { key: 'is_active', label: 'Status', minWidth: 90, align: 'center', sortable: true },
+  { key: 'created_at', label: 'Tanggal Dibuat', minWidth: 120, sortable: true },
 ];
 
 const filters: DataTableFilter[] = [
@@ -122,6 +126,22 @@ const handleOpenRoleModal = (user: UserRow) => {
   selectedRoleUserId.value = user.id;
   roleModalOpen.value = true;
 };
+
+const handleSendPasswordLink = (user: UserRow) => {
+  const isVerified = user.is_verified;
+  const title = isVerified ? 'Kirim Link Reset Password' : 'Kirim Ulang Verifikasi';
+
+  void confirmDialog({
+    title,
+    description: `Apakah Anda yakin ingin mengirimkan tautan ${isVerified ? 'reset password' : 'verifikasi'} ke email ${user.email || user.username}?`,
+    confirmLabel: isVerified ? 'Kirim Reset Password' : 'Kirim Verifikasi',
+    successTitle: 'Berhasil',
+    successDescription: `Tautan ${isVerified ? 'reset password' : 'verifikasi'} berhasil dikirim ke email.`,
+    onConfirm: async () => {
+      await userManagementFacade.sendPasswordLink(user.id);
+    },
+  });
+};
 </script>
 
 <template>
@@ -145,25 +165,12 @@ const handleOpenRoleModal = (user: UserRow) => {
         remember="users"
         search-placeholder="Cari berdasarkan User ID, nama, atau email..."
         actions
-        :actions-width="90"
+        :actions-width="50"
         :can-edit="() => canUpdate"
         :can-delete="() => false"
         @edit="(row: unknown) => handleOpenEdit(row as UserRow)"
         @create="handleOpenCreate"
       >
-        <template #action-extra="{ row }">
-          <Button
-            v-if="canUpdate"
-            variant="ghost"
-            size="icon"
-            class="h-8 w-8 text-primary/80 hover:text-primary hover:bg-primary/10"
-            title="Atur Penugasan Role & Scope"
-            @click="handleOpenRoleModal(row as UserRow)"
-          >
-            <LucideIcon name="Shield" class="h-4 w-4" />
-          </Button>
-        </template>
-
         <template #toolbar>
           <div class="flex justify-end">
             <Select v-model="activeStatus" @update:model-value="handleRefreshTable">
@@ -183,29 +190,74 @@ const handleOpenRoleModal = (user: UserRow) => {
         </template>
 
         <template #cell(username)="{ value, row }">
-          <div class="flex flex-col">
+          <div class="flex flex-col gap-0.5">
             <span class="font-medium text-sm">{{ value }}</span>
             <span v-if="row.email" class="text-xs text-muted-foreground">{{ row.email }}</span>
-            <Badge
-              v-if="row.is_external"
-              class="text-xs py-0 px-1 bg-primary/5 border-primary/10 text-foreground"
-            >
-              Integrasi
-            </Badge>
+            <div class="flex flex-wrap items-center gap-1 mt-0.5">
+              <Badge
+                v-if="row.is_external"
+                class="text-2xs py-0 px-1 bg-blue-500/20 border-blue-500/30 text-foreground"
+              >
+                Integrasi
+              </Badge>
+              <Badge
+                v-else-if="!row.is_verified"
+                variant="outline"
+                class="text-2xs py-0 px-1 border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/5 font-normal"
+              >
+                Menunggu Verifikasi
+              </Badge>
+
+              <Button
+                v-if="canResetPassword && !(row as UserRow).is_external"
+                variant="outline"
+                size="xs"
+                class="cursor-pointer text-muted-foreground hover:text-primary"
+                :title="(row as UserRow).is_verified ? 'Reset Password' : 'Kirim Ulang Verifikasi'"
+                @click="handleSendPasswordLink(row as UserRow)"
+              >
+                <LucideIcon v-if="(row as UserRow).is_verified" name="LucideKey" class="size-4" />
+                <LucideIcon v-else name="Mail" class="size-4" />
+
+                <span class="text-xs">
+                  {{ (row as UserRow).is_verified ? 'Reset Password' : 'Kirim Ulang Verifikasi' }}
+                </span>
+              </Button>
+            </div>
           </div>
         </template>
 
         <template #cell(roles)="{ row }">
           <div
-            v-if="row.roles && (row.roles as string[]).length > 0"
+            v-if="
+              ((row as UserRow).user_roles && ((row as UserRow).user_roles?.length ?? 0) > 0) ||
+              (row.roles && (row.roles as string[]).length > 0)
+            "
             class="flex flex-wrap items-center gap-1.5"
           >
             <BadgeList
               :items="
-                (row as UserRow).user_roles?.map((r) => ({
-                  name: r.role_name ?? r.role_code,
-                  code: r.role_code,
-                })) ?? []
+                (row as UserRow).user_roles && (row as UserRow).user_roles!.length > 0
+                  ? (row as UserRow).user_roles!.map((r) => {
+                      const isExpired = Boolean(r.is_expired);
+                      const roleName = r.role_name ?? r.role_code;
+                      const formattedDate = r.valid_until ? formatHumanDate(r.valid_until) : '';
+                      return {
+                        name: isExpired ? `${roleName}` : roleName,
+                        code: r.role_code,
+                        expired: isExpired,
+                        title: isExpired
+                          ? formattedDate
+                            ? `Kedaluwarsa pada ${formattedDate}`
+                            : 'Kedaluwarsa (Periode master group telah berakhir)'
+                          : r.valid_until
+                            ? `Berlaku hingga ${formattedDate}`
+                            : undefined,
+                      };
+                    })
+                  : ((row.roles as string[])?.map((roleName) => ({
+                      name: roleName,
+                    })) ?? [])
               "
               :max="3"
             />

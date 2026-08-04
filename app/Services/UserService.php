@@ -144,19 +144,19 @@ class UserService
         return DB::transaction(function () use ($data, $authUserId) {
             $now = Carbon::now();
 
-            $rawPassword = $data['password'] ?? $data['v_password'] ?? null;
+            $rawPassword = $data['password'] ?? null;
             $password = ! empty($rawPassword)
                 ? Hash::make($rawPassword)
                 : Hash::make(Str::random(32));
 
             $user = User::create([
-                'v_userid' => $data['userid'] ?? $data['v_userid'],
-                'v_username' => $data['username'] ?? $data['v_username'],
-                'v_email' => $data['email'] ?? $data['v_email'] ?? null,
-                'v_kolok' => $data['unit_code'] ?? $data['v_kolok'] ?? null,
+                'v_userid' => $data['userid'],
+                'v_username' => $data['username'],
+                'v_email' => $data['email'] ?? null,
+                'v_kolok' => $data['unit_code'] ?? null,
                 'v_password' => $password,
-                'b_is_active' => $data['is_active'] ?? $data['b_is_active'] ?? true,
-                'b_use_other' => $data['is_external'] ?? $data['b_use_other'] ?? false,
+                'b_is_active' => (bool) ($data['is_active'] ?? true),
+                'b_use_other' => (bool) ($data['is_external'] ?? false),
                 'v_created_by' => $authUserId,
                 'dt_created_at' => $now,
             ]);
@@ -177,7 +177,15 @@ class UserService
                 }
             }
 
-            return $user->load(['userRoles.roleModel']);
+            $user = $user->load(['userRoles.roleModel']);
+
+            if (! $user->b_use_other && ! empty($user->v_email)) {
+                DB::table('password_reset_tokens')->where('email', $user->v_email)->delete();
+                $token = \Illuminate\Support\Facades\Password::broker()->createToken($user);
+                $user->notify(new \App\Notifications\InvitationNotification($token));
+            }
+
+            return $user;
         });
     }
 
@@ -199,28 +207,38 @@ class UserService
         return DB::transaction(function () use ($user, $data, $authUserId) {
             $now = Carbon::now();
 
-            $username = $data['username'] ?? $data['v_username'] ?? $user->v_username;
-            $email = array_key_exists('email', $data) ? $data['email'] : (array_key_exists('v_email', $data) ? $data['v_email'] : $user->v_email);
-            $unitCode = array_key_exists('unit_code', $data) ? $data['unit_code'] : (array_key_exists('v_kolok', $data) ? $data['v_kolok'] : $user->v_kolok);
-            $isActive = array_key_exists('is_active', $data) ? $data['is_active'] : (array_key_exists('b_is_active', $data) ? $data['b_is_active'] : $user->b_is_active);
-            $isExternal = (bool) (array_key_exists('is_external', $data) ? $data['is_external'] : (array_key_exists('b_use_other', $data) ? $data['b_use_other'] : ($user->b_use_other ?? false)));
+            $updateData = [];
 
-            $updateData = [
-                'v_username' => $username,
-                'v_email' => $email,
-                'v_kolok' => $unitCode,
-                'b_is_active' => $isActive,
-                'b_use_other' => $isExternal,
-                'v_updated_by' => $authUserId,
-                'dt_updated_at' => $now,
-            ];
+            if (array_key_exists('username', $data) && $data['username'] !== null) {
+                $updateData['v_username'] = $data['username'];
+            }
 
-            $rawPassword = $data['password'] ?? $data['v_password'] ?? null;
+            if (array_key_exists('email', $data)) {
+                $updateData['v_email'] = $data['email'];
+            }
+
+            if (array_key_exists('unit_code', $data)) {
+                $updateData['v_kolok'] = $data['unit_code'];
+            }
+
+            if (array_key_exists('is_active', $data) && $data['is_active'] !== null) {
+                $updateData['b_is_active'] = (bool) $data['is_active'];
+            }
+
+            if (array_key_exists('is_external', $data) && $data['is_external'] !== null) {
+                $updateData['b_use_other'] = (bool) $data['is_external'];
+            }
+
+            $rawPassword = $data['password'] ?? null;
             if (! empty($rawPassword)) {
                 $updateData['v_password'] = Hash::make($rawPassword);
             }
 
-            $user->update($updateData);
+            if (! empty($updateData)) {
+                $updateData['v_updated_by'] = $authUserId;
+                $updateData['dt_updated_at'] = $now;
+                $user->update($updateData);
+            }
 
             if (array_key_exists('roles', $data) && is_array($data['roles'])) {
                 // Replace roles

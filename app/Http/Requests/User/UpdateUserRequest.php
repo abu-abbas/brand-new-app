@@ -17,14 +17,35 @@ class UpdateUserRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'username' => $this->username ?? $this->v_username,
-            'email' => $this->email ?? $this->v_email,
-            'unit_code' => $this->unit_code ?? $this->v_kolok,
-            'password' => $this->password ?? $this->v_password,
-            'is_active' => $this->is_active ?? $this->b_is_active,
-            'is_external' => $this->is_external ?? $this->b_use_other,
-        ]);
+        $toMerge = [];
+
+        if ($this->has('v_username') && ! $this->has('username')) {
+            $toMerge['username'] = $this->v_username;
+        }
+
+        if ($this->has('v_email') && ! $this->has('email')) {
+            $toMerge['email'] = $this->v_email;
+        }
+
+        if ($this->has('v_kolok') && ! $this->has('unit_code')) {
+            $toMerge['unit_code'] = $this->v_kolok;
+        }
+
+        if ($this->has('v_password') && ! $this->has('password')) {
+            $toMerge['password'] = $this->v_password;
+        }
+
+        if ($this->has('b_is_active') && ! $this->has('is_active')) {
+            $toMerge['is_active'] = $this->b_is_active;
+        }
+
+        if ($this->has('b_use_other') && ! $this->has('is_external')) {
+            $toMerge['is_external'] = $this->b_use_other;
+        }
+
+        if (! empty($toMerge)) {
+            $this->merge($toMerge);
+        }
 
         if ($this->has('roles') && is_array($this->roles)) {
             $mappedRoles = array_map(function ($r) {

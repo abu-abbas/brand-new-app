@@ -29,7 +29,7 @@ trait HasOrganizationScope
         if ($this instanceof User) {
             $userLevel = $user->role_level;
             $query->whereDoesntHave('currentUserRoles.roleModel', function ($q) use ($userLevel) {
-                $q->where('i_level', '>=', $userLevel);
+                $q->where('i_level', '>', $userLevel);
             });
         }
 
@@ -39,13 +39,18 @@ trait HasOrganizationScope
             $relevantUserRoles = $relevantUserRoles->where('v_role_code', $activeGroupId);
         }
 
-        // Filter 2: Unit Spesifik (jika user memiliki v_unit khusus)
+        // Filter 2: Unit / Perangkat Daerah Spesifik
         $userUnits = $relevantUserRoles
             ->pluck('v_unit')
             ->filter()
             ->unique()
             ->values()
             ->toArray();
+
+        // Fallback: Jika v_unit tidak diset di role aktif, gunakan v_kolok milik user login
+        if (empty($userUnits) && $user->v_kolok) {
+            $userUnits = [$user->v_kolok];
+        }
 
         if (! empty($userUnits)) {
             $query->whereIn($unitColumn, $userUnits);

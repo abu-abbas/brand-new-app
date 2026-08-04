@@ -212,6 +212,22 @@ enum UserManagementError: string implements ErrorCode
     case EMAIL_MAX = 'UM-VAL-025';
 
     #[ErrorDefinition(
+        message: 'Email wajib diisi untuk pengguna lokal.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case EMAIL_REQUIRED = 'UM-VAL-043';
+
+    #[ErrorDefinition(
+        message: 'Email yang Anda masukkan sudah terdaftar.',
+        category: ErrorCategory::VALIDATION,
+        httpStatus: 422,
+        severity: ErrorSeverity::LOW,
+    )]
+    case EMAIL_UNIQUE = 'UM-VAL-044';
+
+    #[ErrorDefinition(
         message: 'Password harus berupa teks.',
         category: ErrorCategory::VALIDATION,
         httpStatus: 422,

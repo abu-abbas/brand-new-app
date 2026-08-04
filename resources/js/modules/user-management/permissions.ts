@@ -4,4 +4,5 @@ export const USER_PERMISSIONS = {
   UPDATE: 'ubah-pengguna',
   DELETE: 'hapus-pengguna',
   IMPERSONATE: 'impersonate-pengguna',
+  RESET_PASSWORD: 'reset-password-pengguna',
 } as const;

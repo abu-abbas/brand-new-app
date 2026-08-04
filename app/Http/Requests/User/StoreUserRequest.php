@@ -5,6 +5,7 @@ namespace App\Http\Requests\User;
 use App\Core\ErrorDefinition\Traits\HasErrorDefinitions;
 use App\Errors\UserManagementError;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -17,15 +18,39 @@ class StoreUserRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'userid' => $this->userid ?? $this->v_userid,
-            'username' => $this->username ?? $this->v_username ?? $this->userid ?? $this->v_userid,
-            'email' => $this->email ?? $this->v_email,
-            'unit_code' => $this->unit_code ?? $this->v_kolok,
-            'password' => $this->password ?? $this->v_password,
-            'is_active' => $this->is_active ?? $this->b_is_active ?? true,
-            'is_external' => $this->is_external ?? $this->b_use_other ?? false,
-        ]);
+        $toMerge = [];
+
+        if ($this->has('v_userid') && ! $this->has('userid')) {
+            $toMerge['userid'] = $this->v_userid;
+        }
+
+        if ($this->has('v_username') && ! $this->has('username')) {
+            $toMerge['username'] = $this->v_username;
+        }
+
+        if ($this->has('v_email') && ! $this->has('email')) {
+            $toMerge['email'] = $this->v_email;
+        }
+
+        if ($this->has('v_kolok') && ! $this->has('unit_code')) {
+            $toMerge['unit_code'] = $this->v_kolok;
+        }
+
+        if ($this->has('v_password') && ! $this->has('password')) {
+            $toMerge['password'] = $this->v_password;
+        }
+
+        if ($this->has('b_is_active') && ! $this->has('is_active')) {
+            $toMerge['is_active'] = $this->b_is_active;
+        }
+
+        if ($this->has('b_use_other') && ! $this->has('is_external')) {
+            $toMerge['is_external'] = $this->b_use_other;
+        }
+
+        if (! empty($toMerge)) {
+            $this->merge($toMerge);
+        }
 
         if ($this->has('roles') && is_array($this->roles)) {
             $mappedRoles = array_map(function ($r) {
@@ -51,7 +76,13 @@ class StoreUserRequest extends FormRequest
         return [
             'userid' => ['required', 'string', 'max:100', 'unique:tm_users,v_userid'],
             'username' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'email' => [
+                'required_if:is_external,false',
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('tm_users', 'v_email')->whereNull('dt_deleted_at'),
+            ],
             'unit_code' => ['nullable', 'string', 'max:50'],
             'password' => ['nullable', 'string', 'min:6'],
             'is_active' => ['nullable', 'boolean'],
@@ -78,8 +109,10 @@ class StoreUserRequest extends FormRequest
             'username.string' => UserManagementError::USERNAME_STRING,
             'username.max' => UserManagementError::USERNAME_MAX,
 
+            'email.required_if' => UserManagementError::EMAIL_REQUIRED,
             'email.email' => UserManagementError::EMAIL_INVALID,
             'email.max' => UserManagementError::EMAIL_MAX,
+            'email.illuminate\validation\rules\unique' => UserManagementError::EMAIL_UNIQUE,
 
             'unit_code.string' => UserManagementError::UNIT_STRING,
             'unit_code.max' => UserManagementError::UNIT_MAX,

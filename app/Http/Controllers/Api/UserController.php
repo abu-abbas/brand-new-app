@@ -17,6 +17,7 @@ class UserController extends Controller
 {
     public function __construct(
         protected UserService $userService,
+        protected \App\Services\AuthService $authService,
     ) {}
 
     /**
@@ -127,6 +128,29 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Status pengguna berhasil diperbarui.',
             'data' => new UserResource($updatedUser),
+        ]);
+    }
+
+    /**
+     * Send password reset / invitation link to a user by Admin.
+     *
+     * @summary Kirim tautan reset/verifikasi password oleh admin.
+     */
+    public function sendPasswordLink(User $user, \Illuminate\Http\Request $request): JsonResponse
+    {
+        $this->authorize('update', $user);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        $this->authService->sendPasswordLink($actor, $user);
+
+        $message = $user->dt_email_verified_at === null
+            ? 'Tautan undangan verifikasi berhasil dikirim.'
+            : 'Tautan reset password berhasil dikirim.';
+
+        return response()->json([
+            'message' => $message,
         ]);
     }
 }
