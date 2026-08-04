@@ -57,4 +57,22 @@ describe('BadgeList', () => {
 
     expect(wrapper.text()).toBe('Tidak ada fitur');
   });
+
+  it('renders expired badge with muted dashed styling and clock icon', () => {
+    const wrapper = mount(BadgeList, {
+      props: {
+        items: [
+          { name: 'Admin OPD', expired: false },
+          { name: 'Admin Wilayah (Expired)', expired: true, title: 'Kedaluwarsa pada 31 Jul 2026' },
+        ],
+      },
+    });
+
+    expect(wrapper.text()).toContain('Admin OPD');
+    expect(wrapper.text()).toContain('Admin Wilayah (Expired)');
+    const expiredBadge = wrapper.findAll('.inline-flex')[1];
+    expect(expiredBadge.classes()).toContain('border-dashed');
+    expect(expiredBadge.classes()).toContain('opacity-60');
+    expect(expiredBadge.attributes('title')).toBe('Kedaluwarsa pada 31 Jul 2026');
+  });
 });

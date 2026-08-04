@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Badge } from '@/components/ui/badge';
+import { LucideIcon } from '@/components/custom-ui/lucide-icon';
 
 export type BadgeListItem =
-  string | { alias?: string; name?: string; label?: string; key?: string };
+  | string
+  | {
+      alias?: string;
+      name?: string;
+      label?: string;
+      key?: string;
+      expired?: boolean;
+      title?: string;
+    };
 
 const props = withDefaults(
   defineProps<{
@@ -69,14 +78,28 @@ const remainingCount = computed(() => Math.max(0, (props.items?.length || 0) - p
     <Badge
       v-for="item in visibleItems"
       :key="getItemKey(item)"
-      :variant="isMatching(item) ? 'default' : 'secondary'"
-      :class="
-        isMatching(item)
-          ? 'bg-primary text-primary-foreground font-medium shadow-2xs'
-          : 'text-2sm px-1.5 py-0.5 font-normal'
+      :variant="
+        typeof item === 'object' && item.expired
+          ? 'outline'
+          : isMatching(item)
+            ? 'default'
+            : 'secondary'
       "
+      :class="
+        typeof item === 'object' && item.expired
+          ? 'opacity-60 bg-muted/40 text-muted-foreground border-dashed text-2sm px-1.5 py-0.5 font-normal inline-flex items-center gap-1'
+          : isMatching(item)
+            ? 'bg-primary text-primary-foreground font-medium shadow-2xs'
+            : 'text-2sm px-1.5 py-0.5 font-normal'
+      "
+      :title="typeof item === 'object' ? item.title : undefined"
     >
-      {{ getLabel(item) }}
+      <LucideIcon
+        v-if="typeof item === 'object' && item.expired"
+        name="Clock"
+        class="size-3 text-amber-500 shrink-0"
+      />
+      <span>{{ getLabel(item) }}</span>
     </Badge>
     <Badge
       v-if="remainingCount > 0"
