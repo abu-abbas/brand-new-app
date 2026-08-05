@@ -9,10 +9,14 @@ use App\Models\Feature;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FeatureService
 {
-    public function __construct(private readonly ErrorDefinitionReader $errorDefinitionReader) {}
+    public function __construct(
+        private readonly ErrorDefinitionReader $errorDefinitionReader,
+        private readonly ActivityLogger $activityLogger = new ActivityLogger,
+    ) {}
 
     private const COLUMNS = [
         'name' => 'v_name',
@@ -133,7 +137,21 @@ class FeatureService
             $attributes['b_is_restricted'] = (bool) $data['is_restricted'];
         }
 
-        return Feature::query()->create($attributes);
+        return DB::transaction(function () use ($attributes) {
+            $feature = Feature::query()->create($attributes);
+
+            $this->activityLogger->record(
+                subjectType: 'Feature',
+                subjectId: $feature->v_alias,
+                event: 'created',
+                properties: [
+                    'name' => $feature->v_name,
+                    'type' => $feature->e_type,
+                ]
+            );
+
+            return $feature;
+        });
     }
 
     /**
@@ -164,17 +182,41 @@ class FeatureService
             $updateData['b_is_restricted'] = (bool) $data['is_restricted'];
         }
 
-        $feature->update($updateData);
+        $oldData = $feature->only(array_keys($updateData));
 
-        return $feature->refresh();
+        return DB::transaction(function () use ($feature, $updateData, $oldData) {
+            $feature->update($updateData);
+
+            $this->activityLogger->record(
+                subjectType: 'Feature',
+                subjectId: $feature->v_alias,
+                event: 'updated',
+                properties: [
+                    'before' => $oldData,
+                    'after' => $updateData,
+                    'updated_fields' => array_keys($updateData),
+                ]
+            );
+
+            return $feature->refresh();
+        });
     }
 
     public function delete(Feature $feature): void
     {
-        $feature->update([
-            'v_deleted_by' => Auth::user()?->username,
-        ]);
-        $feature->delete();
+        DB::transaction(function () use ($feature) {
+            $feature->update([
+                'v_deleted_by' => Auth::user()?->username,
+            ]);
+            $feature->delete();
+
+            $this->activityLogger->record(
+                subjectType: 'Feature',
+                subjectId: $feature->v_alias,
+                event: 'deleted',
+                properties: []
+            );
+        });
     }
 
     public function restore(Feature $feature): Feature
@@ -186,12 +228,21 @@ class FeatureService
             );
         }
 
-        $feature->restore();
-        $feature->update([
-            'v_deleted_by' => null,
-            'v_updated_by' => Auth::user()?->username,
-        ]);
+        return DB::transaction(function () use ($feature) {
+            $feature->restore();
+            $feature->update([
+                'v_deleted_by' => null,
+                'v_updated_by' => Auth::user()?->username,
+            ]);
 
-        return $feature->refresh();
+            $this->activityLogger->record(
+                subjectType: 'Feature',
+                subjectId: $feature->v_alias,
+                event: 'restored',
+                properties: []
+            );
+
+            return $feature->refresh();
+        });
     }
 }

@@ -53,6 +53,27 @@ class PaginationSchemaExtension
     {
         $this->registerSharedSchemas($openApi->components);
         $this->replaceInlinePaginationSchemas($openApi);
+        $this->normalizeUserPathParameters($openApi);
+    }
+
+    /**
+     * Pastikan semua path parameter `{user}` didefinisikan sebagai string (Hash ID).
+     */
+    private function normalizeUserPathParameters(OpenApi $openApi): void
+    {
+        foreach ($openApi->paths as $path) {
+            foreach ($path->operations as $operation) {
+                if (! $operation->parameters) {
+                    continue;
+                }
+
+                foreach ($operation->parameters as $parameter) {
+                    if ($parameter->name === 'user') {
+                        $parameter->setSchema(Schema::fromType(new StringType));
+                    }
+                }
+            }
+        }
     }
 
     /**

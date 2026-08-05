@@ -22,6 +22,7 @@ class UserService
 {
     public function __construct(
         private readonly ErrorDefinitionReader $errorDefinitionReader = new ErrorDefinitionReader,
+        private readonly ActivityLogger $activityLogger = new ActivityLogger,
     ) {}
 
     /**
@@ -179,6 +180,18 @@ class UserService
                 }
             }
 
+            $this->activityLogger->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'created',
+                properties: [
+                    'username' => $user->v_username,
+                    'email' => $user->v_email,
+                    'is_active' => $user->b_is_active,
+                    'is_external' => $user->b_use_other,
+                ]
+            );
+
             return $user->load(['userRoles.roleModel']);
         });
 
@@ -268,6 +281,15 @@ class UserService
 
             $user->forgetAuthorizationCache();
 
+            $this->activityLogger->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'updated',
+                properties: [
+                    'updated_fields' => array_keys($updateData),
+                ]
+            );
+
             return $user->load(['userRoles.roleModel']);
         });
 
@@ -299,17 +321,28 @@ class UserService
             );
         }
 
-        $user->update([
-            'b_is_active' => ! $user->b_is_active,
-            'v_updated_by' => $authUserId,
-            'dt_updated_at' => Carbon::now(),
-        ]);
+        return DB::transaction(function () use ($user, $authUserId) {
+            $user->update([
+                'b_is_active' => ! $user->b_is_active,
+                'v_updated_by' => $authUserId,
+                'dt_updated_at' => Carbon::now(),
+            ]);
 
-        if (! $user->b_is_active) {
-            DB::table('sessions')->where('user_id', $user->v_userid)->delete();
-        }
+            $this->activityLogger->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'updated',
+                properties: [
+                    'b_is_active' => $user->b_is_active,
+                ]
+            );
 
-        return $user->load(['userRoles.roleModel']);
+            if (! $user->b_is_active) {
+                DB::table('sessions')->where('user_id', $user->v_userid)->delete();
+            }
+
+            return $user->load(['userRoles.roleModel']);
+        });
     }
 
     public function deleteUser(User $user, ?string $authUserId = null): void
@@ -330,10 +363,21 @@ class UserService
             );
         }
 
-        $user->update([
-            'v_deleted_by' => $authUserId,
-            'dt_deleted_at' => Carbon::now(),
-        ]);
+        DB::transaction(function () use ($user, $authUserId) {
+            $user->update([
+                'v_deleted_by' => $authUserId,
+                'dt_deleted_at' => Carbon::now(),
+            ]);
+
+            $this->activityLogger->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'deleted',
+                properties: []
+            );
+
+            DB::table('sessions')->where('user_id', $user->v_userid)->delete();
+        });
     }
 
     /**

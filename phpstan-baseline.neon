@@ -55,12 +55,6 @@ parameters:
 			path: app/Http/Resources/UserResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\UserRoleResource\:\:\$roleModel\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Resources/UserRoleResource.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>b_need_region" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -120,11 +114,6 @@ parameters:
 			count: 1
 			path: app/Models/User.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\UserRole\:\:\$roleModel\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/User.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
@@ -168,11 +157,6 @@ parameters:
 			count: 1
 			path: app/Models/User.php
 
-		-
-			message: '#^Access to an undefined property App\\Models\\UserRole\:\:\$roleModel\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/UserRole.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$v_default_group_id\.$#'

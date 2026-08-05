@@ -15,7 +15,10 @@ use Illuminate\Support\Facades\DB;
 
 class RoleService
 {
-    public function __construct(private readonly ErrorDefinitionReader $errorDefinitionReader) {}
+    public function __construct(
+        private readonly ErrorDefinitionReader $errorDefinitionReader,
+        private readonly ActivityLogger $activityLogger = new ActivityLogger,
+    ) {}
 
     private const COLUMNS = [
         'code' => 'v_code',
@@ -173,6 +176,17 @@ class RoleService
                 $role->features()->sync($featureAliases);
             }
 
+            $this->activityLogger->record(
+                subjectType: 'Role',
+                subjectId: $role->v_code,
+                event: 'created',
+                properties: [
+                    'name' => $role->v_name,
+                    'level' => $role->i_level,
+                    'features' => $features,
+                ]
+            );
+
             return $role->load('features');
         });
     }
@@ -188,7 +202,9 @@ class RoleService
         $features = array_key_exists('features', $data) ? (array) $data['features'] : [];
         $this->assertCanAssignFeatures($currentUser, $features);
 
-        return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel, $features) {
+        $beforeFeatures = $role->features->pluck('v_alias')->toArray();
+
+        return DB::transaction(function () use ($role, $data, $currentUser, $currentUserLevel, $features, $beforeFeatures) {
             $updateData = [
                 'v_name' => $data['name'],
                 'v_active_periode' => array_key_exists('active_periode', $data) ? $data['active_periode'] : $role->v_active_periode,
@@ -221,6 +237,17 @@ class RoleService
                 $role->features()->sync($featureAliases);
             }
 
+            $this->activityLogger->record(
+                subjectType: 'Role',
+                subjectId: $role->v_code,
+                event: 'updated',
+                properties: [
+                    'updated_fields' => array_keys($updateData),
+                    'features_before' => $beforeFeatures,
+                    'features_after' => $features,
+                ]
+            );
+
             return $role->fresh(['features']);
         });
     }
@@ -234,10 +261,19 @@ class RoleService
             );
         }
 
-        $role->update([
-            'v_deleted_by' => Auth::user()?->username,
-        ]);
-        $role->delete();
+        DB::transaction(function () use ($role) {
+            $role->update([
+                'v_deleted_by' => Auth::user()?->username,
+            ]);
+            $role->delete();
+
+            $this->activityLogger->record(
+                subjectType: 'Role',
+                subjectId: $role->v_code,
+                event: 'deleted',
+                properties: []
+            );
+        });
     }
 
     public function restore(Role $role): Role
@@ -249,12 +285,21 @@ class RoleService
             );
         }
 
-        $role->restore();
-        $role->update([
-            'v_deleted_by' => null,
-        ]);
+        return DB::transaction(function () use ($role) {
+            $role->restore();
+            $role->update([
+                'v_deleted_by' => null,
+            ]);
 
-        return $role->refresh()->load('features');
+            $this->activityLogger->record(
+                subjectType: 'Role',
+                subjectId: $role->v_code,
+                event: 'restored',
+                properties: []
+            );
+
+            return $role->refresh()->load('features');
+        });
     }
 
     /**

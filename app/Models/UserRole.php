@@ -23,6 +23,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $dt_updated_at
  * @property string|null $v_deleted_by
  * @property Carbon|null $dt_deleted_at
+ *
+ * @property-read Role|null $roleModel
+ * @property-read User $user
  */
 class UserRole extends Model
 {
