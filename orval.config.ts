@@ -6,7 +6,6 @@ export default defineConfig({
     output: {
       mode: 'single',
       target: './resources/js/api/generated/api.ts',
-      schemas: false,
       client: 'axios-functions',
       clean: true,
       override: {
