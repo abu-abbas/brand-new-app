@@ -11,6 +11,7 @@ use App\Http\Requests\Auth\SetActiveGroupRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\ImpersonateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -164,6 +165,14 @@ class AuthController extends Controller
      */
     public function logout(Request $request): Response
     {
+        if (session()->has('impersonator_id')) {
+            try {
+                app(ImpersonateService::class)->stop('logout');
+            } catch (\Throwable $e) {
+                // Abaikan jika stop gagal agar logout utama tetap berjalan
+            }
+        }
+
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

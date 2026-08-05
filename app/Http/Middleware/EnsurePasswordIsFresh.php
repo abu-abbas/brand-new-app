@@ -20,11 +20,16 @@ class EnsurePasswordIsFresh
     {
         $user = $request->user();
 
+        if (session()->has('impersonator_id')) {
+            return $next($request);
+        }
+
         if ($user instanceof User && $user->mustChangePassword()) {
             $allowedRoutes = [
                 'api.auth.me',
                 'api.auth.password',
                 'api.auth.logout',
+                'api.impersonate.leave',
             ];
 
             $routeName = $request->route()?->getName();

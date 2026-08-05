@@ -19,6 +19,7 @@ class AssignRequestId
             ? strtolower($incoming)
             : (string) Str::uuid();
 
+        $request->attributes->set('request_id', $requestId);
         Log::withContext(['request_id' => $requestId]);
 
         $response = $next($request);

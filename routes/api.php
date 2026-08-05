@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FeatureController;
+use App\Http\Controllers\Api\ImpersonateController;
 use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Middleware\BlockImpersonatedSensitiveActions;
+use App\Http\Middleware\EnforceImpersonateSession;
 use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsurePasswordIsFresh;
 use Illuminate\Support\Facades\Route;
@@ -30,12 +33,28 @@ Route::get('/auth/captcha/audio', [AuthController::class, 'captchaAudio'])
     ->middleware('throttle:20,1')
     ->name('api.auth.captcha.audio');
 
-Route::middleware(['auth:sanctum', EnsureActiveUser::class, EnsurePasswordIsFresh::class])->group(function () {
+// Routes yang selalu reachable untuk mengakhiri sesi (Logout & Leave Impersonate)
+Route::middleware([
+    'auth:sanctum',
+    EnforceImpersonateSession::class,
+])->group(function () {
+    Route::post('/impersonate/leave', [ImpersonateController::class, 'leave'])
+        ->name('api.impersonate.leave');
+    Route::post('/auth/logout', [AuthController::class, 'logout'])
+        ->name('api.auth.logout');
+});
+
+Route::middleware([
+    'auth:sanctum',
+    EnforceImpersonateSession::class,
+    BlockImpersonatedSensitiveActions::class,
+    EnsureActiveUser::class,
+    EnsurePasswordIsFresh::class,
+])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('api.auth.me');
     Route::put('/auth/password', [AuthController::class, 'changePassword'])->name('api.auth.password');
     Route::post('/auth/active-group', [AuthController::class, 'setActiveGroup'])->name('api.auth.active-group');
     Route::post('/auth/reset-default-group', [AuthController::class, 'resetDefaultGroup'])->name('api.auth.reset-default-group');
-    Route::post('/auth/logout', [AuthController::class, 'logout'])->name('api.auth.logout');
 
     // Users
     Route::get('/users', [UserController::class, 'index'])
@@ -59,6 +78,9 @@ Route::middleware(['auth:sanctum', EnsureActiveUser::class, EnsurePasswordIsFres
     Route::post('/users/{user}/send-password-link', [UserController::class, 'sendPasswordLink'])
         ->middleware(['can:reset-password-pengguna', 'throttle:6,1'])
         ->name('api.users.send-password-link');
+    Route::post('/users/{user}/impersonate', [ImpersonateController::class, 'start'])
+        ->middleware('throttle:10,1')
+        ->name('api.users.impersonate');
 
     // References
     Route::get('/references/wilayah', [ReferenceController::class, 'wilayah'])->name('api.references.wilayah');
