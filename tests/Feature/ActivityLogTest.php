@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\ActivityLog;
 use App\Models\User;
+use App\Models\UserRole;
 use App\Services\FeatureService;
 use App\Services\RoleService;
 use App\Services\UserService;
@@ -19,6 +21,11 @@ beforeEach(function () {
         'b_is_active' => true,
         'b_use_other' => false,
         'dt_last_updated_password' => Carbon::now(),
+    ]);
+
+    UserRole::create([
+        'v_userid' => 'admin_test',
+        'v_role_code' => 'ADMIN',
     ]);
 
     $this->actingAs($this->admin);
@@ -85,7 +92,7 @@ it('records activity log on role mutations', function () {
 
     $this->assertDatabaseHas('tm_activity_log', [
         'v_subject_type' => 'Role',
-        'v_subject_id' => 'ROLE_MUTATION_TEST',
+        'v_subject_id' => $role->v_code,
         'v_event' => 'created',
     ]);
 
@@ -95,7 +102,7 @@ it('records activity log on role mutations', function () {
 
     $this->assertDatabaseHas('tm_activity_log', [
         'v_subject_type' => 'Role',
-        'v_subject_id' => 'ROLE_MUTATION_TEST',
+        'v_subject_id' => $role->v_code,
         'v_event' => 'updated',
     ]);
 
@@ -103,7 +110,7 @@ it('records activity log on role mutations', function () {
 
     $this->assertDatabaseHas('tm_activity_log', [
         'v_subject_type' => 'Role',
-        'v_subject_id' => 'ROLE_MUTATION_TEST',
+        'v_subject_id' => $role->v_code,
         'v_event' => 'deleted',
     ]);
 });
@@ -141,4 +148,70 @@ it('records activity log on feature mutations', function () {
         'v_subject_id' => 'feature-test',
         'v_event' => 'deleted',
     ]);
+});
+
+it('records activity log on user login and logout', function () {
+    $this->withHeader('Referer', config('app.url'));
+
+    $this->postJson('/api/auth/login', [
+        'username' => 'admin_test',
+        'password' => 'password123',
+    ])->assertOk();
+
+    $this->assertDatabaseHas('tm_activity_log', [
+        'v_subject_type' => 'User',
+        'v_subject_id' => 'admin_test',
+        'v_event' => 'login',
+        'v_causer_id' => 'admin_test',
+    ]);
+
+    $this->postJson('/api/auth/logout')->assertNoContent();
+
+    $this->assertDatabaseHas('tm_activity_log', [
+        'v_subject_type' => 'User',
+        'v_subject_id' => 'admin_test',
+        'v_event' => 'logout',
+        'v_causer_id' => 'admin_test',
+    ]);
+});
+
+it('records role assignment details in activity log on user creation and update', function () {
+    $userService = app(UserService::class);
+
+    $user = $userService->createUser([
+        'userid' => 'testuser_roles',
+        'username' => 'User Roles Test',
+        'email' => 'roles_test@example.com',
+        'is_active' => true,
+        'is_external' => false,
+        'roles' => [
+            ['role_code' => 'ADMIN'],
+        ],
+    ], 'admin_test');
+
+    $this->assertDatabaseHas('tm_activity_log', [
+        'v_subject_type' => 'User',
+        'v_subject_id' => 'testuser_roles',
+        'v_event' => 'created',
+    ]);
+
+    $log = ActivityLog::where('v_subject_id', 'testuser_roles')
+        ->where('v_event', 'created')
+        ->first();
+
+    expect($log->j_properties['roles'])->toContain('ADMIN');
+
+    $userService->updateUser($user, [
+        'roles' => [
+            ['role_code' => 'OPERATOR'],
+        ],
+    ], 'admin_test');
+
+    $updateLog = ActivityLog::where('v_subject_id', 'testuser_roles')
+        ->where('v_event', 'updated')
+        ->latest('i_id')
+        ->first();
+
+    expect($updateLog->j_properties['roles_before'])->toContain('ADMIN');
+    expect($updateLog->j_properties['roles_after'])->toContain('OPERATOR');
 });

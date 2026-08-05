@@ -21,6 +21,7 @@ class AuthService
 {
     public function __construct(
         private readonly ErrorDefinitionReader $reader,
+        private readonly ActivityLogger $activityLogger = new ActivityLogger,
     ) {}
 
     /**
@@ -74,6 +75,17 @@ class AuthService
             } elseif ($user->v_default_group_id && in_array($user->v_default_group_id, $roles, true)) {
                 session(['active_group_id' => $user->v_default_group_id]);
             }
+
+            $this->activityLogger->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'login',
+                properties: [
+                    'username' => $inputUsername,
+                    'ip' => $ip,
+                ],
+                causerId: $user->v_userid
+            );
 
             return $user;
         }
@@ -140,6 +152,18 @@ class AuthService
         } elseif ($user->v_default_group_id && in_array($user->v_default_group_id, $roles, true)) {
             session(['active_group_id' => $user->v_default_group_id]);
         }
+
+        $this->activityLogger->record(
+            subjectType: 'User',
+            subjectId: $user->v_userid,
+            event: 'login',
+            properties: [
+                'username' => $inputUsername,
+                'ip' => $ip,
+                'auto_provisioned' => true,
+            ],
+            causerId: $user->v_userid
+        );
 
         return $user;
     }

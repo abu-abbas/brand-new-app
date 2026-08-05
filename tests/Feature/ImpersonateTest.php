@@ -313,7 +313,7 @@ function setImpersonateTestSession($test, $targetUser, $adminUserId = 'admin01')
     session([
         'impersonator_id' => $adminUserId,
         'impersonated_active_group' => 'ROLE_OPERATOR',
-        'impersonate_started_at' => \Illuminate\Support\Carbon::now()->toIso8601String(),
+        'impersonate_started_at' => Carbon::now()->toIso8601String(),
     ]);
 }
 

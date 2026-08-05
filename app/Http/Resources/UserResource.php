@@ -51,7 +51,8 @@ class UserResource extends JsonResource
         $name = toTitleCase($this->v_username ?? $this->v_userid);
 
         $isImpersonating = session()->has('impersonator_id');
-        $routeName = $request->route()->getName();
+        /** @phpstan-ignore-next-line nullsafe.neverNull */
+        $routeName = $request->route()?->getName();
         $isAuthOrImpersonateEndpoint = is_string($routeName) && (
             str_starts_with($routeName, 'api.auth.') || str_starts_with($routeName, 'api.impersonate.')
         );

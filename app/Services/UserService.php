@@ -167,6 +167,7 @@ class UserService
 
             $user = User::create($attributes);
 
+            $assignedRoleCodes = [];
             if (! empty($data['roles']) && is_array($data['roles'])) {
                 foreach ($data['roles'] as $roleItem) {
                     $roleAttributes = [
@@ -177,6 +178,7 @@ class UserService
                     ];
                     $this->copyRoleMutationFields($roleAttributes, $roleItem);
                     UserRole::create($roleAttributes);
+                    $assignedRoleCodes[] = $roleItem['role_code'];
                 }
             }
 
@@ -189,6 +191,7 @@ class UserService
                     'email' => $user->v_email,
                     'is_active' => $user->b_is_active,
                     'is_external' => $user->b_use_other,
+                    'roles' => $assignedRoleCodes,
                 ]
             );
 
@@ -217,8 +220,9 @@ class UserService
 
         $oldEmail = $user->v_email;
         $wasExternal = $user->b_use_other;
+        $beforeRoleCodes = UserRole::query()->where('v_userid', $user->v_userid)->pluck('v_role_code')->toArray();
 
-        $updatedUser = DB::transaction(function () use ($user, $data, $authUserId) {
+        $updatedUser = DB::transaction(function () use ($user, $data, $authUserId, $beforeRoleCodes) {
             $now = Carbon::now();
 
             $updateData = [];
@@ -261,7 +265,10 @@ class UserService
                 $user->update($updateData);
             }
 
-            if (array_key_exists('roles', $data) && is_array($data['roles'])) {
+            $afterRoleCodes = [];
+            $rolesUpdated = array_key_exists('roles', $data) && is_array($data['roles']);
+
+            if ($rolesUpdated) {
                 // Replace roles
                 $assignedRoles = UserRole::where('v_userid', $user->v_userid);
                 $assignedRoles->update(['v_deleted_by' => $authUserId]);
@@ -276,18 +283,28 @@ class UserService
                     ];
                     $this->copyRoleMutationFields($roleAttributes, $roleItem);
                     UserRole::create($roleAttributes);
+                    $afterRoleCodes[] = $roleItem['role_code'];
                 }
             }
 
             $user->forgetAuthorizationCache();
 
+            $updatedFields = array_keys($updateData);
+            $logProperties = [
+                'updated_fields' => $updatedFields,
+            ];
+
+            if ($rolesUpdated) {
+                $logProperties['updated_fields'][] = 'roles';
+                $logProperties['roles_before'] = $beforeRoleCodes;
+                $logProperties['roles_after'] = $afterRoleCodes;
+            }
+
             $this->activityLogger->record(
                 subjectType: 'User',
                 subjectId: $user->v_userid,
                 event: 'updated',
-                properties: [
-                    'updated_fields' => array_keys($updateData),
-                ]
+                properties: $logProperties
             );
 
             return $user->load(['userRoles.roleModel']);

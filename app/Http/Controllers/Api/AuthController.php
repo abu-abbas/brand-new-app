@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\SetActiveGroupRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\AuthService;
 use App\Services\ImpersonateService;
 use Illuminate\Http\JsonResponse;
@@ -165,12 +166,25 @@ class AuthController extends Controller
      */
     public function logout(Request $request): Response
     {
+        /** @var User|null $user */
+        $user = $request->user();
+
         if (session()->has('impersonator_id')) {
             try {
                 app(ImpersonateService::class)->stop('logout');
             } catch (\Throwable $e) {
                 // Abaikan jika stop gagal agar logout utama tetap berjalan
             }
+        }
+
+        if ($user !== null) {
+            app(ActivityLogger::class)->record(
+                subjectType: 'User',
+                subjectId: $user->v_userid,
+                event: 'logout',
+                properties: [],
+                causerId: $user->v_userid
+            );
         }
 
         Auth::guard('web')->logout();
