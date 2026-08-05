@@ -125,7 +125,7 @@ const isScrolled = ref(false);
 const scrollContent = ref<HTMLElement | null>(null);
 const scrollViewport = ref<HTMLElement | null>(null);
 
-function handleScroll(event) {
+function handleScroll(event: Event) {
   const scrollTop = (event.currentTarget as HTMLElement).scrollTop;
 
   if (!isScrolled.value && scrollTop > 35) {

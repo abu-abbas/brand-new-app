@@ -198,6 +198,29 @@ axiosInstance.interceptors.response.use(
     const normalizedError = normalizeAppError(error);
 
     if (
+      status === 409 &&
+      (normalizedError.code === 'IMP-WF-003' || normalizedError.code === 'IMP-WF-004')
+    ) {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(
+          'impersonate_notice',
+          JSON.stringify({
+            code: normalizedError.code,
+            message: normalizedError.message,
+          }),
+        );
+        const returnUrl = sessionStorage.getItem('impersonate_return_url');
+        sessionStorage.removeItem('impersonate_return_url');
+        if (returnUrl) {
+          window.location.href = returnUrl;
+        } else {
+          window.location.reload();
+        }
+        return Promise.reject(normalizedError);
+      }
+    }
+
+    if (
       status === 403 &&
       normalizedError.code === ERROR_CODES.AUTH_VAL_017 &&
       typeof window !== 'undefined' &&

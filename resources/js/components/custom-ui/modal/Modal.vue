@@ -14,6 +14,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
@@ -31,6 +32,8 @@ export interface ModalProps {
   asForm?: boolean;
   /** Loading status - mendisable tombol & menampilkan spinner pada tombol Confirm */
   loading?: boolean;
+  /** Disable tombol Confirm eksplisit */
+  confirmDisabled?: boolean;
   /** Label tombol Confirm */
   confirmText?: string;
   /** Label tombol Cancel */
@@ -60,6 +63,7 @@ const props = withDefaults(defineProps<ModalProps>(), {
   size: 'md',
   asForm: false,
   loading: false,
+  confirmDisabled: false,
   confirmText: 'Simpan',
   cancelText: 'Batal',
   confirmVariant: 'default',
@@ -119,7 +123,7 @@ const sizeClasses = computed(() => {
 });
 
 const handleConfirm = (event: MouseEvent | SubmitEvent | Event) => {
-  if (props.loading) return;
+  if (props.loading || props.confirmDisabled) return;
   emits('confirm', event);
 };
 
@@ -171,13 +175,11 @@ const handleInteractOutside = (event: Event) => {
         </DialogHeader>
 
         <!-- Body / Content Section -->
-        <div
-          :class="
-            cn('p-6 overflow-y-auto flex-1 text-sm text-foreground/90 space-y-4', props.bodyClass)
-          "
-        >
-          <slot />
-        </div>
+        <ScrollArea :class="cn('flex-1 min-h-0 text-sm text-foreground/90', props.bodyClass)">
+          <div class="p-6 space-y-4">
+            <slot />
+          </div>
+        </ScrollArea>
 
         <!-- Footer Section -->
         <DialogFooter
@@ -202,7 +204,7 @@ const handleInteractOutside = (event: Event) => {
                 v-if="!hideConfirm"
                 :type="asForm ? 'submit' : 'button'"
                 :variant="confirmVariant"
-                :disabled="loading"
+                :disabled="loading || confirmDisabled"
                 @click="!asForm ? handleConfirm($event) : undefined"
               >
                 <Spinner v-if="loading" class="mr-2 h-4 w-4 animate-spin" />

@@ -225,6 +225,23 @@
                 "security": []
             }
         },
+        "/auth/logout": {
+            "post": {
+                "operationId": "auth.logout",
+                "summary": "End the authenticated session",
+                "tags": [
+                    "Auth"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/auth/me": {
             "get": {
                 "operationId": "auth.me",
@@ -373,23 +390,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    }
-                }
-            }
-        },
-        "/auth/logout": {
-            "post": {
-                "operationId": "auth.logout",
-                "summary": "End the authenticated session",
-                "tags": [
-                    "Auth"
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -832,6 +832,96 @@
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/impersonate/leave": {
+            "post": {
+                "operationId": "impersonate.leave",
+                "summary": "Menghentikan sesi impersonate dan memulihkan sesi Admin",
+                "tags": [
+                    "Impersonate"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/users/{user}/impersonate": {
+            "post": {
+                "operationId": "users.impersonate",
+                "summary": "Memulai sesi impersonate Admin ke Target User",
+                "tags": [
+                    "Impersonate"
+                ],
+                "parameters": [
+                    {
+                        "name": "user",
+                        "in": "path",
+                        "required": true,
+                        "description": "The user i id",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ImpersonateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "`UserResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/components/schemas/UserResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     }
                 }
             }
@@ -1615,7 +1705,7 @@
                         "required": true,
                         "description": "The user i id",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1662,7 +1752,7 @@
                         "required": true,
                         "description": "The user i id",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1726,7 +1816,7 @@
                         "required": true,
                         "description": "The user i id",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1776,7 +1866,7 @@
                         "required": true,
                         "description": "The user i id",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -1830,7 +1920,7 @@
                         "required": true,
                         "description": "The user i id",
                         "schema": {
-                            "type": "integer"
+                            "type": "string"
                         }
                     }
                 ],
@@ -2017,6 +2107,19 @@
                     "email"
                 ],
                 "title": "ForgotPasswordRequest"
+            },
+            "ImpersonateRequest": {
+                "type": "object",
+                "properties": {
+                    "target_group_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    }
+                },
+                "title": "ImpersonateRequest"
             },
             "LoginRequest": {
                 "type": "object",
@@ -2786,6 +2889,39 @@
                             "string",
                             "null"
                         ]
+                    },
+                    "is_impersonating": {
+                        "type": "string"
+                    },
+                    "impersonator": {
+                        "type": "object",
+                        "properties": {
+                            "userid": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "userid",
+                            "name"
+                        ]
+                    },
+                    "impersonated_active_group": {
+                        "type": "string"
+                    },
+                    "impersonated_active_group_name": {
+                        "type": "string"
+                    },
+                    "impersonated_active_group_unit_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "impersonate_expires_at": {
+                        "type": "null"
                     }
                 },
                 "required": [
@@ -2805,7 +2941,8 @@
                     "must_change_password",
                     "password_expires_at",
                     "is_verified",
-                    "created_at"
+                    "created_at",
+                    "is_impersonating"
                 ],
                 "title": "UserResource"
             },
@@ -2830,11 +2967,17 @@
                             "null"
                         ]
                     },
+                    "wilayah_name": {
+                        "type": "string"
+                    },
                     "unit": {
                         "type": [
                             "string",
                             "null"
                         ]
+                    },
+                    "unit_name": {
+                        "type": "string"
                     },
                     "pelaksana": {
                         "type": [
@@ -2870,7 +3013,9 @@
                     "role_code",
                     "role_name",
                     "wilayah",
+                    "wilayah_name",
                     "unit",
+                    "unit_name",
                     "pelaksana",
                     "valid_from",
                     "valid_until",

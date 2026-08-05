@@ -1,6 +1,7 @@
 import type { LoginRequest, UserResource } from '@/api/generated/api';
 import { clearDataTableMemory } from '@/components/custom-ui/data-table';
 import { AuthFacade } from '@/modules/auth/api/auth.facade';
+import { ImpersonateFacade } from '@/modules/user-management/api/impersonate.facade';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -11,12 +12,21 @@ export const useAuthStore = defineStore('auth', () => {
 
   const activeGroup = computed(() => user.value?.active_group_id ?? null);
 
+  const isImpersonating = computed(() => Boolean(user.value?.is_impersonating));
+  const impersonator = computed(() => user.value?.impersonator ?? null);
+  const impersonatedActiveGroup = computed(() => user.value?.impersonated_active_group ?? null);
+  const impersonateExpiresAt = computed(() => user.value?.impersonate_expires_at ?? null);
+
   const requiresGroupSelection = computed(() => {
     if (!user.value) return false;
     const hasMultiple =
       user.value.has_multiple_groups ?? (user.value.roles && user.value.roles.length > 1);
     return Boolean(hasMultiple && !user.value.active_group_id);
   });
+
+  function can(permission: string): boolean {
+    return user.value?.permissions?.includes(permission) ?? false;
+  }
 
   async function restore(): Promise<void> {
     if (restored.value) return;
@@ -53,6 +63,23 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function startImpersonate(
+    targetUserId: string,
+    targetGroupId?: string,
+  ): Promise<UserResource> {
+    const res = await ImpersonateFacade.startImpersonate(targetUserId, targetGroupId);
+    user.value = res.data;
+    clearDataTableMemory();
+    return res.data;
+  }
+
+  async function leaveImpersonate(): Promise<UserResource> {
+    const res = await ImpersonateFacade.leaveImpersonate();
+    user.value = res.data;
+    clearDataTableMemory();
+    return res.data;
+  }
+
   async function logout(): Promise<void> {
     await AuthFacade.logout();
     clearLocalSession();
@@ -67,11 +94,18 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isAuthenticated,
     activeGroup,
+    isImpersonating,
+    impersonator,
+    impersonatedActiveGroup,
+    impersonateExpiresAt,
     requiresGroupSelection,
+    can,
     restore,
     login,
     setActiveGroup,
     resetDefaultGroup,
+    startImpersonate,
+    leaveImpersonate,
     logout,
     clearLocalSession,
   };

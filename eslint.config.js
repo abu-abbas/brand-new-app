@@ -44,6 +44,7 @@ export default tseslint.config(
         HTMLElement: 'readonly',
         MouseEvent: 'readonly',
         Node: 'readonly',
+        sessionStorage: 'readonly',
       },
     },
   },
@@ -57,6 +58,7 @@ export default tseslint.config(
     rules: {
       'vue/multi-word-component-names': 'off', // Dimatikan agar nama component seperti App.vue atau Button.vue diperbolehkan
       '@typescript-eslint/no-explicit-any': 'warn',
+      'no-undef': 'off', // Dimatikan karena TypeScript (vue-tsc) sudah menangani undefined checks — sesuai rekomendasi typescript-eslint
       'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'warn', // Error saat build production, warn saat development
     },
   },

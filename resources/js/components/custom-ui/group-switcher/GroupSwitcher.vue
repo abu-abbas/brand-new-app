@@ -108,7 +108,7 @@ function handleLogout() {
 </script>
 
 <template>
-  <div v-if="availableRoles.length > 0" class="flex items-center">
+  <div v-if="availableRoles.length > 0 && !auth.isImpersonating" class="flex items-center">
     <DropdownMenu>
       <DropdownMenuTrigger as-child>
         <Button

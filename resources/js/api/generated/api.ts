@@ -54,6 +54,16 @@ export interface ForgotPasswordRequest {
 }
 
 /**
+ * @maxLength 100
+ */
+export type ImpersonateRequestTargetGroupId = string | null;
+
+export interface ImpersonateRequest {
+  /** @maxLength 100 */
+  target_group_id?: ImpersonateRequestTargetGroupId;
+}
+
+/**
  * @minLength 60
  * @maxLength 60
  */
@@ -436,6 +446,13 @@ export type UserResourcePasswordExpiresAt = string | null;
 
 export type UserResourceCreatedAt = string | null;
 
+export type UserResourceImpersonator = {
+  userid: string;
+  name: string;
+};
+
+export type UserResourceImpersonatedActiveGroupUnitName = string | null;
+
 export interface UserResource {
   id: string;
   userid: string;
@@ -456,6 +473,12 @@ export interface UserResource {
   password_expires_at: UserResourcePasswordExpiresAt;
   is_verified: boolean;
   created_at: UserResourceCreatedAt;
+  is_impersonating: string;
+  impersonator?: UserResourceImpersonator;
+  impersonated_active_group?: string;
+  impersonated_active_group_name?: string;
+  impersonated_active_group_unit_name?: UserResourceImpersonatedActiveGroupUnitName;
+  impersonate_expires_at?: null;
 }
 
 export type UserRoleResourceWilayah = string | null;
@@ -474,7 +497,9 @@ export interface UserRoleResource {
   role_code: string;
   role_name: string;
   wilayah: UserRoleResourceWilayah;
+  wilayah_name: string;
   unit: UserRoleResourceUnit;
+  unit_name: string;
   pelaksana: UserRoleResourcePelaksana;
   valid_from: UserRoleResourceValidFrom;
   valid_until: UserRoleResourceValidUntil;
@@ -608,6 +633,14 @@ export type FeaturesUpdate200 = {
 
 export type FeaturesRestore200 = {
   data: FeatureResource;
+};
+
+export type ImpersonateLeave200 = {
+  data: UserResource;
+};
+
+export type UsersImpersonate200 = {
+  data: UserResource;
 };
 
 export type ReferencesWilayah200DataItem = {
@@ -827,6 +860,18 @@ export const authCaptchaAudio = (
     }
   
 /**
+ * @summary End the authenticated session
+ */
+export const authLogout = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
+      return customAxiosInstance<void>(
+      {url: `/auth/logout`, method: 'POST'
+    },
+      options);
+    }
+  
+/**
  * @summary Return the authenticated user
  */
 export const authMe = (
@@ -874,18 +919,6 @@ export const authResetDefaultGroup = (
  options?: SecondParameter<typeof customAxiosInstance<AuthResetDefaultGroup200>>,) => {
       return customAxiosInstance<AuthResetDefaultGroup200>(
       {url: `/auth/reset-default-group`, method: 'POST'
-    },
-      options);
-    }
-  
-/**
- * @summary End the authenticated session
- */
-export const authLogout = (
-    
- options?: SecondParameter<typeof customAxiosInstance<void>>,) => {
-      return customAxiosInstance<void>(
-      {url: `/auth/logout`, method: 'POST'
     },
       options);
     }
@@ -964,6 +997,33 @@ export const featuresRestore = (
  options?: SecondParameter<typeof customAxiosInstance<FeaturesRestore200>>,) => {
       return customAxiosInstance<FeaturesRestore200>(
       {url: `/features/${feature}/restore`, method: 'POST'
+    },
+      options);
+    }
+  
+/**
+ * @summary Menghentikan sesi impersonate dan memulihkan sesi Admin
+ */
+export const impersonateLeave = (
+    
+ options?: SecondParameter<typeof customAxiosInstance<ImpersonateLeave200>>,) => {
+      return customAxiosInstance<ImpersonateLeave200>(
+      {url: `/impersonate/leave`, method: 'POST'
+    },
+      options);
+    }
+  
+/**
+ * @summary Memulai sesi impersonate Admin ke Target User
+ */
+export const usersImpersonate = (
+    user: string,
+    impersonateRequest: ImpersonateRequest,
+ options?: SecondParameter<typeof customAxiosInstance<UsersImpersonate200>>,) => {
+      return customAxiosInstance<UsersImpersonate200>(
+      {url: `/users/${user}/impersonate`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: impersonateRequest
     },
       options);
     }
@@ -1107,7 +1167,7 @@ export const usersStore = (
  * @summary Display detail of a user
  */
 export const usersShow = (
-    user: number,
+    user: string,
  options?: SecondParameter<typeof customAxiosInstance<UsersShow200>>,) => {
       return customAxiosInstance<UsersShow200>(
       {url: `/users/${user}`, method: 'GET'
@@ -1119,7 +1179,7 @@ export const usersShow = (
  * @summary Update an existing user
  */
 export const usersUpdate = (
-    user: number,
+    user: string,
     updateUserRequest: UpdateUserRequest,
  options?: SecondParameter<typeof customAxiosInstance<UsersUpdate200>>,) => {
       return customAxiosInstance<UsersUpdate200>(
@@ -1134,7 +1194,7 @@ export const usersUpdate = (
  * @summary Soft delete a user
  */
 export const usersDestroy = (
-    user: number,
+    user: string,
  options?: SecondParameter<typeof customAxiosInstance<UsersDestroy200>>,) => {
       return customAxiosInstance<UsersDestroy200>(
       {url: `/users/${user}`, method: 'DELETE'
@@ -1146,7 +1206,7 @@ export const usersDestroy = (
  * @summary Toggle active status of a user
  */
 export const usersToggleStatus = (
-    user: number,
+    user: string,
  options?: SecondParameter<typeof customAxiosInstance<UsersToggleStatus200>>,) => {
       return customAxiosInstance<UsersToggleStatus200>(
       {url: `/users/${user}/toggle-status`, method: 'PATCH'
@@ -1158,7 +1218,7 @@ export const usersToggleStatus = (
  * @summary Send password reset / invitation link to a user by Admin
  */
 export const usersSendPasswordLink = (
-    user: number,
+    user: string,
  options?: SecondParameter<typeof customAxiosInstance<UsersSendPasswordLink200>>,) => {
       return customAxiosInstance<UsersSendPasswordLink200>(
       {url: `/users/${user}/send-password-link`, method: 'POST'
@@ -1171,17 +1231,19 @@ export type AuthForgotPasswordResult = NonNullable<Awaited<ReturnType<typeof aut
 export type AuthResetPasswordResult = NonNullable<Awaited<ReturnType<typeof authResetPassword>>>
 export type AuthCaptchaResult = NonNullable<Awaited<ReturnType<typeof authCaptcha>>>
 export type AuthCaptchaAudioResult = NonNullable<Awaited<ReturnType<typeof authCaptchaAudio>>>
+export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
 export type AuthMeResult = NonNullable<Awaited<ReturnType<typeof authMe>>>
 export type AuthPasswordResult = NonNullable<Awaited<ReturnType<typeof authPassword>>>
 export type AuthActiveGroupResult = NonNullable<Awaited<ReturnType<typeof authActiveGroup>>>
 export type AuthResetDefaultGroupResult = NonNullable<Awaited<ReturnType<typeof authResetDefaultGroup>>>
-export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
 export type FeaturesIndexResult = NonNullable<Awaited<ReturnType<typeof featuresIndex>>>
 export type FeaturesStoreResult = NonNullable<Awaited<ReturnType<typeof featuresStore>>>
 export type FeaturesOptionsResult = NonNullable<Awaited<ReturnType<typeof featuresOptions>>>
 export type FeaturesUpdateResult = NonNullable<Awaited<ReturnType<typeof featuresUpdate>>>
 export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featuresDestroy>>>
 export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>
+export type ImpersonateLeaveResult = NonNullable<Awaited<ReturnType<typeof impersonateLeave>>>
+export type UsersImpersonateResult = NonNullable<Awaited<ReturnType<typeof usersImpersonate>>>
 export type ReferencesWilayahResult = NonNullable<Awaited<ReturnType<typeof referencesWilayah>>>
 export type ReferencesPerangkatDaerahResult = NonNullable<Awaited<ReturnType<typeof referencesPerangkatDaerah>>>
 export type RolesIndexResult = NonNullable<Awaited<ReturnType<typeof rolesIndex>>>

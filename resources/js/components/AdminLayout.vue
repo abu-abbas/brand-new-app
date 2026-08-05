@@ -5,6 +5,7 @@ import { useRouter, type RouteLocationRaw } from 'vue-router';
 import AdminSidebar from '@/components/AdminSidebar.vue';
 import AdminHeader from '@/components/AdminHeader.vue';
 import PageHeader from '@/components/PageHeader.vue';
+import ImpersonateBanner from '@/components/ImpersonateBanner.vue';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,32 @@ function scrollToTop() {
   }
 }
 
+import { useConfirmDialog } from '@/composables/useConfirmDialog';
+
+const confirmDialog = useConfirmDialog();
+
 onMounted(() => {
+  if (typeof window !== 'undefined') {
+    const rawNotice = sessionStorage.getItem('impersonate_notice');
+    if (rawNotice) {
+      sessionStorage.removeItem('impersonate_notice');
+      try {
+        const notice = JSON.parse(rawNotice);
+        const isTtl = notice.code === 'IMP-WF-003';
+        void confirmDialog({
+          title: isTtl ? 'Batas Waktu Sesi Impersonate Berakhir' : 'Sesi Impersonate Dibatalkan',
+          description:
+            notice.message ||
+            'Sesi impersonate telah berakhir dan identitas Admin Anda telah dipulihkan.',
+          confirmLabel: 'Mengerti',
+          cancelLabel: false,
+        });
+      } catch {
+        // ignore parse error
+      }
+    }
+  }
+
   if (!containerRef.value) return;
   const target = containerRef.value.querySelector<HTMLElement>(
     '[data-reka-scroll-area-viewport], [data-radix-scroll-area-viewport], .h-full',
@@ -76,13 +102,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <SidebarProvider>
-    <div class="flex h-svh w-full overflow-hidden bg-background font-sans">
+  <SidebarProvider class="flex h-svh w-full flex-col overflow-hidden">
+    <ImpersonateBanner />
+    <div class="relative flex flex-1 min-h-0 w-full overflow-hidden bg-background font-sans">
       <!-- 1. SIDEBAR (Warna Putih/Clean) -->
       <AdminSidebar />
 
       <!-- 2. MAIN INSET CONTENT -->
-      <SidebarInset class="flex h-svh flex-1 flex-col overflow-hidden bg-background">
+      <SidebarInset class="flex flex-1 min-h-0 flex-col overflow-hidden bg-background">
         <!-- Header Clean (Warna Putih) -->
         <AdminHeader />
 

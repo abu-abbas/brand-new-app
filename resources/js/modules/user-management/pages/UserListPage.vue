@@ -31,23 +31,32 @@ import UserFormModal from '../components/UserFormModal.vue';
 import UserRoleModal from '../components/UserRoleModal.vue';
 import { USER_PERMISSIONS } from '../permissions';
 
+import { useAuthStore } from '@/stores/auth';
+import SelectImpersonateGroupModal from '../components/SelectImpersonateGroupModal.vue';
+
 interface UserRow extends Record<string, unknown>, UserResource {}
 
 const permission = usePermissionStore();
+const authStore = useAuthStore();
 const confirmDialog = useConfirmDialog();
 
 const dataTableRef = ref();
 const formModalOpen = ref(false);
 const roleModalOpen = ref(false);
+const groupModalOpen = ref(false);
 
 const selectedUserId = ref<string | null>(null);
 const selectedRoleUserId = ref<string | null>(null);
+
+const impersonateTarget = ref<UserRow | null>(null);
+const impersonateLoading = ref(false);
 
 const activeStatus = ref<'all' | 'true' | 'false'>('all');
 
 const canCreate = computed(() => permission.can(USER_PERMISSIONS.CREATE));
 const canUpdate = computed(() => permission.can(USER_PERMISSIONS.UPDATE));
 const canResetPassword = computed(() => permission.can(USER_PERMISSIONS.RESET_PASSWORD));
+const canImpersonate = computed(() => permission.can('impersonate-pengguna'));
 
 const fields: DataTableField<UserRow>[] = [
   {
@@ -142,6 +151,67 @@ const handleSendPasswordLink = (user: UserRow) => {
     },
   });
 };
+
+const impersonateValidRoles = computed(() => {
+  if (!impersonateTarget.value) return [];
+  const user = impersonateTarget.value;
+  if (Array.isArray(user.user_roles) && user.user_roles.length > 0) {
+    return (
+      user.user_roles as Array<{
+        role_code: string;
+        role_name?: string;
+        unit_name?: string | null;
+        wilayah_name?: string | null;
+        is_expired?: boolean;
+      }>
+    )
+      .filter((r) => !r.is_expired)
+      .map((r) => ({
+        code: r.role_code,
+        name: r.role_name || r.role_code,
+        subtitle: r.unit_name ?? r.wilayah_name ?? null,
+      }));
+  }
+  if (Array.isArray(user.roles)) {
+    return user.roles.map((r) => (typeof r === 'string' ? { code: r, name: r } : r));
+  }
+  return [];
+});
+
+const handleStartImpersonate = async (user: UserRow, targetGroupId?: string) => {
+  impersonateLoading.value = true;
+  try {
+    sessionStorage.setItem(
+      'impersonate_return_url',
+      window.location.pathname + window.location.search,
+    );
+    await authStore.startImpersonate(user.id, targetGroupId);
+    groupModalOpen.value = false;
+    window.location.href = '/';
+  } finally {
+    impersonateLoading.value = false;
+  }
+};
+
+const handleImpersonateClick = (user: UserRow) => {
+  impersonateTarget.value = user;
+  const validRoles = impersonateValidRoles.value;
+
+  if (validRoles.length > 1) {
+    groupModalOpen.value = true;
+  } else {
+    const singleRoleCode = validRoles.length === 1 ? validRoles[0].code : undefined;
+    void confirmDialog({
+      title: 'Mulai Impersonate Pengguna',
+      description: `Apakah Anda yakin ingin bertindak sebagai ${user.name || user.username} (${user.userid})?`,
+      confirmLabel: 'Mulai Impersonate',
+      cancelLabel: 'Batal',
+      onConfirm: async () => {
+        await handleStartImpersonate(user, singleRoleCode);
+      },
+    });
+  }
+};
 </script>
 
 <template>
@@ -222,6 +292,22 @@ const handleSendPasswordLink = (user: UserRow) => {
                 <span class="text-xs">
                   {{ (row as UserRow).is_verified ? 'Reset Password' : 'Kirim Ulang Verifikasi' }}
                 </span>
+              </Button>
+
+              <Button
+                v-if="
+                  canImpersonate &&
+                  (row as UserRow).userid !== authStore.user?.userid &&
+                  (row as UserRow).is_active
+                "
+                variant="secondary"
+                size="xs"
+                class="cursor-pointer gap-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+                title="Bertindak sebagai pengguna ini"
+                @click="handleImpersonateClick(row as UserRow)"
+              >
+                <LucideIcon name="UserCheck" class="size-3.5 text-amber-600 dark:text-amber-400" />
+                <span class="text-xs font-medium">Impersonate</span>
               </Button>
             </div>
           </div>
@@ -322,6 +408,16 @@ const handleSendPasswordLink = (user: UserRow) => {
       v-model:open="roleModalOpen"
       :user-id="selectedRoleUserId"
       @saved="handleRefreshTable"
+    />
+
+    <!-- Modal Pemilihan Group Target Impersonate -->
+    <SelectImpersonateGroupModal
+      v-if="impersonateTarget"
+      v-model:open="groupModalOpen"
+      :target-name="impersonateTarget.name || impersonateTarget.username"
+      :roles="impersonateValidRoles"
+      :loading="impersonateLoading"
+      @submit="(groupId) => handleStartImpersonate(impersonateTarget!, groupId)"
     />
   </AdminLayout>
 </template>
