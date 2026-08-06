@@ -17,7 +17,7 @@ class BlockImpersonatedSensitiveActions
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (session()->has('impersonator_id')) {
+        if ($request->hasSession() && $request->session()->has('impersonator_id')) {
             $routeName = $request->route()->getName();
             $blockedRoutes = [
                 'api.auth.password',

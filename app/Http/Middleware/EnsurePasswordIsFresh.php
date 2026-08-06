@@ -20,7 +20,7 @@ class EnsurePasswordIsFresh
     {
         $user = $request->user();
 
-        if (session()->has('impersonator_id')) {
+        if ($request->hasSession() && $request->session()->has('impersonator_id')) {
             return $next($request);
         }
 

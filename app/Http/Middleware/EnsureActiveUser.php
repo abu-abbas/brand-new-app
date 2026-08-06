@@ -17,8 +17,10 @@ class EnsureActiveUser
 
         if (! $user instanceof User || ! $user->b_is_active || $user->getRolesList() === []) {
             Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
 
             throw new AuthenticationException;
         }

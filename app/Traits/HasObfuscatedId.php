@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Support\Obfuscator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 trait HasObfuscatedId
 {
@@ -33,7 +34,7 @@ trait HasObfuscatedId
      */
     public function resolveRouteBinding($value, $field = null)
     {
-        return $this->resolveRouteBindingQuery($this, $value, $field)->first();
+        return $this->resolveRouteBindingQuery($this->newQuery(), $value, $field)->first();
     }
 
     /**
@@ -45,7 +46,13 @@ trait HasObfuscatedId
      */
     public function resolveSoftDeletableRouteBinding($value, $field = null)
     {
-        return $this->resolveRouteBindingQuery($this, $value, $field)->withTrashed()->first();
+        $query = $this->newQuery();
+        if (in_array(SoftDeletes::class, class_uses_recursive(static::class), true)) {
+            /** @var Builder $query */
+            $query = $query->withTrashed(); // @phpstan-ignore method.notFound
+        }
+
+        return $this->resolveRouteBindingQuery($query, $value, $field)->first();
     }
 
     /**
@@ -73,6 +80,7 @@ trait HasObfuscatedId
             return $query->where($this->getKeyName(), (int) $value);
         }
 
+        /** @var Builder */
         return $query->whereRaw('1 = 0');
     }
 }

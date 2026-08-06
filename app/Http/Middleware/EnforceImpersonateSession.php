@@ -22,7 +22,7 @@ class EnforceImpersonateSession
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (session()->has('impersonator_id')) {
+        if ($request->hasSession() && $request->session()->has('impersonator_id')) {
             $impersonatorId = session()->get('impersonator_id');
             $impersonatedGroup = session()->get('impersonated_active_group');
             $startedAtIso = session()->get('impersonate_started_at');
