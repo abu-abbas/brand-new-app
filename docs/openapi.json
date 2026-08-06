@@ -926,6 +926,77 @@
                 }
             }
         },
+        "/profile/activity-logs": {
+            "get": {
+                "operationId": "profile.activity-logs",
+                "summary": "Mengambil daftar log aktivitas milik pengguna yang sedang terautentikasi",
+                "tags": [
+                    "Profile"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "minimum": 1,
+                            "maximum": 50
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Paginated set of `ActivityLogResource`",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ActivityLogResource"
+                                            }
+                                        },
+                                        "links": {
+                                            "$ref": "#/components/schemas/PaginationLinks"
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/PaginationMeta"
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
         "/references/wilayah": {
             "get": {
                 "operationId": "references.wilayah",
@@ -1969,6 +2040,66 @@
             }
         },
         "schemas": {
+            "ActivityLogResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "event": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "causer_name": {
+                        "type": "string"
+                    },
+                    "impersonator_name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "is_impersonated": {
+                        "type": "boolean"
+                    },
+                    "request_id": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "ip_address": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "event",
+                    "title",
+                    "reason",
+                    "causer_name",
+                    "impersonator_name",
+                    "is_impersonated",
+                    "request_id",
+                    "ip_address",
+                    "created_at"
+                ],
+                "title": "ActivityLogResource"
+            },
             "ChangePasswordRequest": {
                 "type": "object",
                 "properties": {
@@ -2822,7 +2953,10 @@
                                 ]
                             },
                             "name": {
-                                "type": "string"
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [

@@ -5,6 +5,27 @@
  * OpenAPI spec version: 0.0.1
  */
 import { customAxiosInstance } from '../../lib/axios';
+export type ActivityLogResourceReason = string | null;
+
+export type ActivityLogResourceImpersonatorName = string | null;
+
+export type ActivityLogResourceRequestId = string | null;
+
+export type ActivityLogResourceIpAddress = string | null;
+
+export interface ActivityLogResource {
+  id: string;
+  event: string;
+  title: string;
+  reason: ActivityLogResourceReason;
+  causer_name: string;
+  impersonator_name: ActivityLogResourceImpersonatorName;
+  is_impersonated: boolean;
+  request_id: ActivityLogResourceRequestId;
+  ip_address: ActivityLogResourceIpAddress;
+  created_at: string;
+}
+
 export interface ChangePasswordRequest {
   current_password: string;
   password: string;
@@ -433,9 +454,11 @@ export type UserResourceEmail = string | null;
 
 export type UserResourceUnitCode = string | null;
 
+export type UserResourceUnitName = string | null;
+
 export type UserResourceUnit = {
   code: UserResourceUnitCode;
-  name: string;
+  name: UserResourceUnitName;
 };
 
 export type UserResourceActiveGroupId = string | null;
@@ -641,6 +664,24 @@ export type ImpersonateLeave200 = {
 
 export type UsersImpersonate200 = {
   data: UserResource;
+};
+
+export type ProfileActivityLogsParams = {
+/**
+ * @minimum 1
+ */
+page?: number | null;
+/**
+ * @minimum 1
+ * @maximum 50
+ */
+per_page?: number | null;
+};
+
+export type ProfileActivityLogs200 = {
+  data: ActivityLogResource[];
+  links: PaginationLinks;
+  meta: PaginationMeta;
 };
 
 export type ReferencesWilayah200DataItem = {
@@ -1028,6 +1069,19 @@ export const usersImpersonate = (
       options);
     }
   
+/**
+ * @summary Mengambil daftar log aktivitas milik pengguna yang sedang terautentikasi
+ */
+export const profileActivityLogs = (
+    params?: ProfileActivityLogsParams,
+ options?: SecondParameter<typeof customAxiosInstance<ProfileActivityLogs200>>,) => {
+      return customAxiosInstance<ProfileActivityLogs200>(
+      {url: `/profile/activity-logs`, method: 'GET',
+        params
+    },
+      options);
+    }
+  
 export const referencesWilayah = (
     
  options?: SecondParameter<typeof customAxiosInstance<ReferencesWilayah200>>,) => {
@@ -1244,6 +1298,7 @@ export type FeaturesDestroyResult = NonNullable<Awaited<ReturnType<typeof featur
 export type FeaturesRestoreResult = NonNullable<Awaited<ReturnType<typeof featuresRestore>>>
 export type ImpersonateLeaveResult = NonNullable<Awaited<ReturnType<typeof impersonateLeave>>>
 export type UsersImpersonateResult = NonNullable<Awaited<ReturnType<typeof usersImpersonate>>>
+export type ProfileActivityLogsResult = NonNullable<Awaited<ReturnType<typeof profileActivityLogs>>>
 export type ReferencesWilayahResult = NonNullable<Awaited<ReturnType<typeof referencesWilayah>>>
 export type ReferencesPerangkatDaerahResult = NonNullable<Awaited<ReturnType<typeof referencesPerangkatDaerah>>>
 export type RolesIndexResult = NonNullable<Awaited<ReturnType<typeof rolesIndex>>>
