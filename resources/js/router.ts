@@ -7,6 +7,7 @@ import { blankPageRoutes } from '@/modules/blank-page/routes';
 import { featureRoutes } from '@/modules/features-management/routes';
 import { roleRoutes } from '@/modules/roles-management/routes';
 import { userRoutes } from '@/modules/user-management/routes';
+import { profileRoutes } from '@/modules/profile/routes';
 import { errorRoutes } from '@/modules/errors/routes';
 import { useAuthStore } from '@/stores/auth';
 
@@ -21,6 +22,7 @@ const router = createRouter({
     ...featureRoutes,
     ...roleRoutes,
     ...userRoutes,
+    ...profileRoutes,
     ...errorRoutes,
   ],
 });

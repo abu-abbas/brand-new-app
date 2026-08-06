@@ -36,18 +36,7 @@ import { usePermissionStore } from '@/stores/permission';
 import { LucideIcon } from '@/components/custom-ui/lucide-icon';
 import { FeaturesFacade } from '@/modules/features-management/api/features.facade';
 
-import {
-  ChevronRight,
-  ChevronsUpDown,
-  Sparkles,
-  BadgeCheck,
-  CreditCard,
-  Bell,
-  LogOut,
-  Palette,
-  Sun,
-  Moon,
-} from '@lucide/vue';
+import { ChevronRight, ChevronsUpDown, BadgeCheck, LogOut, Palette, Sun, Moon } from '@lucide/vue';
 
 const { activeTheme, otherThemes, setTheme, activeThemeLabel, activeThemeColor } = useTheme();
 const { isDark, toggleDarkMode } = useDarkMode();
@@ -344,26 +333,14 @@ const dynamicMenu = computed<DynamicMenuItem[]>(() => {
                   </div>
                 </div>
               </DropdownMenuLabel>
+
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <Sparkles class="size-4 mr-2 text-muted-foreground" />
-                  <span>Upgrade to Pro</span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <BadgeCheck class="size-4 mr-2 text-muted-foreground" />
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard class="size-4 mr-2 text-muted-foreground" />
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell class="size-4 mr-2 text-muted-foreground" />
-                  <span>Notifications</span>
+                <DropdownMenuItem as-child>
+                  <RouterLink :to="{ name: 'profile' }">
+                    <BadgeCheck class="size-4 mr-2 text-muted-foreground" />
+                    <span>Profil Saya</span>
+                  </RouterLink>
                 </DropdownMenuItem>
 
                 <!-- Theme Settings & Dark Mode -->
