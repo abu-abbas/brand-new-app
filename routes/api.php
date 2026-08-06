@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\FeatureController;
 use App\Http\Controllers\Api\ImpersonateController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReferenceController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\UserController;
@@ -55,6 +56,7 @@ Route::middleware([
     Route::put('/auth/password', [AuthController::class, 'changePassword'])->name('api.auth.password');
     Route::post('/auth/active-group', [AuthController::class, 'setActiveGroup'])->name('api.auth.active-group');
     Route::post('/auth/reset-default-group', [AuthController::class, 'resetDefaultGroup'])->name('api.auth.reset-default-group');
+    Route::get('/profile/activity-logs', [ProfileController::class, 'activityLogs'])->name('api.profile.activity-logs');
 
     // Users
     Route::get('/users', [UserController::class, 'index'])

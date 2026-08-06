@@ -49,12 +49,6 @@ parameters:
 			path: app/Http/Resources/UserResource.php
 
 		-
-			message: '#^Method App\\Http\\Resources\\UserResource\:\:toArray\(\) should return array\{id\: string, userid\: string, username\: string, name\: string, email\: string\|null, unit\: array\{code\: string\|null, name\: string\}, is_active\: bool, is_external\: bool, \.\.\.\} but returns array\{id\: string, userid\: string, username\: string, name\: string, email\: string\|null, unit\: array\{code\: string\|null, name\: string\}, is_active\: bool, is_external\: bool, \.\.\.\}\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Resources/UserResource.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>b_need_region" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -73,18 +67,6 @@ parameters:
 			path: app/Models/Feature.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/Role.php
-
-		-
-			message: '#^Method App\\Models\\Role\:\:resolveRouteBindingQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder but returns Illuminate\\Database\\Query\\Builder\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Role.php
-
-		-
 			message: '#^Offset 0 on non\-empty\-array\<string, string\> on left side of \?\? does not exist\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
@@ -94,12 +76,6 @@ parameters:
 			message: '#^Offset 1 on non\-empty\-array\<string, string\> on left side of \?\? does not exist\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
-			path: app/Models/Role.php
-
-		-
-			message: '#^Parameter \#1 \$query of method App\\Models\\Role\:\:resolveRouteBindingQuery\(\) expects Illuminate\\Database\\Eloquent\\Builder, \$this\(App\\Models\\Role\) given\.$#'
-			identifier: argument.type
-			count: 2
 			path: app/Models/Role.php
 
 		-
@@ -114,13 +90,6 @@ parameters:
 			count: 1
 			path: app/Models/User.php
 
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:withTrashed\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Models/User.php
-
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:currentlyValid\(\)\.$#'
 			identifier: method.notFound
@@ -128,21 +97,9 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Method App\\Models\\User\:\:resolveRouteBindingQuery\(\) should return Illuminate\\Database\\Eloquent\\Builder but returns Illuminate\\Database\\Query\\Builder\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/User.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\UserRole\)\: bool given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Models/User.php
-
-		-
-			message: '#^Parameter \#1 \$query of method App\\Models\\User\:\:resolveRouteBindingQuery\(\) expects Illuminate\\Database\\Eloquent\\Builder, \$this\(App\\Models\\User\) given\.$#'
-			identifier: argument.type
-			count: 2
 			path: app/Models/User.php
 
 		-
